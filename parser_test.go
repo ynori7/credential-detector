@@ -18,7 +18,7 @@ func TestParser(t *testing.T) {
 	parser.ParseFile(file)
 
 	// then
-	res := parser.Results[file]
+	res := parser.Results
 	assert.Equal(t, 4, len(res))
 
 	expected := []Result{

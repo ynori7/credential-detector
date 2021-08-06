@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 func main() {
@@ -41,13 +42,24 @@ func main() {
 		log.Println(err)
 	}
 
-	for file, results := range parser.Results {
-		fmt.Printf("In %s\n\n", file)
+	results := parser.Results
+	sort.Slice(results, func(i, j int) bool {
+		if results[i].File == results[j].File {
+			return results[i].Line < results[j].Line
+		}
+		return results[i].File < results[j].File
+	})
 
-		for _, res := range results {
-			fmt.Printf("Line %d: %s = %s\n", res.Line, res.Name, res.Value)
+	currentFile := ""
+	for _, result := range parser.Results {
+		if result.File != currentFile {
+			if currentFile != "" {
+				fmt.Printf("\n\n")
+			}
+			currentFile = result.File
+			fmt.Printf("In %s\n\n", currentFile)
 		}
 
-		fmt.Printf("\n\n")
+		fmt.Printf("Line %d: %s = %s\n", result.Line, result.Name, result.Value)
 	}
 }

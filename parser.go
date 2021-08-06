@@ -22,7 +22,7 @@ type Parser struct {
 	valueIncludeMatchers         []*regexp.Regexp
 	valueExcludeMatchers         []*regexp.Regexp
 
-	Results map[string][]Result
+	Results []Result
 }
 
 type Result struct {
@@ -39,7 +39,7 @@ func NewParser(conf Config) Parser {
 		variableNameExclusionMatcher: regexp.MustCompile(conf.VariableNameExclusionPattern),
 		valueIncludeMatchers:         make([]*regexp.Regexp, len(conf.ValueMatchPatterns)),
 		valueExcludeMatchers:         make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
-		Results:                      make(map[string][]Result),
+		Results:                      make([]Result, 0),
 	}
 
 	for k, v := range conf.ValueMatchPatterns {
@@ -53,7 +53,7 @@ func NewParser(conf Config) Parser {
 	return parser
 }
 
-func (p Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool {
+func (p *Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool {
 	// exclude non-strings and empty values
 	if value.Kind != token.STRING || value.Value == `""` {
 		return false
@@ -86,7 +86,7 @@ func (p Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool 
 	return false
 }
 
-func (p Parser) ParseFile(filepath string) {
+func (p *Parser) ParseFile(filepath string) {
 	if !strings.HasSuffix(filepath, GoSuffix) {
 		return
 	}
@@ -115,7 +115,7 @@ func (p Parser) ParseFile(filepath string) {
 	}
 }
 
-func (p Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.FileSet) {
+func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.FileSet) {
 	for _, spec := range decl.Specs {
 		switch spec := spec.(type) {
 		case *ast.ImportSpec:
@@ -132,11 +132,7 @@ func (p Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.F
 				switch val := id.Obj.Decl.(*ast.ValueSpec).Values[0].(type) {
 				case *ast.BasicLit:
 					if p.IsPossiblyCredentials(id.Name, val) {
-						if _, ok := p.Results[filepath]; !ok {
-							p.Results[filepath] = make([]Result, 0)
-						}
-
-						p.Results[filepath] = append(p.Results[filepath], Result{
+						p.Results = append(p.Results, Result{
 							File:  filepath,
 							Line:  fs.Position(val.Pos()).Line,
 							Name:  id.Name,
