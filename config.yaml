@@ -1,0 +1,10 @@
+variableNamePattern: (?i)passwd|password|pwd|secret|token|pw|apiKey|api_key|accessKey|bearer|credentials
+variableNameExclusionPattern: (?i)format
+valueMatchPatterns:
+  - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
+  - ^eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9[a-zA-Z0-9_.]+$ #jwt token
+valueExcludePatterns:
+  - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
+  - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
+  - (?i)api-key #used for consts like API_KEY_HEADER = "X-Api-Key"
+excludeTests: true
