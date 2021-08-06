@@ -37,7 +37,7 @@ func TestParser(t *testing.T) {
 		{
 			File:  file,
 			Line:  13,
-			Name:  "TOKEN",
+			Name:  "AccessCode",
 			Value: `"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
 		},
 		{
@@ -52,10 +52,11 @@ func TestParser(t *testing.T) {
 }
 
 func getTestConfig() []byte {
-	return []byte(`variableNamePattern: (?i)passwd|password|pwd|secret|token|pw|apiKey|api_key|accessKey|bearer|credentials
+	return []byte(`variableNamePattern: (?i)passwd|password|secret|token|apiKey|api_key|accessKey|bearer|credentials
 variableNameExclusionPattern: (?i)format
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+
+  - ^eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+$
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+

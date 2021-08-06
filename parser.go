@@ -59,16 +59,19 @@ func (p *Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool
 		return false
 	}
 
+	// remove quotes around the string
+	val := value.Value[1 : len(value.Value)-1]
+
 	// exclude any variables whose value is in our exclusion list (this would include things like defaults and test values)
 	for _, m := range p.valueExcludeMatchers {
-		if m.MatchString(value.Value) {
+		if m.MatchString(val) {
 			return false
 		}
 	}
 
 	// include anything in our value inclusion list. This would include things like postgres uris regardless of the variable name
 	for _, m := range p.valueIncludeMatchers {
-		if m.MatchString(value.Value) {
+		if m.MatchString(val) {
 			return true
 		}
 	}
@@ -79,7 +82,7 @@ func (p *Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool
 	}
 
 	// include variables which have potentially suspicious names, but only if the value does not also match (to exclude constants like const Token = "token")
-	if p.variableNameMatcher.MatchString(varName) && !p.variableNameMatcher.MatchString(value.Value) {
+	if p.variableNameMatcher.MatchString(varName) && !p.variableNameMatcher.MatchString(val) {
 		return true
 	}
 
