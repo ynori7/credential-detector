@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	VariableNamePattern          string   `yaml:"variableNamePattern"`
+	VariableNamePatterns         []string `yaml:"variableNamePatterns,flow"`
 	VariableNameExclusionPattern string   `yaml:"variableNameExclusionPattern"`
 	ValueMatchPatterns           []string `yaml:"valueMatchPatterns,flow"`
 	ValueExcludePatterns         []string `yaml:"valueExcludePatterns,flow"`
@@ -15,13 +15,22 @@ type Config struct {
 }
 
 var (
-	defaultVariableNamePattern = `(?i)passwd|password|pwd|secret|token|pw|apiKey|api_key|accessKey|bearer|credentials`
+	defaultVariableNamePatterns = []string{
+		"(?i)passwd|password",
+		"(?i)secret",
+		"(?i)token",
+		"(?i)apiKey|api[_-]key",
+		"(?i)accessKey|access[_-]key",
+		"(?i)bearer",
+		"(?i)credentials",
+		"salt|SALT|Salt",
+	}
 )
 
 func LoadConfig(path string) (Config, error) {
 	if path == "" {
 		return Config{
-			VariableNamePattern: defaultVariableNamePattern,
+			VariableNamePatterns: defaultVariableNamePatterns,
 		}, nil
 	}
 

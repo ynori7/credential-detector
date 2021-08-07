@@ -36,3 +36,7 @@ var conf = Config{
 }
 
 var PasswordFormat = "([0-9]+):(.+)"
+
+var StatusAlternatives = "Alternatives" //variable name contains sAlt. Should not match the "salt" pattern
+
+var blahToken = "password"

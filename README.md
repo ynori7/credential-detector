@@ -15,8 +15,16 @@ Line 711: secret = "Dklj34k3oi23kD"
 The following configuration options are available:
 
 ```yaml
-variableNamePattern: (?i)passwd|password|pwd|secret|token|pw|apiKey|api_key|accessKey|bearer|credentials
-variableNameExclusionPattern: (?i)format
+variableNamePatterns:
+  - (?i)passwd|password
+  - (?i)secret
+  - (?i)token
+  - (?i)apiKey|api[_-]key
+  - (?i)accessKey|access[_-]key
+  - (?i)bearer
+  - (?i)credentials
+  - salt|SALT|Salt
+variableNameExclusionPattern: (?i)format|tokenizer
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+
 valueExcludePatterns:
@@ -26,7 +34,7 @@ valueExcludePatterns:
 excludeTests: true
 ```
 
-- variableNamePattern defines the regular expression for matching potentially suspicious variable names (the above value is the default)
+- variableNamePatterns defines the regular expressions for matching potentially suspicious variable names (the above value is the default)
 - variableNameExclusionPattern defines the regular expression for excluding variable names that are not interesting (for example a passwordFormat pattern)
 - valueMatchPatterns is a list of patterns to match potentially suspicious values, regardless of the variable name (empty by default)
 - valueExcludePatterns is a list of patterns to exclude for the value (for example for test data or constants defining header names, etc)  (empty by default)
@@ -38,24 +46,19 @@ faster, especially when scanning large directories. Here is a comparison using t
 
 gosec: 
 ```bash
-[gosec] 2021/08/06 12:16:16 Including rules: G101
-[gosec] 2021/08/06 12:16:16 Excluding rules: default
-[gosec] 2021/08/06 12:16:16 Import directory: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata
-[gosec] 2021/08/06 12:16:16 Checking package: testdata
-[gosec] 2021/08/06 12:16:16 Checking file: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go
+$ time gosec -include=G101 testdata
+[gosec] 2021/08/07 19:11:43 Including rules: G101
+[gosec] 2021/08/07 19:11:43 Excluding rules: default
+[gosec] 2021/08/07 19:11:43 Import directory: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata
+[gosec] 2021/08/07 19:11:43 Checking package: testdata
+[gosec] 2021/08/07 19:11:43 Checking file: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go
 Results:
 
 
 [/home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go:38] - G101 (CWE-798): Potential hardcoded credentials (Confidence: LOW, Severity: HIGH)
     37: 
   > 38: var PasswordFormat = "([0-9]+):(.+)"
-
-
-
-[/home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go:13] - G101 (CWE-798): Potential hardcoded credentials (Confidence: LOW, Severity: HIGH)
-    12: const (
-  > 13: 	TOKEN          = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-    14: 	API_KEY_HEADER = "X-Api-Key"
+    39: 
 
 
 
@@ -69,13 +72,13 @@ Results:
 Summary:
   Gosec  : dev
   Files  : 1
-  Lines  : 38
+  Lines  : 42
   Nosec  : 0
-  Issues : 3
+  Issues : 2
 
 
 real	0m0,108s
-user	0m0,077s
+user	0m0,099s
 sys	0m0,033s
 ```
 
@@ -87,17 +90,16 @@ In testdata/dummy.go
 
 Line 5: internalSecret = "asdfasdfasdf"
 Line 9: authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-Line 13: TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+Line 13: AccessCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 Line 17: RealPostgresUri = "postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"
+Line 42: blahToken = "password"
 
-
-
-real	0m0,004s
-user	0m0,004s
-sys	0m0,000s
+real	0m0,007s
+user	0m0,001s
+sys	0m0,008s
 ```
 
-credential-detector was 27 times faster, found two values which gosec missed, and excluded a false-positive which gosec reported.
+credential-detector was 15 times faster, found four values which gosec missed, and excluded a false-positive which gosec reported.
 
 
 ## Limitations

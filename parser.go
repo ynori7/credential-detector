@@ -17,7 +17,7 @@ const (
 type Parser struct {
 	config Config
 
-	variableNameMatcher          *regexp.Regexp
+	variableNameMatchers         []*regexp.Regexp
 	variableNameExclusionMatcher *regexp.Regexp
 	valueIncludeMatchers         []*regexp.Regexp
 	valueExcludeMatchers         []*regexp.Regexp
@@ -35,11 +35,15 @@ type Result struct {
 func NewParser(conf Config) Parser {
 	parser := Parser{
 		config:                       conf,
-		variableNameMatcher:          regexp.MustCompile(conf.VariableNamePattern),
+		variableNameMatchers:         make([]*regexp.Regexp, len(conf.VariableNamePatterns)),
 		variableNameExclusionMatcher: regexp.MustCompile(conf.VariableNameExclusionPattern),
 		valueIncludeMatchers:         make([]*regexp.Regexp, len(conf.ValueMatchPatterns)),
 		valueExcludeMatchers:         make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
 		Results:                      make([]Result, 0),
+	}
+
+	for k, v := range conf.VariableNamePatterns {
+		parser.variableNameMatchers[k] = regexp.MustCompile(v)
 	}
 
 	for k, v := range conf.ValueMatchPatterns {
@@ -81,10 +85,13 @@ func (p *Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool
 		return false
 	}
 
-	// include variables which have potentially suspicious names, but only if the value does not also match (to exclude constants like const Token = "token")
-	if p.variableNameMatcher.MatchString(varName) && !p.variableNameMatcher.MatchString(val) {
-		return true
+	for _, m := range p.variableNameMatchers {
+		// include variables which have potentially suspicious names, but only if the value does not also match (to exclude constants like const Token = "token")
+		if m.MatchString(varName) && !m.MatchString(val) {
+			return true
+		}
 	}
+
 
 	return false
 }

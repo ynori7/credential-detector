@@ -1,10 +1,17 @@
-variableNamePattern: (?i)passwd|password|secret|token|apiKey|api_key|accessKey|bearer|credentials|salt
-variableNameExclusionPattern: (?i)format
+variableNamePatterns:
+  - (?i)passwd|password
+  - (?i)secret
+  - (?i)token
+  - (?i)apiKey|api[_-]key
+  - (?i)accessKey|access[_-]key
+  - (?i)bearer
+  - (?i)credentials
+  - salt|SALT|Salt
+variableNameExclusionPattern: (?i)format|tokenizer
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - ^eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+$ #jwt token
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
-  - (?i)api-key #used for consts like API_KEY_HEADER = "X-Api-Key"
 excludeTests: true

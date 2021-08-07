@@ -19,7 +19,7 @@ func TestParser(t *testing.T) {
 
 	// then
 	res := parser.Results
-	assert.Equal(t, 4, len(res))
+	assert.Equal(t, 5, len(res))
 
 	expected := []Result{
 		{
@@ -46,20 +46,33 @@ func TestParser(t *testing.T) {
 			Name:  "RealPostgresUri",
 			Value: `"postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"`,
 		},
+		{
+			File:  file,
+			Line:  42,
+			Name:  "blahToken",
+			Value: `"password"`,
+		},
 	}
 
 	assert.Equal(t, expected, res)
 }
 
 func getTestConfig() []byte {
-	return []byte(`variableNamePattern: (?i)passwd|password|secret|token|apiKey|api_key|accessKey|bearer|credentials
+	return []byte(`variableNamePatterns:
+  - (?i)passwd|password
+  - (?i)secret
+  - (?i)token
+  - (?i)apiKey|api[_-]key
+  - (?i)accessKey|access[_-]key
+  - (?i)bearer
+  - (?i)credentials
+  - salt|SALT|Salt
 variableNameExclusionPattern: (?i)format
 valueMatchPatterns:
-  - postgres:\/\/.+:.+@.+:.+\/.+
-  - ^eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+$
+  - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
+  - ^eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+$ #jwt token
 valueExcludePatterns:
-  - postgres:\/\/.+:.+@localhost:.+\/.+
-  - postgres:\/\/.+:.+@127.0.0.1:.+\/.+
-  - (?i)api-key
+  - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
+  - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
 excludeTests: true`)
 }
