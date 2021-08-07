@@ -14,6 +14,11 @@ const (
 	TestSuffix = "_test.go"
 )
 
+const (
+	TypeComment  = "comment"
+	TypeVariable = "variable"
+)
+
 type Parser struct {
 	config Config
 
@@ -27,6 +32,7 @@ type Parser struct {
 
 type Result struct {
 	File  string
+	Type  string
 	Line  int
 	Name  string
 	Value string
@@ -57,7 +63,84 @@ func NewParser(conf Config) Parser {
 	return parser
 }
 
-func (p *Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool {
+func (p *Parser) ParseFile(filepath string) {
+	if !strings.HasSuffix(filepath, GoSuffix) {
+		return
+	}
+
+	if strings.HasSuffix(filepath, TestSuffix) && p.config.ExcludeTests {
+		return
+	}
+
+	fs := token.NewFileSet()
+
+	f, err := parser.ParseFile(fs, filepath, nil, parser.ParseComments)
+	if err != nil {
+		log.Printf("could not parse %s: %v", filepath, err)
+		return
+	}
+
+	for _, d := range f.Decls {
+		switch decl := d.(type) {
+		case *ast.FuncDecl:
+			//ignore
+		case *ast.GenDecl:
+			p.parseDeclaration(decl, filepath, fs)
+		default:
+			//ignore
+		}
+	}
+
+	if !p.config.ExcludeComments {
+		for _, d := range f.Comments {
+			if p.isPossiblyCredentialsInComment(d) {
+				p.Results = append(p.Results, Result{
+					File:  filepath,
+					Type:  TypeComment,
+					Line:  fs.Position(d.Pos()).Line,
+					Name:  "",
+					Value: p.buildCommentString(d.List),
+				})
+			}
+		}
+	}
+}
+
+func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.FileSet) {
+	for _, spec := range decl.Specs {
+		switch spec := spec.(type) {
+		case *ast.ImportSpec:
+			//ignore
+		case *ast.TypeSpec:
+			//ignore
+		case *ast.ValueSpec:
+			for _, id := range spec.Names {
+				if len(id.Obj.Decl.(*ast.ValueSpec).Values) == 0 {
+					continue
+				}
+				switch val := id.Obj.Decl.(*ast.ValueSpec).Values[0].(type) {
+				case *ast.BasicLit:
+					if p.isPossiblyCredentials(id.Name, val) {
+						p.Results = append(p.Results, Result{
+							File:  filepath,
+							Type:  TypeVariable,
+							Line:  fs.Position(val.Pos()).Line,
+							Name:  id.Name,
+							Value: val.Value,
+						})
+					}
+				case *ast.UnaryExpr:
+					//ignore
+				default:
+					//ignore
+				}
+			}
+
+		}
+	}
+}
+
+func (p *Parser) isPossiblyCredentials(varName string, value *ast.BasicLit) bool {
 	// exclude non-strings and empty values
 	if value.Kind != token.STRING || value.Value == `""` {
 		return false
@@ -92,72 +175,24 @@ func (p *Parser) IsPossiblyCredentials(varName string, value *ast.BasicLit) bool
 		}
 	}
 
+	return false
+}
+
+func (p *Parser) isPossiblyCredentialsInComment(value *ast.CommentGroup) bool {
+	for _, m := range p.valueIncludeMatchers {
+		if m.MatchString(value.Text()) {
+			return true
+		}
+	}
 
 	return false
 }
 
-func (p *Parser) ParseFile(filepath string) {
-	if !strings.HasSuffix(filepath, GoSuffix) {
-		return
+func (p *Parser) buildCommentString(comments []*ast.Comment) string {
+	lines := make([]string, len(comments))
+	for i, l := range comments {
+		lines[i] = l.Text
 	}
 
-	if strings.HasSuffix(filepath, TestSuffix) && p.config.ExcludeTests {
-		return
-	}
-
-	fs := token.NewFileSet()
-
-	f, err := parser.ParseFile(fs, filepath, nil, parser.AllErrors)
-	if err != nil {
-		log.Printf("could not parse %s: %v", filepath, err)
-		return
-	}
-
-	for _, d := range f.Decls {
-		switch decl := d.(type) {
-		case *ast.FuncDecl:
-			//ignore
-		case *ast.GenDecl:
-			p.parseDeclaration(decl, filepath, fs)
-		default:
-			//ignore
-		}
-	}
-}
-
-func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.FileSet) {
-	for _, spec := range decl.Specs {
-		switch spec := spec.(type) {
-		case *ast.ImportSpec:
-			//ignore
-			//fmt.Println("Import", spec.Path.Value)
-		case *ast.TypeSpec:
-			//ignore
-			//fmt.Println("Type", spec.Name.String())
-		case *ast.ValueSpec:
-			for _, id := range spec.Names {
-				if len(id.Obj.Decl.(*ast.ValueSpec).Values) == 0 {
-					continue
-				}
-				switch val := id.Obj.Decl.(*ast.ValueSpec).Values[0].(type) {
-				case *ast.BasicLit:
-					if p.IsPossiblyCredentials(id.Name, val) {
-						p.Results = append(p.Results, Result{
-							File:  filepath,
-							Line:  fs.Position(val.Pos()).Line,
-							Name:  id.Name,
-							Value: val.Value,
-						})
-					}
-				case *ast.UnaryExpr:
-					//ignore
-					//fmt.Printf("Var (unaryExpr) %s: %v", id.Name, val)
-				default:
-					//ignore
-					//fmt.Printf("Unknown token type: %s\n", decl.Tok)
-				}
-			}
-
-		}
-	}
+	return strings.Join(lines, "\n")
 }

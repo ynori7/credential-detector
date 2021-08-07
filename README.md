@@ -26,12 +26,14 @@ variableNamePatterns:
   - salt|SALT|Salt
 variableNameExclusionPattern: (?i)format|tokenizer
 valueMatchPatterns:
-  - postgres:\/\/.+:.+@.+:.+\/.+
+  - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
+  - ^eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+$ #jwt token
 valueExcludePatterns:
-  - postgres:\/\/.+:.+@localhost:.+\/.+
-  - postgres:\/\/.+:.+@127.0.0.1:.+\/.+
-  - (?i)api-key
+  - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
+  - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
 excludeTests: true
+excludeComments: false
+disableOutputColors: false
 ```
 
 - variableNamePatterns defines the regular expressions for matching potentially suspicious variable names (the above value is the default)
@@ -39,6 +41,8 @@ excludeTests: true
 - valueMatchPatterns is a list of patterns to match potentially suspicious values, regardless of the variable name (empty by default)
 - valueExcludePatterns is a list of patterns to exclude for the value (for example for test data or constants defining header names, etc)  (empty by default)
 - excludeTests is a boolean flag to exclude scanning test files (defaults to false)
+- excludeComments is a boolean flag to exclude scanning comments in the code (defaults to false)
+- disableOutputColors is a boolean flag to disable colorized output when printing the results (defaults to false)
 
 ## Comparison to Gosec
 Credential-detector is more flexible since it can be easily configured with more options than gosec and it's significantly 
@@ -88,18 +92,38 @@ $ time credential-detector --config config.yaml --path testdata
 
 In testdata/dummy.go
 
-Line 5: internalSecret = "asdfasdfasdf"
-Line 9: authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-Line 13: AccessCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-Line 17: RealPostgresUri = "postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"
-Line 42: blahToken = "password"
+Line 5: 
+internalSecret = "asdfasdfasdf"
+
+Line 9: 
+authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+Line 13: 
+AccessCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+Line 17: 
+RealPostgresUri = "postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"
+
+Line 20: 
+/*
+Multiline comment
+postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+*/
+
+Line 47: 
+blahToken = "password"
+
+Line 51: 
+//this is a local comment
+//postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+
 
 real	0m0,007s
 user	0m0,001s
 sys	0m0,008s
 ```
 
-credential-detector was 15 times faster, found four values which gosec missed, and excluded a false-positive which gosec reported.
+credential-detector was 15 times faster, found six values which gosec missed, and excluded a false-positive which gosec reported.
 
 
 ## Limitations

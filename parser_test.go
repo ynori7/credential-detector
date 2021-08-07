@@ -13,47 +13,69 @@ func TestParser(t *testing.T) {
 	require.NoError(t, err)
 	file := "testdata/dummy.go"
 
-	// when
-	parser := NewParser(conf)
-	parser.ParseFile(file)
-
-	// then
-	res := parser.Results
-	assert.Equal(t, 5, len(res))
-
 	expected := []Result{
 		{
 			File:  file,
+			Type: TypeVariable,
 			Line:  5,
 			Name:  "internalSecret",
 			Value: `"asdfasdfasdf"`,
 		},
 		{
 			File:  file,
+			Type: TypeVariable,
 			Line:  9,
 			Name:  "authToken",
 			Value: `"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
 		},
 		{
 			File:  file,
+			Type: TypeVariable,
 			Line:  13,
 			Name:  "AccessCode",
 			Value: `"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
 		},
 		{
 			File:  file,
+			Type: TypeVariable,
 			Line:  17,
 			Name:  "RealPostgresUri",
 			Value: `"postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"`,
 		},
 		{
 			File:  file,
-			Line:  42,
+			Type: TypeVariable,
+			Line:  47,
 			Name:  "blahToken",
 			Value: `"password"`,
 		},
+		{
+			File:  file,
+			Type: TypeComment,
+			Line:  20,
+			Name:  "",
+			Value: `/*
+Multiline comment
+postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+*/`,
+		},
+		{
+			File:  file,
+			Type: TypeComment,
+			Line:  51,
+			Name:  "",
+			Value: `//this is a local comment
+//postgres://myuser:password123@localhost:5432/mydb?sslmode=disable`,
+		},
 	}
 
+	// when
+	parser := NewParser(conf)
+	parser.ParseFile(file)
+
+	// then
+	res := parser.Results
+	assert.Equal(t, len(expected), len(res))
 	assert.Equal(t, expected, res)
 }
 

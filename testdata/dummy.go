@@ -17,6 +17,11 @@ const (
 var RealPostgresUri = "postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"
 var TestPostgresUri = "postgres://myuser:password123@localhost:5432/mydb?sslmode=disable"
 
+/*
+Multiline comment
+postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+*/
+
 func blah() {
 	badPassword := "stupid"
 
@@ -40,3 +45,9 @@ var PasswordFormat = "([0-9]+):(.+)"
 var StatusAlternatives = "Alternatives" //variable name contains sAlt. Should not match the "salt" pattern
 
 var blahToken = "password"
+
+// blop is a function that does nothing
+func blop() {
+	//this is a local comment
+	//postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+}

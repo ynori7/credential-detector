@@ -15,3 +15,5 @@ valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
 excludeTests: true
+excludeComments: false
+disableOutputColors: false

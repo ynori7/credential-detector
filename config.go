@@ -12,6 +12,8 @@ type Config struct {
 	ValueMatchPatterns           []string `yaml:"valueMatchPatterns,flow"`
 	ValueExcludePatterns         []string `yaml:"valueExcludePatterns,flow"`
 	ExcludeTests                 bool     `yaml:"excludeTests"`
+	ExcludeComments              bool     `yaml:"excludeComments"`
+	DisableOutputColors          bool     `yaml:"disableOutputColors"`
 }
 
 var (
