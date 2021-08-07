@@ -8,7 +8,8 @@ Example output:
 ```
 In /home/me/myproject
 
-Line 711: secret = "Dklj34k3oi23kD"
+Line 711: 
+secret = "Dklj34k3oi23kD"
 ```
 
 ## Configuration
