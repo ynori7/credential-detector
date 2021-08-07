@@ -10,7 +10,7 @@ variableNamePatterns:
 variableNameExclusionPattern: (?i)format|tokenizer
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
-  - ^eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+$ #jwt token
+  - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing

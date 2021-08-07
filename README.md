@@ -51,18 +51,18 @@ faster, especially when scanning large directories. Here is a comparison using t
 gosec: 
 ```bash
 $ time gosec -include=G101 testdata
-[gosec] 2021/08/07 19:11:43 Including rules: G101
-[gosec] 2021/08/07 19:11:43 Excluding rules: default
-[gosec] 2021/08/07 19:11:43 Import directory: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata
-[gosec] 2021/08/07 19:11:43 Checking package: testdata
-[gosec] 2021/08/07 19:11:43 Checking file: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go
+[gosec] 2021/08/07 21:14:01 Including rules: G101
+[gosec] 2021/08/07 21:14:01 Excluding rules: default
+[gosec] 2021/08/07 21:14:01 Import directory: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata
+[gosec] 2021/08/07 21:14:01 Checking package: testdata
+[gosec] 2021/08/07 21:14:01 Checking file: /home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go
 Results:
 
 
-[/home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go:38] - G101 (CWE-798): Potential hardcoded credentials (Confidence: LOW, Severity: HIGH)
-    37: 
-  > 38: var PasswordFormat = "([0-9]+):(.+)"
-    39: 
+[/home/sfinlay/go/src/github.com/ynori7/credential-detector/testdata/dummy.go:43] - G101 (CWE-798): Potential hardcoded credentials (Confidence: LOW, Severity: HIGH)
+    42: 
+  > 43: var PasswordFormat = "([0-9]+):(.+)"
+    44: 
 
 
 
@@ -76,14 +76,14 @@ Results:
 Summary:
   Gosec  : dev
   Files  : 1
-  Lines  : 42
+  Lines  : 53
   Nosec  : 0
   Issues : 2
 
 
-real	0m0,108s
-user	0m0,099s
-sys	0m0,033s
+real	0m0,116s
+user	0m0,112s
+sys	0m0,035s
 ```
 
 credential-detector:
@@ -114,16 +114,16 @@ Line 47:
 blahToken = "password"
 
 Line 51: 
-//this is a local comment
-//postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+// this is a local comment
+// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
 real	0m0,007s
-user	0m0,001s
-sys	0m0,008s
+user	0m0,005s
+sys	0m0,004s
 ```
 
-credential-detector was 15 times faster, found six values which gosec missed, and excluded a false-positive which gosec reported.
+credential-detector was 16 times faster, found six values which gosec missed, and excluded a false-positive which gosec reported.
 
 
 ## Limitations

@@ -64,8 +64,8 @@ postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
 			Type: TypeComment,
 			Line:  51,
 			Name:  "",
-			Value: `//this is a local comment
-//postgres://myuser:password123@localhost:5432/mydb?sslmode=disable`,
+			Value: `// this is a local comment
+// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
 		},
 	}
 
@@ -92,7 +92,7 @@ func getTestConfig() []byte {
 variableNameExclusionPattern: (?i)format
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
-  - ^eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+$ #jwt token
+  - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
