@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ynori7/credential-detector/config"
 	"gopkg.in/yaml.v2"
 )
 
@@ -16,8 +17,9 @@ const (
 )
 
 func (p *Parser) isParsableYamlFile(filepath string) bool {
-	return p.config.IncludeYamlFiles &&
-		(strings.HasSuffix(filepath, YamlSuffix) || strings.HasSuffix(filepath, YamlShortSuffix))
+	_, ok := p.scanTypes[config.ScanType_Yaml]
+
+	return ok && (strings.HasSuffix(filepath, YamlSuffix) || strings.HasSuffix(filepath, YamlShortSuffix))
 }
 
 func (p *Parser) ParseYamlFile(filepath string) {

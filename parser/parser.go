@@ -17,6 +17,8 @@ const (
 type Parser struct {
 	config config.Config
 
+	scanTypes map[string]struct{}
+
 	variableNameMatchers         []*regexp.Regexp
 	variableNameExclusionMatcher *regexp.Regexp
 	valueIncludeMatchers         []*regexp.Regexp
@@ -36,6 +38,7 @@ type Result struct {
 func NewParser(conf config.Config) Parser {
 	parser := Parser{
 		config:                       conf,
+		scanTypes:                    make(map[string]struct{}),
 		variableNameMatchers:         make([]*regexp.Regexp, len(conf.VariableNamePatterns)),
 		variableNameExclusionMatcher: regexp.MustCompile(conf.VariableNameExclusionPattern),
 		valueIncludeMatchers:         make([]*regexp.Regexp, len(conf.ValueMatchPatterns)),
@@ -53,6 +56,10 @@ func NewParser(conf config.Config) Parser {
 
 	for k, v := range conf.ValueExcludePatterns {
 		parser.valueExcludeMatchers[k] = regexp.MustCompile(v)
+	}
+
+	for _, v := range conf.ScanTypes {
+		parser.scanTypes[v] = struct{}{}
 	}
 
 	return parser

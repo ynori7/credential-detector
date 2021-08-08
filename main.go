@@ -36,6 +36,10 @@ func main() {
 			if err != nil {
 				return err
 			}
+			if conf.ExcludeTests && conf.IsTestDirectory(info.Name()) {
+				//skip test directories if we're excluding tests
+				return filepath.SkipDir
+			}
 			p.ParseFile(path)
 			return nil
 		})
@@ -48,4 +52,3 @@ func main() {
 	}
 	PrintResults(p.Results)
 }
-

@@ -215,16 +215,26 @@ func getTestConfig() []byte {
   - (?i)bearer
   - (?i)credentials
   - salt|SALT|Salt
-variableNameExclusionPattern: (?i)format|tokenizer
+variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
+  - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
+  - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$ #common dummy values
+  - (?i)^true$|^false$
+  - (?i)^bearer$
 excludeTests: true
+testDirectories:
+  - test
+  - testdata
 excludeComments: false
-includeJsonFiles: true
-includeYamlFiles: true
-disableOutputColors: false`)
+scanTypes: #possible values are go|yaml|json
+  - go
+  - yaml
+  - json
+disableOutputColors: false
+verbose: false`)
 }

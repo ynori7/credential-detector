@@ -6,15 +6,33 @@ import (
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/ynori7/credential-detector/config"
 )
 
 const (
 	JsonSuffix     = ".json"
-	LockFileSuffix = "lock.json"
+)
+
+var (
+	ignoreSuffixes = map[string]struct{}{
+		"lock.json": {},
+		"package.json": {},
+		"composer.json": {},
+	}
 )
 
 func (p *Parser) isParsableJsonFile(filepath string) bool {
-	return p.config.IncludeJsonFiles && strings.HasSuffix(filepath, JsonSuffix) && !strings.HasSuffix(filepath, LockFileSuffix)
+	_, ok := p.scanTypes[config.ScanType_Json]
+	if ok && strings.HasSuffix(filepath, JsonSuffix) {
+		for k := range ignoreSuffixes {
+			if strings.HasSuffix(filepath, k) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func (p *Parser) ParseJsonFile(filepath string) {

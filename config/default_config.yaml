@@ -19,8 +19,15 @@ valueExcludePatterns:
   - (?i)^true$|^false$
   - (?i)^bearer$
 excludeTests: true
+testDirectories:
+  - test
+  - testdata
+  - example
+  - data
 excludeComments: false
-includeJsonFiles: true
-includeYamlFiles: true
+scanTypes: #possible values are go|yaml|json
+  - go
+  - yaml
+  - json
 disableOutputColors: false
 verbose: false

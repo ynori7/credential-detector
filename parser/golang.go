@@ -6,6 +6,8 @@ import (
 	"go/token"
 	"log"
 	"strings"
+
+	"github.com/ynori7/credential-detector/config"
 )
 
 const (
@@ -14,6 +16,10 @@ const (
 )
 
 func (p *Parser) isParsableGoFile(filepath string) bool {
+	if _, ok := p.scanTypes[config.ScanType_Go]; !ok {
+		return false
+	}
+
 	if strings.HasSuffix(filepath, GoSuffix) {
 		if strings.HasSuffix(filepath, GoTestSuffix) && p.config.ExcludeTests {
 			return false

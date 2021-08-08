@@ -49,25 +49,36 @@ valueExcludePatterns:
   - (?i)^true$|^false$
   - (?i)^bearer$
 excludeTests: true
+testDirectories:
+  - test
+  - testdata
+  - example
+  - data
 excludeComments: false
-includeJsonFiles: true
-includeYamlFiles: true
+scanTypes: #possible values are go|yaml|json
+  - go
+  - yaml
+  - json
 disableOutputColors: false
 verbose: false
 ```
 
 Note that the above values are the defaults.
 
-- variableNamePatterns defines the regular expressions for matching potentially suspicious variable names 
-- variableNameExclusionPattern defines the regular expression for excluding variable names that are not interesting (for example a passwordFormat pattern)
-- valueMatchPatterns is a list of patterns to match potentially suspicious values, regardless of the variable name 
-- valueExcludePatterns is a list of patterns to exclude for the value (for example for test data or constants defining header names, etc)
-- excludeTests is a boolean flag to exclude scanning test files
-- excludeComments is a boolean flag to exclude scanning comments in the code 
-- includeJsonFiles is a boolean flag which, when true, triggers the program to also scan json files
-- includeYamlFiles is a boolean flag which, when true, triggers the program to also scan yaml files
-- disableOutputColors is a boolean flag to disable colorized output when printing the results
-- verbose is a boolean flag which toggles the output of warning messages which occur while parsing specific files
+|Config Option|Description|Values|
+|-------------|-----------|------|
+|variableNamePatterns|The regular expressions for matching potentially suspicious variable names|List of regular expressions| 
+|variableNameExclusionPattern|The regular expression for excluding variable names that are not interesting (for example a passwordFormat pattern)|A regular expression|
+|valueMatchPatterns|A list of patterns to match potentially suspicious values, regardless of the variable name|List of regular expressions|
+|valueExcludePatterns|A list of patterns to exclude for the value (for example for test data or constants defining header names, etc)|List of regular expressions|
+|excludeTests|A boolean flag to exclude scanning test files|true or false|
+|testDirectories|A list of directory names which are considered test data only|A list of strings|
+|excludeComments|A boolean flag to exclude scanning comments in the code |true or false|
+|scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, or yaml|
+|disableOutputColors|A boolean flag to disable colorized output when printing the results|true or false|
+|verbose|A boolean flag which toggles the output of warning messages which occur while parsing specific files|true or false|
+
+The configuration from config/default_config.yaml is the default, and it's recommended to use this as a base for any configuration you create.
 
 ## Comparison to Gosec
 Credential-detector is more flexible since it can be easily configured with more options than gosec and it's significantly 
