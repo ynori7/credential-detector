@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"runtime"
 	"sort"
+
+	"github.com/ynori7/credential-detector/parser"
 )
 
 var (
@@ -18,11 +20,15 @@ func init() {
 	}
 }
 
-func PrintResults(results []Result) {
+func PrintResults(results []parser.Result) {
 	// sort the results by file and then by line
 	sort.Slice(results, func(i, j int) bool {
 		if results[i].File == results[j].File {
-			return results[i].Line < results[j].Line
+			if results[i].Line == results[j].Line {
+				return results[i].Name < results[j].Name
+			} else {
+				return results[i].Line < results[j].Line
+			}
 		}
 		return results[i].File < results[j].File
 	})
@@ -39,26 +45,70 @@ func PrintResults(results []Result) {
 		}
 
 		switch result.Type {
-		case TypeVariable:
-			printVariableResult(result)
-		case TypeComment:
-			printCommentResult(result)
+		case parser.TypeGoVariable:
+			printGoVariableResult(result)
+		case parser.TypeGoComment:
+			printGoCommentResult(result)
+		case parser.TypeJsonVariable:
+			printJsonVariableResult(result)
+		case parser.TypeJsonListVal:
+			printJsonListValResult(result)
+		case parser.TypeYamlVariable:
+			printYamlVariableResult(result)
+		case parser.TypeYamlListVal:
+			printYamlListValResult(result)
 		}
 	}
 }
 
-func printVariableResult(result Result) {
+func printGoVariableResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s = %s
 
 `, FgYellow, result.Line, Reset, result.Name, result.Value)
 }
 
-func printCommentResult(result Result) {
+func printGoCommentResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s
 
 `, FgYellow, result.Line, Reset, result.Value)
+}
+
+func printJsonVariableResult(result parser.Result) {
+	fmt.Printf(`%sJSON Variable:%s 
+"%s": "%s"
+
+`, FgYellow, Reset, result.Name, result.Value)
+}
+
+func printJsonListValResult(result parser.Result) {
+	fmt.Printf(`%sJSON List Item:%s
+"%s": [
+...
+"%s",
+...
+]
+
+`, FgYellow, Reset, result.Name, result.Value)
+}
+
+func printYamlVariableResult(result parser.Result) {
+	fmt.Printf(`%sYAML Variable:%s 
+"%s": "%s"
+
+`, FgYellow, Reset, result.Name, result.Value)
+}
+
+func printYamlListValResult(result parser.Result) {
+	fmt.Printf(`%sYAML List Item:%s
+"%s": [
+...
+- "%s",
+...
+]
+
+`, FgYellow, Reset, result.Name, result.Value)
 }
 
 func disableColors() {

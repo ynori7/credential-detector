@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  replicas: 2
+  revisionHistoryLimit: 1
+  accessKey: 2342342kjasdre
+  template:
+    spec:
+      nodeSelector:
+        public: "false"
+      containers:
+        - name: blah-service
+          image: some-image-url
+          imagePullPolicy: Always
+          args:
+            - --registry
+            - consul
+            - --postgres_uri
+            - postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+          env:
+            - name: API_KEY
+              value: "askjlwerkol#"
+emptyVal: ~
+intMap:
+  0: test
+  1: blah

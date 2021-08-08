@@ -1,6 +1,7 @@
-package main
+package config
 
 import (
+	_ "embed"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -11,29 +12,22 @@ type Config struct {
 	VariableNameExclusionPattern string   `yaml:"variableNameExclusionPattern"`
 	ValueMatchPatterns           []string `yaml:"valueMatchPatterns,flow"`
 	ValueExcludePatterns         []string `yaml:"valueExcludePatterns,flow"`
-	ExcludeTests                 bool     `yaml:"excludeTests"`
-	ExcludeComments              bool     `yaml:"excludeComments"`
-	DisableOutputColors          bool     `yaml:"disableOutputColors"`
+
+	ExcludeTests     bool `yaml:"excludeTests"`
+	ExcludeComments  bool `yaml:"excludeComments"`
+	IncludeJsonFiles bool `yaml:"includeJsonFiles"`
+	IncludeYamlFiles bool `yaml:"includeYamlFiles"`
+
+	DisableOutputColors bool `yaml:"disableOutputColors"`
+	Verbose             bool `yaml:"verbose"`
 }
 
-var (
-	defaultVariableNamePatterns = []string{
-		"(?i)passwd|password",
-		"(?i)secret",
-		"(?i)token",
-		"(?i)apiKey|api[_-]key",
-		"(?i)accessKey|access[_-]key",
-		"(?i)bearer",
-		"(?i)credentials",
-		"salt|SALT|Salt",
-	}
-)
+//go:embed default_config.yaml
+var defaultConfig []byte
 
 func LoadConfig(path string) (Config, error) {
 	if path == "" {
-		return Config{
-			VariableNamePatterns: defaultVariableNamePatterns,
-		}, nil
+		return ParseConfig(defaultConfig)
 	}
 
 	data, err := ioutil.ReadFile(path)
@@ -41,10 +35,10 @@ func LoadConfig(path string) (Config, error) {
 		return Config{}, err
 	}
 
-	return parseConfig(data)
+	return ParseConfig(data)
 }
 
-func parseConfig(data []byte) (Config, error) {
+func ParseConfig(data []byte) (Config, error) {
 	c := Config{}
 	if err := yaml.Unmarshal(data, &c); err != nil {
 		return c, err

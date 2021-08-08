@@ -1,0 +1,25 @@
+{
+  "logLevel": "INFO",
+  "apiKey": "aslkdjflkjwe#Kjkjoi3",
+  "stuff": 3,
+  "minPasswordLength": 10,
+  "someListOfObjects": [
+    {
+      "test": "val"
+    },
+    {
+      "test": "anotherVal",
+      "secret": "23423Ksk3s"
+    }
+  ],
+  "testAPI": {
+    "token": "lkaskjlklejer#4",
+    "baseUri": "http://www.blah.blop"
+  },
+  "stuff2": [
+    "asdf",
+    "blop",
+    "postgres://myuser:password123@localhost:5432/mydb?sslmode=disable"
+  ],
+  "emptyVal": null
+}

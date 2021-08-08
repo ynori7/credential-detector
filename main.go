@@ -5,6 +5,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/ynori7/credential-detector/config"
+	"github.com/ynori7/credential-detector/parser"
 )
 
 func main() {
@@ -21,19 +24,19 @@ func main() {
 		log.Fatal("The path flag must be provided")
 	}
 
-	conf, err := LoadConfig(configPath)
+	conf, err := config.LoadConfig(configPath)
 	if err != nil {
 		log.Fatalf("Error loading configuration: %s", err.Error())
 	}
 
-	parser := NewParser(conf)
+	p := parser.NewParser(conf)
 
 	err = filepath.Walk(scanPath,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			parser.ParseFile(path)
+			p.ParseFile(path)
 			return nil
 		})
 	if err != nil {
@@ -43,5 +46,6 @@ func main() {
 	if conf.DisableOutputColors {
 		disableColors()
 	}
-	PrintResults(parser.Results)
+	PrintResults(p.Results)
 }
+

@@ -12,6 +12,11 @@ Line 711:
 secret = "Dklj34k3oi23kD"
 ```
 
+## Features
+This highly configurable tool scans go files, json, and yaml files, searching for potential credentials. It reports
+suspiciously named go variables (excluding variables whose value indicates that it's obviously test data or some constant 
+such as a header name). It additionally searches code comments and the contents of json and yaml configuration files. 
+
 ## Configuration
 The following configuration options are available:
 
@@ -34,16 +39,22 @@ valueExcludePatterns:
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
 excludeTests: true
 excludeComments: false
+includeJsonFiles: true
+includeYamlFiles: true
 disableOutputColors: false
 ```
 
-- variableNamePatterns defines the regular expressions for matching potentially suspicious variable names (the above value is the default)
+Note that the above values are the defaults.
+
+- variableNamePatterns defines the regular expressions for matching potentially suspicious variable names 
 - variableNameExclusionPattern defines the regular expression for excluding variable names that are not interesting (for example a passwordFormat pattern)
-- valueMatchPatterns is a list of patterns to match potentially suspicious values, regardless of the variable name (empty by default)
-- valueExcludePatterns is a list of patterns to exclude for the value (for example for test data or constants defining header names, etc)  (empty by default)
-- excludeTests is a boolean flag to exclude scanning test files (defaults to false)
-- excludeComments is a boolean flag to exclude scanning comments in the code (defaults to false)
-- disableOutputColors is a boolean flag to disable colorized output when printing the results (defaults to false)
+- valueMatchPatterns is a list of patterns to match potentially suspicious values, regardless of the variable name 
+- valueExcludePatterns is a list of patterns to exclude for the value (for example for test data or constants defining header names, etc)
+- excludeTests is a boolean flag to exclude scanning test files
+- excludeComments is a boolean flag to exclude scanning comments in the code 
+- includeJsonFiles is a boolean flag which, when true, triggers the program to also scan json files
+- includeYamlFiles is a boolean flag which, when true, triggers the program to also scan yaml files
+- disableOutputColors is a boolean flag to disable colorized output when printing the results
 
 ## Comparison to Gosec
 Credential-detector is more flexible since it can be easily configured with more options than gosec and it's significantly 
@@ -89,8 +100,6 @@ sys	0m0,035s
 
 credential-detector:
 ```bash
-$ time credential-detector --config config.yaml --path testdata
-
 In testdata/dummy.go
 
 Line 5: 
@@ -119,12 +128,49 @@ Line 51:
 // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 
-real	0m0,007s
-user	0m0,005s
-sys	0m0,004s
+
+
+In testdata/dummy.json
+
+JSON Variable: 
+"apiKey": "aslkdjflkjwe#Kjkjoi3"
+
+JSON Variable: 
+"secret": "23423Ksk3s"
+
+JSON List Item:
+"stuff2": [
+...
+"postgres://myuser:password123@localhost:5432/mydb?sslmode=disable",
+...
+]
+
+JSON Variable: 
+"token": "lkaskjlklejer#4"
+
+
+
+
+In testdata/dummy.yaml
+
+YAML Variable: 
+"accessKey": "2342342kjasdre"
+
+YAML List Item:
+"args": [
+...
+- "postgres://myuser:password123@localhost:5432/mydb?sslmode=disable",
+...
+]
+
+
+real	0m0,008s
+user	0m0,000s
+sys	0m0,010s
 ```
 
-credential-detector was 16 times faster, found six values which gosec missed, and excluded a false-positive which gosec reported.
+credential-detector was 16 times faster, found six values which gosec missed in go code, included six values from json 
+and yaml files which gosec did not check, and excluded a false-positive which gosec reported.
 
 
 ## Limitations
