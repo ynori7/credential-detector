@@ -1,6 +1,11 @@
 # Credential-Detector
 This simple command allows you to scan projects to detect potentially hard-coded credentials.
 
+## Installation
+```bash
+go install github.com/ynori7/credential-detector
+```
+
 ## Usage
 `go run main.go config.go parser.go --config config.yaml --path "/home/me/myproject"`
 
@@ -11,6 +16,8 @@ In /home/me/myproject
 Line 711: 
 secret = "Dklj34k3oi23kD"
 ```
+
+If the config flag is omitted, default configuration will be used.
 
 ## Features
 This highly configurable tool scans go files, json, and yaml files, searching for potential credentials. It reports
@@ -30,18 +37,23 @@ variableNamePatterns:
   - (?i)bearer
   - (?i)credentials
   - salt|SALT|Salt
-variableNameExclusionPattern: (?i)format|tokenizer
+variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
+  - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
+  - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$ #common dummy values
+  - (?i)^true$|^false$
+  - (?i)^bearer$
 excludeTests: true
 excludeComments: false
 includeJsonFiles: true
 includeYamlFiles: true
 disableOutputColors: false
+verbose: false
 ```
 
 Note that the above values are the defaults.
@@ -55,6 +67,7 @@ Note that the above values are the defaults.
 - includeJsonFiles is a boolean flag which, when true, triggers the program to also scan json files
 - includeYamlFiles is a boolean flag which, when true, triggers the program to also scan yaml files
 - disableOutputColors is a boolean flag to disable colorized output when printing the results
+- verbose is a boolean flag which toggles the output of warning messages which occur while parsing specific files
 
 ## Comparison to Gosec
 Credential-detector is more flexible since it can be easily configured with more options than gosec and it's significantly 
