@@ -115,6 +115,12 @@ func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) boo
 }
 
 func (p *Parser) isPossiblyCredentialValue(v string) bool {
+	for _, m := range p.valueExcludeMatchers {
+		if m.MatchString(v) {
+			return false
+		}
+	}
+
 	for _, m := range p.valueIncludeMatchers {
 		if m.MatchString(v) {
 			return true

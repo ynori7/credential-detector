@@ -58,7 +58,7 @@ func TestParser_Go(t *testing.T) {
 			Name: "",
 			Value: `/*
 Multiline comment
-postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
 */`,
 		},
 		{
@@ -113,7 +113,7 @@ func TestParser_Json(t *testing.T) {
 			Type:  TypeJsonListVal,
 			Line:  0,
 			Name:  "stuff2",
-			Value: `postgres://myuser:password123@localhost:5432/mydb?sslmode=disable`,
+			Value: `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
 		},
 	}
 
@@ -184,7 +184,7 @@ func TestParser_Yaml(t *testing.T) {
 			Type:  TypeYamlListVal,
 			Line:  0,
 			Name:  "args",
-			Value: `postgres://myuser:password123@localhost:5432/mydb?sslmode=disable`,
+			Value: `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
 		},
 	}
 

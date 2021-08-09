@@ -19,7 +19,7 @@ var TestPostgresUri = "postgres://myuser:password123@localhost:5432/mydb?sslmode
 
 /*
 Multiline comment
-postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
 */
 
 func blah() {
