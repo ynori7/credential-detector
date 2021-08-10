@@ -23,8 +23,10 @@ var (
 )
 
 func (p *Parser) isParsableJsonFile(filepath string) bool {
+	_, extension := getFileNameAndExtension(filepath)
+
 	_, ok := p.scanTypes[config.ScanType_Json]
-	if ok && strings.HasSuffix(filepath, JsonSuffix) {
+	if ok && extension == JsonSuffix {
 		for k := range ignoreSuffixes {
 			if strings.HasSuffix(filepath, k) {
 				return false

@@ -57,6 +57,10 @@ func PrintResults(results []parser.Result) {
 			printYamlVariableResult(result)
 		case parser.TypeYamlListVal:
 			printYamlListValResult(result)
+		case parser.TypePropertiesValue:
+			printPropertiesValueResult(result)
+		case parser.TypePropertiesComment:
+			printPropertiesCommentResult(result)
 		}
 	}
 }
@@ -111,8 +115,22 @@ func printYamlListValResult(result parser.Result) {
 `, FgYellow, Reset, result.Name, result.Value)
 }
 
+func printPropertiesValueResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s=%s
+
+`, FgYellow, result.Line, Reset, result.Name, result.Value)
+}
+
+func printPropertiesCommentResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s
+
+`, FgYellow, result.Line, Reset, result.Value)
+}
+
 func disableColors() {
 	FgYellow = ""
 	BgRed = ""
-	Reset  = ""
+	Reset = ""
 }

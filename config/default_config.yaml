@@ -25,9 +25,10 @@ testDirectories:
   - example
   - data
 excludeComments: false
-scanTypes: #possible values are go|yaml|json
+scanTypes: #possible values are go|yaml|json|properties
   - go
   - yaml
   - json
+  - properties
 disableOutputColors: false
 verbose: false

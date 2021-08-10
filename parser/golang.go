@@ -12,7 +12,7 @@ import (
 
 const (
 	GoSuffix     = ".go"
-	GoTestSuffix = "_test.go"
+	GoTestSuffix = "_test"
 )
 
 func (p *Parser) isParsableGoFile(filepath string) bool {
@@ -20,8 +20,10 @@ func (p *Parser) isParsableGoFile(filepath string) bool {
 		return false
 	}
 
-	if strings.HasSuffix(filepath, GoSuffix) {
-		if strings.HasSuffix(filepath, GoTestSuffix) && p.config.ExcludeTests {
+	name, extension := getFileNameAndExtension(filepath)
+
+	if extension == GoSuffix {
+		if strings.HasSuffix(name, GoTestSuffix) && p.config.ExcludeTests {
 			return false
 		}
 

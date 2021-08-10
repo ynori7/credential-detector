@@ -1,17 +1,22 @@
 package parser
 
 import (
-	"github.com/ynori7/credential-detector/config"
+	fp "path/filepath"
 	"regexp"
+	"strings"
+
+	"github.com/ynori7/credential-detector/config"
 )
 
 const (
-	TypeGoComment    = "go_comment"
-	TypeGoVariable   = "go_variable"
-	TypeJsonVariable = "json_variable"
-	TypeJsonListVal  = "json_list_value"
-	TypeYamlVariable = "yaml_variable"
-	TypeYamlListVal  = "yaml_list_value"
+	TypeGoComment         = "go_comment"
+	TypeGoVariable        = "go_variable"
+	TypeJsonVariable      = "json_variable"
+	TypeJsonListVal       = "json_list_value"
+	TypeYamlVariable      = "yaml_variable"
+	TypeYamlListVal       = "yaml_list_value"
+	TypePropertiesComment = "properties_comment"
+	TypePropertiesValue   = "properties_value"
 )
 
 type Parser struct {
@@ -77,6 +82,10 @@ func (p *Parser) ParseFile(filepath string) {
 	if p.isParsableYamlFile(filepath) {
 		p.ParseYamlFile(filepath)
 	}
+
+	if p.isParsablePropertiesFile(filepath) {
+		p.ParsePropertiesFile(filepath)
+	}
 }
 
 func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) bool {
@@ -128,4 +137,15 @@ func (p *Parser) isPossiblyCredentialValue(v string) bool {
 	}
 
 	return false
+}
+
+func getFileNameAndExtension(filepath string) (string, string) {
+	extension := fp.Ext(filepath)
+	dir := fp.Dir(filepath)
+
+	name := strings.TrimPrefix(filepath, dir)
+	name = strings.TrimPrefix(name, "/")
+	name = strings.TrimSuffix(name, extension)
+
+	return name, extension
 }

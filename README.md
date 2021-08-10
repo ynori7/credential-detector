@@ -20,7 +20,7 @@ secret = "Dklj34k3oi23kD"
 If the config flag is omitted, default configuration will be used.
 
 ## Features
-This highly configurable tool scans go files, json, and yaml files, searching for potential credentials. It reports
+This highly configurable tool scans go files, json, yaml and properties files, searching for potential credentials. It reports
 suspiciously named go variables (excluding variables whose value indicates that it's obviously test data or some constant 
 such as a header name). It additionally searches code comments and the contents of json and yaml configuration files. 
 
@@ -55,10 +55,11 @@ testDirectories:
   - example
   - data
 excludeComments: false
-scanTypes: #possible values are go|yaml|json
+scanTypes: #possible values are go|yaml|json|properties
   - go
   - yaml
   - json
+  - properties
 disableOutputColors: false
 verbose: false
 ```
