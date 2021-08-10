@@ -124,12 +124,14 @@ func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) boo
 }
 
 func (p *Parser) isPossiblyCredentialValue(v string) bool {
+	// exclude any variables whose value is in our exclusion list (this would include things like defaults and test values)
 	for _, m := range p.valueExcludeMatchers {
 		if m.MatchString(v) {
 			return false
 		}
 	}
 
+	// include anything in our value inclusion list. This would include things like postgres uris regardless of the variable name
 	for _, m := range p.valueIncludeMatchers {
 		if m.MatchString(v) {
 			return true
