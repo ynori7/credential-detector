@@ -1,4 +1,4 @@
-# Credential-Detector
+# Credential-Detector [![Go Report Card](https://goreportcard.com/badge/ynori7/credential-detector)](https://goreportcard.com/report/github.com/ynori7/credential-detector)
 This simple command allows you to scan projects to detect potentially hard-coded credentials.
 
 ## Installation
