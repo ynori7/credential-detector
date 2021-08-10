@@ -20,9 +20,18 @@ secret = "Dklj34k3oi23kD"
 If the config flag is omitted, default configuration will be used.
 
 ## Features
-This highly configurable tool scans go files, json, yaml and properties files, searching for potential credentials. It reports
-suspiciously named go variables (excluding variables whose value indicates that it's obviously test data or some constant 
-such as a header name). It additionally searches code comments and the contents of json and yaml configuration files. 
+This highly configurable tool scans a multitude of file types searching for potential credentials. It reports
+suspiciously named variables (excluding variables whose value indicates that it's obviously test data or some constant 
+such as a header name). It additionally searches code comments and various configuration files. The scanner
+can also detect private key and certificate files.
+
+Credential-detector can scan:
+
+- Go code
+- JSON files
+- YAML files
+- Properties files
+- Private key / certificate files
 
 ## Configuration
 The following configuration options are available:
@@ -55,11 +64,12 @@ testDirectories:
   - example
   - data
 excludeComments: false
-scanTypes: #possible values are go|yaml|json|properties
+scanTypes: #possible values are go|yaml|json|properties|privatekey
   - go
   - yaml
   - json
   - properties
+  - privatekey
 disableOutputColors: false
 verbose: false
 ```

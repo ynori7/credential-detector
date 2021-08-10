@@ -18,6 +18,7 @@ const (
 	TypeYamlListVal
 	TypePropertiesComment
 	TypePropertiesValue
+	TypePrivateKey
 )
 
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
@@ -77,20 +78,18 @@ func NewParser(conf config.Config) Parser {
 
 // ParseFile parses the given file (if possible) and collects potential credentials
 func (p *Parser) ParseFile(filepath string) {
-	if p.isParsableGoFile(filepath) {
+	switch {
+	case p.isParsableGoFile(filepath):
 		p.parseGoFile(filepath)
-	}
-
-	if p.isParsableJSONFile(filepath) {
+	case p.isParsableJSONFile(filepath):
 		p.parseJSONFile(filepath)
-	}
-
-	if p.isParsableYamlFile(filepath) {
+	case p.isParsableYamlFile(filepath):
 		p.parseYamlFile(filepath)
-	}
-
-	if p.isParsablePropertiesFile(filepath) {
+	case p.isParsablePropertiesFile(filepath):
 		p.parsePropertiesFile(filepath)
+		fallthrough //we also handle hidden files with no extension here, so we should also check the next case
+	case p.isParsablePrivateKeyFile(filepath):
+		p.parsePrivateKeyFile(filepath)
 	}
 }
 

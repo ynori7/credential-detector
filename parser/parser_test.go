@@ -149,6 +149,7 @@ scanTypes:
   - yaml
   - json
   - properties
+  - privatekey
 disableOutputColors: false
 verbose: false`)
 }

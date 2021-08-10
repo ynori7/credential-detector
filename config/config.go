@@ -16,6 +16,8 @@ const (
 	ScanTypeJSON = "json"
 	// ScanTypeProperties indicates properties files
 	ScanTypeProperties = "properties"
+	// ScanTypePrivateKey indicates private key files
+	ScanTypePrivateKey = "privatekey"
 )
 
 // Config contains all the configuration for the credential detector

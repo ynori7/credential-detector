@@ -30,5 +30,6 @@ scanTypes: #possible values are go|yaml|json|properties
   - yaml
   - json
   - properties
+  - privatekey
 disableOutputColors: false
 verbose: false

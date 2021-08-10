@@ -61,6 +61,8 @@ func PrintResults(results []parser.Result) {
 			printPropertiesValueResult(result)
 		case parser.TypePropertiesComment:
 			printPropertiesCommentResult(result)
+		case parser.TypePrivateKey:
+			printPrivateKeyResult(result)
 		}
 	}
 }
@@ -127,6 +129,13 @@ func printPropertiesCommentResult(result parser.Result) {
 %s
 
 `, fgYellow, result.Line, reset, result.Value)
+}
+
+func printPrivateKeyResult(result parser.Result) {
+	fmt.Printf(`%sPrivate key file:%s 
+%s
+
+`, fgYellow, reset, result.Value)
 }
 
 func disableColors() {
