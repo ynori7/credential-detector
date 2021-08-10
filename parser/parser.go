@@ -19,6 +19,7 @@ const (
 	TypePropertiesValue   = "properties_value"
 )
 
+// Parser searches the given files and maintains a list of hard-coded credentials stored in Results
 type Parser struct {
 	config config.Config
 
@@ -29,9 +30,11 @@ type Parser struct {
 	valueIncludeMatchers         []*regexp.Regexp
 	valueExcludeMatchers         []*regexp.Regexp
 
+	// Results is the list of findings
 	Results []Result
 }
 
+// Result is a hard-coded credential finding
 type Result struct {
 	File  string
 	Type  string
@@ -40,6 +43,7 @@ type Result struct {
 	Value string
 }
 
+// NewParser returns a new parser with the given configuration
 func NewParser(conf config.Config) Parser {
 	parser := Parser{
 		config:                       conf,
@@ -70,21 +74,22 @@ func NewParser(conf config.Config) Parser {
 	return parser
 }
 
+// ParseFile parses the given file (if possible) and collects potential credentials
 func (p *Parser) ParseFile(filepath string) {
 	if p.isParsableGoFile(filepath) {
 		p.parseGoFile(filepath)
 	}
 
 	if p.isParsableJsonFile(filepath) {
-		p.ParseJsonFile(filepath)
+		p.parseJsonFile(filepath)
 	}
 
 	if p.isParsableYamlFile(filepath) {
-		p.ParseYamlFile(filepath)
+		p.parseYamlFile(filepath)
 	}
 
 	if p.isParsablePropertiesFile(filepath) {
-		p.ParsePropertiesFile(filepath)
+		p.parsePropertiesFile(filepath)
 	}
 }
 

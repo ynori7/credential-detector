@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	JsonSuffix     = ".json"
+	jsonSuffix = ".json"
 )
 
 var (
 	ignoreSuffixes = map[string]struct{}{
-		"lock.json": {},
-		"package.json": {},
+		"lock.json":     {},
+		"package.json":  {},
 		"composer.json": {},
 	}
 )
@@ -25,8 +25,8 @@ var (
 func (p *Parser) isParsableJsonFile(filepath string) bool {
 	_, extension := getFileNameAndExtension(filepath)
 
-	_, ok := p.scanTypes[config.ScanType_Json]
-	if ok && extension == JsonSuffix {
+	_, ok := p.scanTypes[config.ScanTypeJson]
+	if ok && extension == jsonSuffix {
 		for k := range ignoreSuffixes {
 			if strings.HasSuffix(filepath, k) {
 				return false
@@ -37,7 +37,7 @@ func (p *Parser) isParsableJsonFile(filepath string) bool {
 	return false
 }
 
-func (p *Parser) ParseJsonFile(filepath string) {
+func (p *Parser) parseJsonFile(filepath string) {
 
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {

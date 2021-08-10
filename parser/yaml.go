@@ -10,19 +10,19 @@ import (
 )
 
 const (
-	YamlSuffix      = ".yaml"
-	YamlShortSuffix = ".yml"
+	yamlSuffix      = ".yaml"
+	yamlShortSuffix = ".yml"
 )
 
 func (p *Parser) isParsableYamlFile(filepath string) bool {
-	_, ok := p.scanTypes[config.ScanType_Yaml]
+	_, ok := p.scanTypes[config.ScanTypeYaml]
 
 	_, extension := getFileNameAndExtension(filepath)
 
-	return ok && (extension == YamlSuffix || extension == YamlShortSuffix)
+	return ok && (extension == yamlSuffix || extension == yamlShortSuffix)
 }
 
-func (p *Parser) ParseYamlFile(filepath string) {
+func (p *Parser) parseYamlFile(filepath string) {
 	yamlData := make(map[string]interface{})
 
 	data, err := ioutil.ReadFile(filepath)

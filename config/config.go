@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	ScanType_Go         = "go"
-	ScanType_Yaml       = "yaml"
-	ScanType_Json       = "json"
-	ScanType_Properties = "properties"
+	ScanTypeGo         = "go"
+	ScanTypeYaml       = "yaml"
+	ScanTypeJson       = "json"
+	ScanTypeProperties = "properties"
 )
 
 type Config struct {

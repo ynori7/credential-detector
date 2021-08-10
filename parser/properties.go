@@ -9,21 +9,21 @@ import (
 )
 
 const (
-	PropertiesFileExtension = ".properties"
+	propertiesFileExtension = ".properties"
 )
 
 func (p *Parser) isParsablePropertiesFile(filepath string) bool {
-	if _, ok := p.scanTypes[config.ScanType_Properties]; !ok {
+	if _, ok := p.scanTypes[config.ScanTypeProperties]; !ok {
 		return false
 	}
 
 	name, extension := getFileNameAndExtension(filepath)
 
 	//consider empty file names in case the file is named something like ".env"
-	return name == "" || extension == PropertiesFileExtension
+	return name == "" || extension == propertiesFileExtension
 }
 
-func (p *Parser) ParsePropertiesFile(filepath string) {
+func (p *Parser) parsePropertiesFile(filepath string) {
 	if len(filepath) == 0 {
 		return
 	}

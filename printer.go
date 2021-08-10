@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	FgYellow = "\033[33m"
-	BgRed    = "\u001b[41m"
-	Reset    = "\033[0m"
+	fgYellow = "\033[33m"
+	bgRed    = "\u001b[41m"
+	reset    = "\033[0m"
 )
 
 func init() {
@@ -41,7 +41,7 @@ func PrintResults(results []parser.Result) {
 				fmt.Printf("\n\n")
 			}
 			currentFile = result.File
-			fmt.Printf("\n%sIn %s%s\n\n", BgRed, currentFile, Reset)
+			fmt.Printf("\n%sIn %s%s\n\n", bgRed, currentFile, reset)
 		}
 
 		switch result.Type {
@@ -69,21 +69,21 @@ func printGoVariableResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s = %s
 
-`, FgYellow, result.Line, Reset, result.Name, result.Value)
+`, fgYellow, result.Line, reset, result.Name, result.Value)
 }
 
 func printGoCommentResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s
 
-`, FgYellow, result.Line, Reset, result.Value)
+`, fgYellow, result.Line, reset, result.Value)
 }
 
 func printJsonVariableResult(result parser.Result) {
 	fmt.Printf(`%sJSON Variable:%s 
 "%s": "%s"
 
-`, FgYellow, Reset, result.Name, result.Value)
+`, fgYellow, reset, result.Name, result.Value)
 }
 
 func printJsonListValResult(result parser.Result) {
@@ -94,14 +94,14 @@ func printJsonListValResult(result parser.Result) {
 ...
 ]
 
-`, FgYellow, Reset, result.Name, result.Value)
+`, fgYellow, reset, result.Name, result.Value)
 }
 
 func printYamlVariableResult(result parser.Result) {
 	fmt.Printf(`%sYAML Variable:%s 
 "%s": "%s"
 
-`, FgYellow, Reset, result.Name, result.Value)
+`, fgYellow, reset, result.Name, result.Value)
 }
 
 func printYamlListValResult(result parser.Result) {
@@ -112,25 +112,25 @@ func printYamlListValResult(result parser.Result) {
 ...
 ]
 
-`, FgYellow, Reset, result.Name, result.Value)
+`, fgYellow, reset, result.Name, result.Value)
 }
 
 func printPropertiesValueResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s=%s
 
-`, FgYellow, result.Line, Reset, result.Name, result.Value)
+`, fgYellow, result.Line, reset, result.Name, result.Value)
 }
 
 func printPropertiesCommentResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s
 
-`, FgYellow, result.Line, Reset, result.Value)
+`, fgYellow, result.Line, reset, result.Value)
 }
 
 func disableColors() {
-	FgYellow = ""
-	BgRed = ""
-	Reset = ""
+	fgYellow = ""
+	bgRed = ""
+	reset = ""
 }
