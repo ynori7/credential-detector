@@ -20,15 +20,15 @@ func init() {
 	}
 }
 
+// PrintResults outputs the results of the credential scan
 func PrintResults(results []parser.Result) {
 	// sort the results by file and then by line
 	sort.Slice(results, func(i, j int) bool {
 		if results[i].File == results[j].File {
 			if results[i].Line == results[j].Line {
 				return results[i].Name < results[j].Name
-			} else {
-				return results[i].Line < results[j].Line
 			}
+			return results[i].Line < results[j].Line
 		}
 		return results[i].File < results[j].File
 	})
@@ -49,10 +49,10 @@ func PrintResults(results []parser.Result) {
 			printGoVariableResult(result)
 		case parser.TypeGoComment:
 			printGoCommentResult(result)
-		case parser.TypeJsonVariable:
-			printJsonVariableResult(result)
-		case parser.TypeJsonListVal:
-			printJsonListValResult(result)
+		case parser.TypeJSONVariable:
+			printJSONVariableResult(result)
+		case parser.TypeJSONListVal:
+			printJSONListValResult(result)
 		case parser.TypeYamlVariable:
 			printYamlVariableResult(result)
 		case parser.TypeYamlListVal:
@@ -79,14 +79,14 @@ func printGoCommentResult(result parser.Result) {
 `, fgYellow, result.Line, reset, result.Value)
 }
 
-func printJsonVariableResult(result parser.Result) {
+func printJSONVariableResult(result parser.Result) {
 	fmt.Printf(`%sJSON Variable:%s 
 "%s": "%s"
 
 `, fgYellow, reset, result.Name, result.Value)
 }
 
-func printJsonListValResult(result parser.Result) {
+func printJSONListValResult(result parser.Result) {
 	fmt.Printf(`%sJSON List Item:%s
 "%s": [
 ...

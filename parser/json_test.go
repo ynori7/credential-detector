@@ -45,7 +45,7 @@ func Test_isParsableJsonFile(t *testing.T) {
 	parser := NewParser(conf)
 
 	for testcase, testdata := range testcases {
-		actual := parser.isParsableJsonFile(testdata.path)
+		actual := parser.isParsableJSONFile(testdata.path)
 
 		assert.Equal(t, testdata.expected, actual, testcase)
 	}
@@ -59,28 +59,28 @@ func TestParser_Json(t *testing.T) {
 	expected := []Result{
 		{
 			File:  file,
-			Type:  TypeJsonVariable,
+			Type:  TypeJSONVariable,
 			Line:  0,
 			Name:  "apiKey",
 			Value: `aslkdjflkjwe#Kjkjoi3`,
 		},
 		{
 			File:  file,
-			Type:  TypeJsonVariable,
+			Type:  TypeJSONVariable,
 			Line:  0,
 			Name:  "secret",
 			Value: `23423Ksk3s`,
 		},
 		{
 			File:  file,
-			Type:  TypeJsonVariable,
+			Type:  TypeJSONVariable,
 			Line:  0,
 			Name:  "token",
 			Value: `lkaskjlklejer#4`,
 		},
 		{
 			File:  file,
-			Type:  TypeJsonListVal,
+			Type:  TypeJSONListVal,
 			Line:  0,
 			Name:  "stuff2",
 			Value: `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
@@ -112,7 +112,7 @@ func TestParser_JsonList(t *testing.T) {
 	expected := []Result{
 		{
 			File:  file,
-			Type:  TypeJsonVariable,
+			Type:  TypeJSONVariable,
 			Line:  0,
 			Name:  "Password",
 			Value: `asdfawekrjwe`,

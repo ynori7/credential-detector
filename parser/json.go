@@ -22,10 +22,10 @@ var (
 	}
 )
 
-func (p *Parser) isParsableJsonFile(filepath string) bool {
+func (p *Parser) isParsableJSONFile(filepath string) bool {
 	_, extension := getFileNameAndExtension(filepath)
 
-	_, ok := p.scanTypes[config.ScanTypeJson]
+	_, ok := p.scanTypes[config.ScanTypeJSON]
 	if ok && extension == jsonSuffix {
 		for k := range ignoreSuffixes {
 			if strings.HasSuffix(filepath, k) {
@@ -37,7 +37,7 @@ func (p *Parser) isParsableJsonFile(filepath string) bool {
 	return false
 }
 
-func (p *Parser) parseJsonFile(filepath string) {
+func (p *Parser) parseJSONFile(filepath string) {
 
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -60,7 +60,7 @@ func (p *Parser) parseJsonFile(filepath string) {
 			return
 		}
 
-		p.walkJsonMap(filepath, jsonData)
+		p.walkJSONMap(filepath, jsonData)
 	} else if string(data[0]) == "[" {
 		jsonData := make([]interface{}, 0)
 
@@ -72,11 +72,11 @@ func (p *Parser) parseJsonFile(filepath string) {
 			return
 		}
 
-		p.parseJsonSlice(filepath, "", jsonData)
+		p.parseJSONSlice(filepath, "", jsonData)
 	}
 }
 
-func (p *Parser) walkJsonMap(filepath string, m map[string]interface{}) {
+func (p *Parser) walkJSONMap(filepath string, m map[string]interface{}) {
 	for k, v := range m {
 		if reflect.TypeOf(v) == nil {
 			continue
@@ -86,22 +86,22 @@ func (p *Parser) walkJsonMap(filepath string, m map[string]interface{}) {
 			if p.isPossiblyCredentialsVariable(k, v.(string)) {
 				p.Results = append(p.Results, Result{
 					File:  filepath,
-					Type:  TypeJsonVariable,
+					Type:  TypeJSONVariable,
 					Name:  k,
 					Value: v.(string),
 				})
 			}
 		case reflect.Slice:
-			p.parseJsonSlice(filepath, k, v)
+			p.parseJSONSlice(filepath, k, v)
 		case reflect.Map:
 			if v2, ok := v.(map[string]interface{}); ok {
-				p.walkJsonMap(filepath, v2)
+				p.walkJSONMap(filepath, v2)
 			}
 		}
 	}
 }
 
-func (p *Parser) parseJsonSlice(filepath string, k string, v interface{}) {
+func (p *Parser) parseJSONSlice(filepath string, k string, v interface{}) {
 	s := reflect.ValueOf(v)
 	for i := 0; i < s.Len(); i++ {
 		switch v2 := s.Index(i).Interface().(type) {
@@ -109,13 +109,13 @@ func (p *Parser) parseJsonSlice(filepath string, k string, v interface{}) {
 			if p.isPossiblyCredentialValue(v2) {
 				p.Results = append(p.Results, Result{
 					File:  filepath,
-					Type:  TypeJsonListVal,
+					Type:  TypeJSONListVal,
 					Name:  k,
 					Value: v2,
 				})
 			}
 		case map[string]interface{}:
-			p.walkJsonMap(filepath, v2)
+			p.walkJSONMap(filepath, v2)
 		}
 	}
 }

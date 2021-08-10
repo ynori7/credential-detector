@@ -8,15 +8,16 @@ import (
 	"github.com/ynori7/credential-detector/config"
 )
 
+// Types indicate the credential finding type
 const (
-	TypeGoComment         = "go_comment"
-	TypeGoVariable        = "go_variable"
-	TypeJsonVariable      = "json_variable"
-	TypeJsonListVal       = "json_list_value"
-	TypeYamlVariable      = "yaml_variable"
-	TypeYamlListVal       = "yaml_list_value"
-	TypePropertiesComment = "properties_comment"
-	TypePropertiesValue   = "properties_value"
+	TypeGoComment = iota
+	TypeGoVariable
+	TypeJSONVariable
+	TypeJSONListVal
+	TypeYamlVariable
+	TypeYamlListVal
+	TypePropertiesComment
+	TypePropertiesValue
 )
 
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
@@ -37,7 +38,7 @@ type Parser struct {
 // Result is a hard-coded credential finding
 type Result struct {
 	File  string
-	Type  string
+	Type  int
 	Line  int
 	Name  string
 	Value string
@@ -80,8 +81,8 @@ func (p *Parser) ParseFile(filepath string) {
 		p.parseGoFile(filepath)
 	}
 
-	if p.isParsableJsonFile(filepath) {
-		p.parseJsonFile(filepath)
+	if p.isParsableJSONFile(filepath) {
+		p.parseJSONFile(filepath)
 	}
 
 	if p.isParsableYamlFile(filepath) {
