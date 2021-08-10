@@ -85,7 +85,7 @@ Note that the above values are the defaults.
 |excludeTests|A boolean flag to exclude scanning test files|true or false|
 |testDirectories|A list of directory names which are considered test data only|A list of strings|
 |excludeComments|A boolean flag to exclude scanning comments in the code |true or false|
-|scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, or yaml|
+|scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, yaml, properties, or privatekey|
 |disableOutputColors|A boolean flag to disable colorized output when printing the results|true or false|
 |verbose|A boolean flag which toggles the output of warning messages which occur while parsing specific files|true or false|
 
