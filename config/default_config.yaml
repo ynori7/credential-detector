@@ -7,7 +7,7 @@ variableNamePatterns:
   - (?i)bearer
   - (?i)credentials
   - salt|SALT|Salt
-variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$
+variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
@@ -17,7 +17,8 @@ valueExcludePatterns:
   - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
   - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$ #common dummy values
   - (?i)^true$|^false$
-  - (?i)^bearer$
+  - (?i)^bearer$|^Authorization$
+  - \${.+\} #typically for values injected at build time
 excludeTests: true
 testDirectories:
   - test
@@ -25,11 +26,12 @@ testDirectories:
   - example
   - data
 excludeComments: false
-scanTypes: #possible values are go|yaml|json|properties
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml
   - go
   - yaml
   - json
   - properties
   - privatekey
+  - xml
 disableOutputColors: false
 verbose: false

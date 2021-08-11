@@ -139,6 +139,7 @@ valueExcludePatterns:
   - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$ #common dummy values
   - (?i)^true$|^false$
   - (?i)^bearer$
+  - ^\${.+\}$ #typically for values injected at build time
 excludeTests: true
 testDirectories:
   - test
@@ -150,6 +151,7 @@ scanTypes:
   - json
   - properties
   - privatekey
+  - xml
 disableOutputColors: false
 verbose: false`)
 }

@@ -63,6 +63,10 @@ func PrintResults(results []parser.Result) {
 			printPropertiesCommentResult(result)
 		case parser.TypePrivateKey:
 			printPrivateKeyResult(result)
+		case parser.TypeXmlElement:
+			printXmlElementResult(result)
+		case parser.TypeXmlAttribute:
+			printXmlAttributeResult(result)
 		}
 	}
 }
@@ -133,6 +137,20 @@ func printPropertiesCommentResult(result parser.Result) {
 
 func printPrivateKeyResult(result parser.Result) {
 	fmt.Printf(`%sPrivate key file:%s 
+%s
+
+`, fgYellow, reset, result.Value)
+}
+
+func printXmlElementResult(result parser.Result) {
+	fmt.Printf(`%sXML Element:%s 
+%s = %s
+
+`, fgYellow, reset, result.Name, result.Value)
+}
+
+func printXmlAttributeResult(result parser.Result) {
+	fmt.Printf(`%sXML Attribute:%s 
 %s
 
 `, fgYellow, reset, result.Value)

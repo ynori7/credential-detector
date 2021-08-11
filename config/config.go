@@ -18,6 +18,8 @@ const (
 	ScanTypeProperties = "properties"
 	// ScanTypePrivateKey indicates private key files
 	ScanTypePrivateKey = "privatekey"
+	// ScanTypeXML indicates XML files
+	ScanTypeXML = "xml"
 )
 
 // Config contains all the configuration for the credential detector
