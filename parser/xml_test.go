@@ -58,21 +58,21 @@ func TestParser_XML(t *testing.T) {
 	expected := []Result{
 		{
 			File:  file,
-			Type:  TypeXmlElement,
+			Type:  TypeXMLElement,
 			Line:  0,
 			Name:  "token",
 			Value: `akljwerlkjweker`,
 		},
 		{
 			File:  file,
-			Type:  TypeXmlElement,
+			Type:  TypeXMLElement,
 			Line:  0,
 			Name:  "authToken",
 			Value: `akljwerlkjweker`,
 		},
 		{
 			File:  file,
-			Type:  TypeXmlAttribute,
+			Type:  TypeXMLAttribute,
 			Line:  0,
 			Name:  "property",
 			Value: `<property name="api_key" value="ajskdjlwlkej3k#kd3">`,

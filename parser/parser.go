@@ -19,8 +19,8 @@ const (
 	TypePropertiesComment
 	TypePropertiesValue
 	TypePrivateKey
-	TypeXmlElement
-	TypeXmlAttribute
+	TypeXMLElement
+	TypeXMLAttribute
 )
 
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
@@ -95,7 +95,7 @@ func (p *Parser) ParseFile(filepath string) {
 		if len(p.Results) > currentCount {
 			//we also handle hidden files with no extension here, so we should also check the next case, but
 			//only if we didn't find any results here already
-			 return
+			return
 		}
 		fallthrough
 	case p.isParsablePrivateKeyFile(filepath):

@@ -67,14 +67,14 @@ func (p *Parser) walkXMLMap(filepath string, m map[string]interface{}, parentKey
 			} else if strings.HasPrefix(k, xmlElementPrefix) && p.isPossiblyCredentialsVariable(parentKey, v.(string)) {
 				p.Results = append(p.Results, Result{
 					File:  filepath,
-					Type:  TypeXmlElement,
+					Type:  TypeXMLElement,
 					Name:  parentKey,
 					Value: v.(string),
 				})
 			} else if p.isPossiblyCredentialsVariable(k, v.(string)) {
 				p.Results = append(p.Results, Result{
 					File:  filepath,
-					Type:  TypeXmlElement,
+					Type:  TypeXMLElement,
 					Name:  k,
 					Value: v.(string),
 				})
@@ -90,9 +90,9 @@ func (p *Parser) walkXMLMap(filepath string, m map[string]interface{}, parentKey
 	if p.xmlAttributesContainCredentials(siblings) {
 		p.Results = append(p.Results, Result{
 			File:  filepath,
-			Type:  TypeXmlAttribute,
+			Type:  TypeXMLAttribute,
 			Name:  parentKey,
-			Value: p.buildXmlAttributeLine(parentKey, siblings),
+			Value: p.buildXMLAttributeLine(parentKey, siblings),
 		})
 	}
 }
@@ -143,7 +143,7 @@ func (p *Parser) xmlAttributesContainCredentials(siblings map[string]string) boo
 	for _, v := range siblings {
 		for _, m := range p.variableNameMatchers {
 			// include variables which have potentially suspicious names
-			if m.MatchString(v)  {
+			if m.MatchString(v) {
 				return true
 			}
 		}
@@ -152,7 +152,7 @@ func (p *Parser) xmlAttributesContainCredentials(siblings map[string]string) boo
 	return false
 }
 
-func (p *Parser) buildXmlAttributeLine(parent string, siblings map[string]string) string {
+func (p *Parser) buildXMLAttributeLine(parent string, siblings map[string]string) string {
 	attributes := make([]string, 0, len(siblings))
 	for k, v := range siblings {
 		attributes = append(attributes, fmt.Sprintf(" %s=\"%s\"", k, v))
