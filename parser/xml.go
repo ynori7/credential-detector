@@ -19,6 +19,8 @@ const (
 const (
 	xmlAttributePrefix = "-"
 	xmlElementPrefix   = "#"
+
+	xmlNameAttr = "name"
 )
 
 func (p *Parser) isParsableXMLFile(filepath string) bool {
@@ -116,15 +118,31 @@ func (p *Parser) xmlAttributesContainCredentials(siblings map[string]string) boo
 	}
 
 	// if the key name wasn't suspicious then it doesn't make sense to check the values anymore when there's only one
-	if len(siblings) == 1 {
+	if len(siblings) < 2 {
 		return false
 	}
 
-	//check if any of the value=>other value might be a credential pair, but check exclusions first
-	for _, v := range siblings {
-		if v == "" {
-			return false
+	if name, ok := siblings[xmlNameAttr]; ok {
+		// check if this name plus one of the other values might be a a credential
+		for _, v := range siblings {
+			if v == name {
+				continue //don't compare to itself
+			}
+			if p.isPossiblyCredentialsVariable(name, v) {
+				return true
+			}
 		}
+
+		return false //don't continue. if one of the attributes was "name", we can assume this is the variable name
+	}
+
+	//check if any of the value=>other value might be a credential pair, but check exclusions first
+	countLongEnoughVals := 0
+	for _, v := range siblings {
+		if len(v) < p.config.MinPasswordLength {
+			continue
+		}
+		countLongEnoughVals++
 
 		// if exclusions are defined for variable names, check
 		if p.config.VariableNameExclusionPattern != "" && p.variableNameExclusionMatcher.MatchString(v) {
@@ -139,11 +157,15 @@ func (p *Parser) xmlAttributesContainCredentials(siblings map[string]string) boo
 		}
 	}
 
+	if countLongEnoughVals < 2 {
+		return false //there should be at least two values which are long enough
+	}
+
 	//now check inclusions
 	for _, v := range siblings {
 		for _, m := range p.variableNameMatchers {
 			// include variables which have potentially suspicious names
-			if m.MatchString(v) {
+			if m.MatchString(v) && !(p.config.VariableNameExclusionPattern != "" && p.variableNameExclusionMatcher.MatchString(v)) {
 				return true
 			}
 		}

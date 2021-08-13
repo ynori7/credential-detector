@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 
 <project>
+    <target depends="prepare,phpunit-all,set-api-keys" name="build-release"></target>
+
     <property name="api_key" value="ajskdjlwlkej3k#kd3"/>
 
     <target name="clean">
@@ -36,5 +38,13 @@
     <target name="run">
         <java jar="build/jar/HelloWorld.jar" fork="true"/>
     </target>
+
+    <replacetokens begintoken="{{" endtoken="}}"></replacetokens>
+
+    <field dataType="string" name="EchoToken">test</field>
+
+    <alphanumeric length="30" line="32" name="echotoken" picture="X(30)"></alphanumeric>
+
+    <property name="MODULE_NAME" value="DoTokenize"></property>
 
 </project>

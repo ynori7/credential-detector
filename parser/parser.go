@@ -105,7 +105,7 @@ func (p *Parser) ParseFile(filepath string) {
 
 func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) bool {
 	// no point in considering empty values
-	if value == "" {
+	if len(value) < p.config.MinPasswordLength {
 		return false
 	}
 
@@ -139,6 +139,11 @@ func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) boo
 }
 
 func (p *Parser) isPossiblyCredentialValue(v string) bool {
+	// no point in considering empty values
+	if len(v) < p.config.MinPasswordLength {
+		return false
+	}
+
 	// exclude any variables whose value is in our exclusion list (this would include things like defaults and test values)
 	for _, m := range p.valueExcludeMatchers {
 		if m.MatchString(v) {

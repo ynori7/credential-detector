@@ -52,11 +52,16 @@ func Test_isPossiblyCredentialsVariable(t *testing.T) {
 		},
 		"Name looks like credentials": {
 			varName:  "blahPassword",
-			varVal:   "5",
+			varVal:   "5asdfasdfasdf",
 			expected: true,
 		},
 		"Name looks like credentials, but excluded": {
 			varName:  "blahPasswordFormat",
+			varVal:   "asdfasdfasdf5",
+			expected: false,
+		},
+		"Name looks like credentials but value too short": {
+			varName:  "blahPassword",
 			varVal:   "5",
 			expected: false,
 		},
@@ -128,7 +133,7 @@ func getTestConfig() []byte {
   - (?i)bearer
   - (?i)credentials
   - salt|SALT|Salt
-variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$
+variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
@@ -136,16 +141,21 @@ valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
   - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
-  - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$ #common dummy values
+  - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
+  - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
   - (?i)^true$|^false$
-  - (?i)^bearer$
-  - ^\${.+\}$ #typically for values injected at build time
+  - (?i)^bearer$|^Authorization$
+  - \${.+\} #typically for values injected at build time
+  - (?i){{.*}}
+minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
 excludeTests: true
 testDirectories:
   - test
   - testdata
+  - example
+  - data
 excludeComments: false
-scanTypes: 
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml
   - go
   - yaml
   - json

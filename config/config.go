@@ -28,6 +28,7 @@ type Config struct {
 	VariableNameExclusionPattern string   `yaml:"variableNameExclusionPattern"`
 	ValueMatchPatterns           []string `yaml:"valueMatchPatterns,flow"`
 	ValueExcludePatterns         []string `yaml:"valueExcludePatterns,flow"`
+	MinPasswordLength            int      `yaml:"minPasswordLength"`
 
 	ExcludeTests    bool `yaml:"excludeTests"`
 	ExcludeComments bool `yaml:"excludeComments"`
