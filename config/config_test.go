@@ -65,4 +65,34 @@ func TestMergeConfigs_Error(t *testing.T) {
 
 	_, err = loadConfig("", "asdfasdf")
 	assert.Error(t, err)
+
+	_, err = loadConfig("", "config.go")
+	assert.Error(t, err)
+}
+
+func TestMergeConfigs_IsTestDirectory(t *testing.T) {
+	conf := &Config{
+		VariableNamePatterns:         []string{"test", "blah"},
+		VariableNameExclusionPattern: "asdf|jkl",
+		ValueMatchPatterns:           []string{"postgres"},
+		ValueExcludePatterns:         []string{"dummy", "test"},
+		MinPasswordLength:            6,
+		ExcludeTests:                 true,
+		ExcludeComments:              false,
+		TestDirectories:              []string{"test", "testdata", "example", "data"},
+		ScanTypes:                    []string{"go", "yaml", "json", "properties", "privatekey", "xml"},
+		DisableOutputColors:          false,
+		Verbose:                      false,
+	}
+
+	expected := map[string]bool{
+		"test":   true,
+		"latest": false,
+		"blah":   false,
+		"Test":   true,
+	}
+
+	for dir, expectedVal := range expected {
+		assert.Equal(t, expectedVal, conf.IsTestDirectory(dir), dir)
+	}
 }

@@ -4,8 +4,10 @@ import (
 	_ "embed" //justified because I said so
 	"flag"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -98,7 +100,7 @@ func loadConfig(configPath, rootConfigPath string) (*Config, error) {
 // IsTestDirectory returns true if the given directory matches one of the configured test directories
 func (c Config) IsTestDirectory(dir string) bool {
 	for _, v := range c.TestDirectories {
-		if v == dir {
+		if strings.EqualFold(v, dir) {
 			return true
 		}
 	}
