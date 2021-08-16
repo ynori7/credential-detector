@@ -1,0 +1,7 @@
+variableNamePatterns:
+  - whatever
+variableNameExclusionPattern: werwer
+scanTypes:
+  - go
+  - yaml
+  - json

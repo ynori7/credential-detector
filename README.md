@@ -35,6 +35,9 @@ Credential-detector can scan:
 - XML files
 
 ## Configuration
+When running the credential detector, it is possible to provide an optional `--root_config`, which supplies the base 
+configuration and a `--config` which defines any additions/modifications to the base. 
+
 The following configuration options are available:
 
 ```yaml
@@ -63,7 +66,7 @@ valueExcludePatterns:
   - \${.+\} #typically for values injected at build time
   - (?i){{.*}}
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
-excludeTests: true
+excludeTests: false
 testDirectories:
   - test
   - testdata
@@ -96,7 +99,10 @@ Note that the above values are the defaults.
 |disableOutputColors|A boolean flag to disable colorized output when printing the results|true or false|
 |verbose|A boolean flag which toggles the output of warning messages which occur while parsing specific files|true or false|
 
-The configuration from config/default_config.yaml is the default, and it's recommended to use this as a base for any configuration you create.
+The configuration from config/default_config.yaml is the default root configuration. If the `--config` flag is provided,
+the values for the boolean fields and scanTypes will be take from this config, and the values for minPasswordLength and 
+variableNameExclusionPattern will be taken if non-empty. For all other list attributes, the values from the supplied
+configuration will be appended to the root.
 
 ## Comparison to Gosec
 Credential-detector is more flexible since it can be easily configured with more options than gosec and it's significantly 

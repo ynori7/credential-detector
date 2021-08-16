@@ -1,0 +1,26 @@
+variableNamePatterns:
+  - test
+  - blah
+variableNameExclusionPattern: asdf|jkl
+valueMatchPatterns:
+  - postgres
+valueExcludePatterns:
+  - dummy
+  - test
+minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
+excludeTests: true
+testDirectories:
+  - test
+  - testdata
+  - example
+  - data
+excludeComments: false
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml
+  - go
+  - yaml
+  - json
+  - properties
+  - privatekey
+  - xml
+disableOutputColors: false
+verbose: false

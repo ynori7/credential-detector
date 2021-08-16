@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,27 +10,14 @@ import (
 )
 
 func main() {
-	var (
-		configPath string
-		scanPath   string
-	)
-
-	flag.StringVar(&configPath, "config", "", "The path to the config yaml")
-	flag.StringVar(&scanPath, "path", "", "The path to scan")
-	flag.Parse()
-
-	if scanPath == "" {
-		log.Fatal("The path flag must be provided")
-	}
-
-	conf, err := config.LoadConfig(configPath)
+	conf, err := config.New()
 	if err != nil {
-		log.Fatalf("Error loading configuration: %s", err.Error())
+		log.Fatal(err.Error())
 	}
 
 	p := parser.NewParser(conf)
 
-	err = filepath.Walk(scanPath,
+	err = filepath.Walk(config.ScanPath,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -44,7 +30,7 @@ func main() {
 			return nil
 		})
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err.Error())
 	}
 
 	if conf.DisableOutputColors {

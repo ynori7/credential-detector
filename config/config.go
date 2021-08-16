@@ -2,9 +2,15 @@ package config
 
 import (
 	_ "embed" //justified because I said so
-	"io/ioutil"
-
+	"flag"
+	"fmt"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+)
+
+var (
+	//ScanPath is the path which should be scanned
+	ScanPath string
 )
 
 const (
@@ -40,6 +46,55 @@ type Config struct {
 	Verbose             bool `yaml:"verbose"`
 }
 
+// New returns a new configuration
+func New() (*Config, error) {
+	var (
+		configPath     string
+		rootConfigPath string
+	)
+
+	flag.StringVar(&configPath, "config", "", "The path to the config yaml which defines additions/overrides to the base config")
+	flag.StringVar(&rootConfigPath, "root_config", "", "The path to the config yaml which defines the base configuration")
+	flag.StringVar(&ScanPath, "path", "", "The path to scan")
+	flag.Parse()
+
+	if ScanPath == "" {
+		return nil, fmt.Errorf("the path flag must be provided")
+	}
+
+	return loadConfig(configPath, rootConfigPath)
+}
+
+func loadConfig(configPath, rootConfigPath string) (*Config, error) {
+	var (
+		rootConfig     *Config
+		configAddition *Config
+		err            error
+	)
+	if rootConfigPath != "" {
+		rootConfig, err = loadFile(rootConfigPath)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		rootConfig, err = ParseConfig(defaultConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if configPath == "" {
+		return rootConfig, nil
+	}
+
+	configAddition, err = loadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return mergeConfigs(rootConfig, configAddition), nil
+}
+
 // IsTestDirectory returns true if the given directory matches one of the configured test directories
 func (c Config) IsTestDirectory(dir string) bool {
 	for _, v := range c.TestDirectories {
@@ -53,26 +108,52 @@ func (c Config) IsTestDirectory(dir string) bool {
 //go:embed default_config.yaml
 var defaultConfig []byte
 
-// LoadConfig loads configuration from the given file path
-func LoadConfig(path string) (Config, error) {
-	if path == "" {
-		return ParseConfig(defaultConfig)
-	}
-
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return Config{}, err
-	}
-
-	return ParseConfig(data)
-}
-
 // ParseConfig parses the given YAML file data into a configuration object
-func ParseConfig(data []byte) (Config, error) {
-	c := Config{}
+func ParseConfig(data []byte) (*Config, error) {
+	c := &Config{}
 	if err := yaml.Unmarshal(data, &c); err != nil {
 		return c, err
 	}
 
 	return c, nil
+}
+
+func loadFile(path string) (*Config, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	conf, err := ParseConfig(data)
+	if err != nil {
+		return nil, fmt.Errorf("error loading configuration from %s: %s", path, err.Error())
+	}
+
+	return conf, nil
+}
+
+func mergeConfigs(root *Config, additions *Config) *Config {
+	if additions.MinPasswordLength > 0 {
+		root.MinPasswordLength = additions.MinPasswordLength
+	}
+
+	if len(additions.ScanTypes) > 0 {
+		root.ScanTypes = additions.ScanTypes
+	}
+
+	root.ExcludeTests = additions.ExcludeTests
+	root.ExcludeComments = additions.ExcludeComments
+	root.Verbose = additions.Verbose
+	root.DisableOutputColors = additions.DisableOutputColors
+
+	root.TestDirectories = append(root.TestDirectories, additions.TestDirectories...)
+	root.VariableNamePatterns = append(root.VariableNamePatterns, additions.VariableNamePatterns...)
+	root.ValueExcludePatterns = append(root.ValueExcludePatterns, additions.ValueExcludePatterns...)
+	root.ValueMatchPatterns = append(root.ValueMatchPatterns, additions.ValueMatchPatterns...)
+
+	if additions.VariableNameExclusionPattern != "" {
+		root.VariableNameExclusionPattern = additions.VariableNameExclusionPattern
+	}
+
+	return root
 }

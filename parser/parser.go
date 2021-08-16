@@ -25,7 +25,7 @@ const (
 
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
 type Parser struct {
-	config config.Config
+	config *config.Config
 
 	scanTypes map[string]struct{}
 
@@ -48,7 +48,7 @@ type Result struct {
 }
 
 // NewParser returns a new parser with the given configuration
-func NewParser(conf config.Config) Parser {
+func NewParser(conf *config.Config) Parser {
 	parser := Parser{
 		config:                       conf,
 		scanTypes:                    make(map[string]struct{}),
