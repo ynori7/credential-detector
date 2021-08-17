@@ -12,15 +12,25 @@ import (
 const (
 	TypeGoComment = iota
 	TypeGoVariable
+
 	TypeJSONVariable
 	TypeJSONListVal
+
 	TypeYamlVariable
 	TypeYamlListVal
+
 	TypePropertiesComment
 	TypePropertiesValue
+
 	TypePrivateKey
+
 	TypeXMLElement
 	TypeXMLAttribute
+
+	TypePHPVariable
+	TypePHPHeredoc
+	TypePHPConstant
+	TypePHPComment
 )
 
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
@@ -90,6 +100,8 @@ func (p *Parser) ParseFile(filepath string) {
 		p.parseXMLFile(filepath)
 	case p.isParsableYamlFile(filepath):
 		p.parseYamlFile(filepath)
+	case p.isParsablePhpFile(filepath):
+		p.parsePhpFile(filepath)
 	case p.isParsablePropertiesFile(filepath):
 		p.parsePropertiesFile(filepath)
 		if len(p.Results) > currentCount {

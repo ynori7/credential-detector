@@ -33,6 +33,7 @@ Credential-detector can scan:
 - Properties files
 - Private key / certificate files
 - XML files
+- PHP code
 
 ## Configuration
 When running the credential detector, it is possible to provide an optional `--root_config`, which supplies the base 
@@ -73,13 +74,14 @@ testDirectories:
   - example
   - data
 excludeComments: false
-scanTypes: #possible values are go|yaml|json|properties|privatekey|xml
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - go
   - yaml
   - json
   - properties
   - privatekey
   - xml
+  - php
 disableOutputColors: false
 verbose: false
 ```
@@ -95,7 +97,7 @@ Note that the above values are the defaults.
 |excludeTests|A boolean flag to exclude scanning test files|true or false|
 |testDirectories|A list of directory names which are considered test data only|A list of strings|
 |excludeComments|A boolean flag to exclude scanning comments in the code |true or false|
-|scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, yaml, properties, privatekey, or xml|
+|scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, yaml, properties, privatekey, xml, or php|
 |disableOutputColors|A boolean flag to disable colorized output when printing the results|true or false|
 |verbose|A boolean flag which toggles the output of warning messages which occur while parsing specific files|true or false|
 

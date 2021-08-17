@@ -67,6 +67,10 @@ func PrintResults(results []parser.Result) {
 			printXMLElementResult(result)
 		case parser.TypeXMLAttribute:
 			printXMLAttributeResult(result)
+		case parser.TypePHPVariable, parser.TypePHPHeredoc, parser.TypePHPConstant:
+			printPhpVariableResult(result)
+		case parser.TypePHPComment:
+			printPhpCommentResult(result)
 		}
 	}
 }
@@ -154,6 +158,20 @@ func printXMLAttributeResult(result parser.Result) {
 %s
 
 `, fgYellow, reset, result.Value)
+}
+
+func printPhpVariableResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s = %s;
+
+`, fgYellow, result.Line, reset, result.Name, result.Value)
+}
+
+func printPhpCommentResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s
+
+`, fgYellow, result.Line, reset, result.Value)
 }
 
 func disableColors() {

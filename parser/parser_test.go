@@ -133,6 +133,7 @@ func getTestConfig() []byte {
   - (?i)bearer
   - (?i)credentials
   - salt|SALT|Salt
+  - (?i)signature
 variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
@@ -145,6 +146,7 @@ valueExcludePatterns:
   - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
   - (?i)^true$|^false$
   - (?i)^bearer$|^Authorization$
+  - bootstrapper
   - \${.+\} #typically for values injected at build time
   - (?i){{.*}}
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
@@ -155,13 +157,14 @@ testDirectories:
   - example
   - data
 excludeComments: false
-scanTypes: #possible values are go|yaml|json|properties|privatekey|xml
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - go
   - yaml
   - json
   - properties
   - privatekey
   - xml
+  - php
 disableOutputColors: false
 verbose: false`)
 }

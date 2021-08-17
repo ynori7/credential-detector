@@ -28,6 +28,8 @@ const (
 	ScanTypePrivateKey = "privatekey"
 	// ScanTypeXML indicates XML files
 	ScanTypeXML = "xml"
+	// ScanTypePHP indicates PHP files
+	ScanTypePHP = "php"
 )
 
 // Config contains all the configuration for the credential detector
