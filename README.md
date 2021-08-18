@@ -1,6 +1,14 @@
 # Credential-Detector [![Go Report Card](https://goreportcard.com/badge/ynori7/credential-detector)](https://goreportcard.com/report/github.com/ynori7/credential-detector) [![Build Status](https://travis-ci.org/ynori7/credential-detector.svg?branch=master)](https://travis-ci.com/github/ynori7/credential-detector)
 This simple command allows you to scan projects to detect potentially hard-coded credentials.
 
+Hard-coded credentials are authentication data such as passwords, API keys, authorization tokens,
+or private keys which have been embedded directory into the source code or static configuration files rather
+than obtaining them from an external source or injecting them upon deployment/runtime. This common practice
+tremendously increases the possibility for malicious users to guess passwords and obtain access to your systems.
+
+With this tool, it becomes an easy task to locate credentials which were mistakenly (or naively) committed to
+your repositories so that they can be revoked and replaced with more secure practices. 
+
 ## Installation
 ```bash
 go install github.com/ynori7/credential-detector
@@ -51,7 +59,8 @@ variableNamePatterns:
   - (?i)bearer
   - (?i)credentials
   - salt|SALT|Salt
-variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]
+  - (?i)signature
+variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]|regex
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
@@ -67,12 +76,17 @@ valueExcludePatterns:
   - \${.+\} #typically for values injected at build time
   - (?i){{.*}}
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
-excludeTests: false
+excludeTests: true
 testDirectories:
   - test
+  - tests
   - testdata
   - example
   - data
+ignoreFiles: #files or directories to skip
+  - vendor
+  - .git
+  - .idea
 excludeComments: false
 scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - go
@@ -96,6 +110,7 @@ Note that the above values are the defaults.
 |valueExcludePatterns|A list of patterns to exclude for the value (for example for test data or constants defining header names, etc)|List of regular expressions|
 |excludeTests|A boolean flag to exclude scanning test files|true or false|
 |testDirectories|A list of directory names which are considered test data only|A list of strings|
+|ignoreFiles|A list of directory or file names which should be ignored|A list of strings|
 |excludeComments|A boolean flag to exclude scanning comments in the code |true or false|
 |scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, yaml, properties, privatekey, xml, or php|
 |disableOutputColors|A boolean flag to disable colorized output when printing the results|true or false|

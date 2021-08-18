@@ -44,7 +44,9 @@ type Config struct {
 	ExcludeComments bool `yaml:"excludeComments"`
 
 	TestDirectories []string `yaml:"testDirectories,flow"`
-	ScanTypes       []string `yaml:"scanTypes,flow"`
+	IgnoreFiles     []string `yaml:"ignoreFiles,flow"`
+
+	ScanTypes []string `yaml:"scanTypes,flow"`
 
 	DisableOutputColors bool `yaml:"disableOutputColors"`
 	Verbose             bool `yaml:"verbose"`
@@ -109,6 +111,16 @@ func (c Config) IsTestDirectory(dir string) bool {
 	return false
 }
 
+// IsIgnoreFile returns true if the given file/directory matches one of the configured files to ignore
+func (c Config) IsIgnoreFile(dir string) bool {
+	for _, v := range c.IgnoreFiles {
+		if strings.EqualFold(v, dir) {
+			return true
+		}
+	}
+	return false
+}
+
 //go:embed default_config.yaml
 var defaultConfig []byte
 
@@ -151,6 +163,7 @@ func mergeConfigs(root *Config, additions *Config) *Config {
 	root.DisableOutputColors = additions.DisableOutputColors
 
 	root.TestDirectories = append(root.TestDirectories, additions.TestDirectories...)
+	root.IgnoreFiles = append(root.IgnoreFiles, additions.IgnoreFiles...)
 	root.VariableNamePatterns = append(root.VariableNamePatterns, additions.VariableNamePatterns...)
 	root.ValueExcludePatterns = append(root.ValueExcludePatterns, additions.ValueExcludePatterns...)
 	root.ValueMatchPatterns = append(root.ValueMatchPatterns, additions.ValueMatchPatterns...)

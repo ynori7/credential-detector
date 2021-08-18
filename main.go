@@ -22,6 +22,10 @@ func main() {
 			if err != nil {
 				return err
 			}
+			if conf.IsIgnoreFile(info.Name()) {
+				//skip ignored directories
+				return filepath.SkipDir
+			}
 			if conf.ExcludeTests && conf.IsTestDirectory(info.Name()) {
 				//skip test directories if we're excluding tests
 				return filepath.SkipDir

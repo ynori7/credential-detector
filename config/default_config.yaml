@@ -31,6 +31,10 @@ testDirectories:
   - testdata
   - example
   - data
+ignoreFiles: #files or directories to skip
+  - vendor
+  - .git
+  - .idea
 excludeComments: false
 scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - go
