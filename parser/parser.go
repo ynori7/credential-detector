@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"os"
 	fp "path/filepath"
 	"regexp"
 	"strings"
@@ -86,6 +87,26 @@ func NewParser(conf *config.Config) Parser {
 	}
 
 	return parser
+}
+
+// Scan initiates the recursive scan of all files/directories in the given path
+func (p *Parser) Scan(path string) error {
+	return fp.Walk(config.ScanPath,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if p.config.IsIgnoreFile(info.Name()) {
+				//skip ignored directories
+				return fp.SkipDir
+			}
+			if p.config.ExcludeTests && p.config.IsTestDirectory(info.Name()) {
+				//skip test directories if we're excluding tests
+				return fp.SkipDir
+			}
+			p.ParseFile(path)
+			return nil
+		})
 }
 
 // ParseFile parses the given file (if possible) and collects potential credentials

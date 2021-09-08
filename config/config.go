@@ -68,10 +68,11 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("the path flag must be provided")
 	}
 
-	return loadConfig(configPath, rootConfigPath)
+	return LoadConfig(configPath, rootConfigPath)
 }
 
-func loadConfig(configPath, rootConfigPath string) (*Config, error) {
+// LoadConfig loads configuration based on the provided config path and root config path. If rootConfigPath is empty, the default will be used
+func LoadConfig(configPath, rootConfigPath string) (*Config, error) {
 	var (
 		rootConfig     *Config
 		configAddition *Config

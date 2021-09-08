@@ -22,7 +22,7 @@ func TestMergeConfigs(t *testing.T) {
 		Verbose:                      false,
 	}
 
-	actual, err := loadConfig("testdata/config.yaml", "testdata/root-config.yaml")
+	actual, err := LoadConfig("testdata/config.yaml", "testdata/root-config.yaml")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, actual)
@@ -43,7 +43,7 @@ func TestMergeConfigs_NoAdditionalConfig(t *testing.T) {
 		Verbose:                      false,
 	}
 
-	actual, err := loadConfig("", "testdata/root-config.yaml")
+	actual, err := LoadConfig("", "testdata/root-config.yaml")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, actual)
@@ -53,20 +53,20 @@ func TestMergeConfigs_NoRootProvided(t *testing.T) {
 	expected, err := ParseConfig(defaultConfig)
 	require.NoError(t, err)
 
-	actual, err := loadConfig("", "")
+	actual, err := LoadConfig("", "")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, actual)
 }
 
 func TestMergeConfigs_Error(t *testing.T) {
-	_, err := loadConfig("asdfsadf", "")
+	_, err := LoadConfig("asdfsadf", "")
 	assert.Error(t, err)
 
-	_, err = loadConfig("", "asdfasdf")
+	_, err = LoadConfig("", "asdfasdf")
 	assert.Error(t, err)
 
-	_, err = loadConfig("", "config.go")
+	_, err = LoadConfig("", "config.go")
 	assert.Error(t, err)
 }
 

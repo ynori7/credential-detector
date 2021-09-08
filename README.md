@@ -254,3 +254,32 @@ func main() {
 	password := "blah" //local variables are not scanned
 }
 ```
+
+## Usage as a library
+The credential scanner can also be used as a library like so:
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/ynori7/credential-detector/config"
+	"github.com/ynori7/credential-detector/parser"
+)
+
+func main() {
+	//Specify the configuration file paths. Use empty string as root config to use default root
+	conf, err := config.LoadConfig("myconfig.yaml", "myrootconfig.yaml")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	p := parser.NewParser(conf)
+	if err := p.Scan("/myScanPath"); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	//results are in p.Results
+}
+```
