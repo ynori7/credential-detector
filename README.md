@@ -2,7 +2,7 @@
 This simple command allows you to scan projects to detect potentially hard-coded credentials.
 
 Hard-coded credentials are authentication data such as passwords, API keys, authorization tokens,
-or private keys which have been embedded directory into the source code or static configuration files rather
+or private keys which have been embedded directly into the source code or static configuration files rather
 than obtaining them from an external source or injecting them upon deployment/runtime. This common practice
 tremendously increases the possibility for malicious users to guess passwords and obtain access to your systems.
 
