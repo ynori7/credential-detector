@@ -107,9 +107,16 @@ EOF`,
 			Value: `// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
 		},
 		{
+			File:  file,
+			Type:  TypePHPVariable,
+			Line:  35,
+			Name:  "private $password",
+			Value: `"woieruwkljlekjrlkwjer"`,
+		},
+		{
 			File: file,
 			Type: TypePHPComment,
-			Line: 36,
+			Line: 38,
 			Name: "",
 			Value: `/*
 * This is a multiline comment

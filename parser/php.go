@@ -78,10 +78,30 @@ func (p *Parser) parsePhpFile(filepath string) {
 			if err2 != nil {
 				return
 			}
+		} else if strings.HasPrefix(trimmedLine, "private ") || strings.HasPrefix(trimmedLine, "protected ") ||
+			strings.HasPrefix(trimmedLine, "public ") { //It's a class variable
+
+			varName, val, _, newLineNumber, err2 := parsePhpAssignment(reader, trimmedLine, lineNumber)
+			if varName != "" && val != "" {
+				if p.isPossiblyCredentialsVariable(trimDeclarationPrefix(varName), strings.Trim(val, "'\"")) {
+					p.Results = append(p.Results, Result{
+						File:  filepath,
+						Type:  TypePHPVariable,
+						Line:  lineNumber,
+						Name:  varName,
+						Value: val,
+					})
+				}
+			}
+			lineNumber = newLineNumber
+
+			if err2 != nil {
+				return
+			}
 		} else if strings.HasPrefix(trimmedLine, "const ") { //It's a constant
 			varName, val, _, newLineNumber, err2 := parsePhpAssignment(reader, trimmedLine, lineNumber)
 			if varName != "" && val != "" {
-				if p.isPossiblyCredentialsVariable(strings.TrimPrefix(varName, "const "), strings.Trim(val, "'\"")) {
+				if p.isPossiblyCredentialsVariable(trimDeclarationPrefix(varName), strings.Trim(val, "'\"")) {
 					p.Results = append(p.Results, Result{
 						File:  filepath,
 						Type:  TypePHPConstant,
@@ -119,12 +139,13 @@ func (p *Parser) parsePhpFile(filepath string) {
 						Name:  "",
 						Value: commentBody,
 					})
-					lineNumber = newLineNumber
 
 					if err2 != nil {
 						return
 					}
 				}
+
+				lineNumber = newLineNumber
 			}
 		}
 
@@ -214,4 +235,12 @@ func trimAfter(s string, tok string) string {
 	}
 
 	return s[0:lastIndex]
+}
+
+func trimDeclarationPrefix(s string) string {
+	s = strings.TrimPrefix(s, "const ")
+	s = strings.TrimPrefix(s, "private ")
+	s = strings.TrimPrefix(s, "protected ")
+	s = strings.TrimPrefix(s, "public ")
+	return s
 }
