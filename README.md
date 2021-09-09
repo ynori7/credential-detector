@@ -9,6 +9,11 @@ tremendously increases the possibility for malicious users to guess passwords an
 With this tool, it becomes an easy task to locate credentials which were mistakenly (or naively) committed to
 your repositories so that they can be revoked and replaced with more secure practices. 
 
+Further reading:
+- [CWE-798: Use of Hard-coded Credentials](https://cwe.mitre.org/data/definitions/798.html)
+- [OWASP Use of hard-coded passwords](https://owasp.org/www-community/vulnerabilities/Use_of_hard-coded_password)
+
+
 ## Installation
 ```bash
 go install github.com/ynori7/credential-detector
@@ -237,24 +242,6 @@ sys	0m0,010s
 credential-detector was 16 times faster, found six values which gosec missed in go code, included six values from json 
 and yaml files which gosec did not check, and excluded a false-positive which gosec reported.
 
-
-## Limitations
-This program is only scanning global variables and constants. It will not detect things like this:
-
-```go
-type Config {
-	Secret string
-}
-
-var conf = Config{
-	Secret: "blah", //struct fields are not checked
-}
-
-func main() {
-	password := "blah" //local variables are not scanned
-}
-```
-
 ## Usage as a library
 The credential scanner can also be used as a library like so:
 
@@ -281,5 +268,22 @@ func main() {
 	}
 
 	//results are in p.Results
+}
+```
+
+## Limitations
+This program is only scanning global variables and constants. It will not detect things like this:
+
+```go
+type Config {
+	Secret string
+}
+
+var conf = Config{
+	Secret: "blah", //struct fields are not checked
+}
+
+func main() {
+	password := "blah" //local variables are not scanned
 }
 ```
