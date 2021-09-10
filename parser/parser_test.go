@@ -135,6 +135,7 @@ func getTestConfig() []byte {
   - salt|SALT|Salt
   - (?i)signature
 variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]
+xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token

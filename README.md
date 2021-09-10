@@ -272,7 +272,7 @@ func main() {
 ```
 
 ## Limitations
-This program is only scanning global variables and constants. It will not detect things like this:
+The Go scanner is only scanning global variables and constants. It will not detect things like this:
 
 ```go
 type Config {
@@ -286,4 +286,14 @@ var conf = Config{
 func main() {
 	password := "blah" //local variables are not scanned
 }
+```
+
+XML tends to have a lot of false positives due to the fact that it often describes a model without actually containing 
+the data like so:
+
+```xml
+<element id="password" label="Password" type="password">
+    <validations>
+        <validation type="passwordlength">
+        ....
 ```

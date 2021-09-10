@@ -9,6 +9,7 @@ variableNamePatterns:
   - salt|SALT|Salt
   - (?i)signature
 variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]|regex
+xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
@@ -16,7 +17,7 @@ valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
   - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
-  - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
+  - (?i)^test$|password|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
   - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
   - (?i)^true$|^false$
   - (?i)^bearer$|^Authorization$

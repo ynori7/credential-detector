@@ -47,4 +47,7 @@
 
     <property name="MODULE_NAME" value="DoTokenize"></property>
 
+    <property name="token" type="asdfasdfasdf">
+        <description>This is a token...</description>
+    </property>
 </project>

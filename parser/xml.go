@@ -112,6 +112,11 @@ func (p *Parser) parseXMLSlice(filepath string, k string, v interface{}) {
 func (p *Parser) xmlAttributesContainCredentials(siblings map[string]string) bool {
 	//check if any of the sibling keys=>value might be a credential pair
 	for k, v := range siblings {
+		//ignore all attributes in the xml attribute exclusion list
+		if p.config.XmlAttributeNameExclusionPattern != "" && (p.xmlAttributeNameExclusionMatcher.MatchString(k) || p.xmlAttributeNameExclusionMatcher.MatchString(v)){
+			return false
+		}
+
 		if p.isPossiblyCredentialsVariable(k, v) {
 			return true
 		}
