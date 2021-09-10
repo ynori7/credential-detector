@@ -20,7 +20,7 @@ go install github.com/ynori7/credential-detector
 ```
 
 ## Usage
-`go run main.go config.go parser.go --config config.yaml --path "/home/me/myproject"`
+`go run main.go --config config.yaml --path "/home/me/myproject"`
 
 Example output:
 ```
