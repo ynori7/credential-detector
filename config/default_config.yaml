@@ -7,7 +7,7 @@ variableNamePatterns:
   - (?i)bearer
   - (?i)credentials
   - salt|SALT|Salt
-  - (?i)signature|X509Certificate
+  - (?i)signature
 variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]|regex
 xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
