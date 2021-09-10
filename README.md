@@ -66,6 +66,7 @@ variableNamePatterns:
   - salt|SALT|Salt
   - (?i)signature
 variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]|regex
+xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
@@ -111,6 +112,7 @@ Note that the above values are the defaults.
 |-------------|-----------|------|
 |variableNamePatterns|The regular expressions for matching potentially suspicious variable names|List of regular expressions| 
 |variableNameExclusionPattern|The regular expression for excluding variable names that are not interesting (for example a passwordFormat pattern)|A regular expression|
+|xmlAttributeNameExclusionPattern|The regular expression for excluding xml attributes since XML often describes a model rather than containing the data.|A regular expression|
 |valueMatchPatterns|A list of patterns to match potentially suspicious values, regardless of the variable name|List of regular expressions|
 |valueExcludePatterns|A list of patterns to exclude for the value (for example for test data or constants defining header names, etc)|List of regular expressions|
 |excludeTests|A boolean flag to exclude scanning test files|true or false|

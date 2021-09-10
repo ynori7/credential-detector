@@ -34,12 +34,12 @@ const (
 
 // Config contains all the configuration for the credential detector
 type Config struct {
-	VariableNamePatterns            []string `yaml:"variableNamePatterns,flow"`
-	VariableNameExclusionPattern    string   `yaml:"variableNameExclusionPattern"`
-	XmlAttributeNameExclusionPattern string   `yaml:"xmlAttributeNameExclusionPattern"`
-	ValueMatchPatterns              []string `yaml:"valueMatchPatterns,flow"`
-	ValueExcludePatterns            []string `yaml:"valueExcludePatterns,flow"`
-	MinPasswordLength               int      `yaml:"minPasswordLength"`
+	VariableNamePatterns             []string `yaml:"variableNamePatterns,flow"`
+	VariableNameExclusionPattern     string   `yaml:"variableNameExclusionPattern"`
+	XMLAttributeNameExclusionPattern string   `yaml:"xmlAttributeNameExclusionPattern"`
+	ValueMatchPatterns               []string `yaml:"valueMatchPatterns,flow"`
+	ValueExcludePatterns             []string `yaml:"valueExcludePatterns,flow"`
+	MinPasswordLength                int      `yaml:"minPasswordLength"`
 
 	ExcludeTests    bool `yaml:"excludeTests"`
 	ExcludeComments bool `yaml:"excludeComments"`
@@ -174,8 +174,8 @@ func mergeConfigs(root *Config, additions *Config) *Config {
 		root.VariableNameExclusionPattern = additions.VariableNameExclusionPattern
 	}
 
-	if additions.XmlAttributeNameExclusionPattern != "" {
-		root.XmlAttributeNameExclusionPattern = additions.XmlAttributeNameExclusionPattern
+	if additions.XMLAttributeNameExclusionPattern != "" {
+		root.XMLAttributeNameExclusionPattern = additions.XMLAttributeNameExclusionPattern
 	}
 
 	return root

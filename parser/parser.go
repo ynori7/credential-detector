@@ -66,7 +66,7 @@ func NewParser(conf *config.Config) Parser {
 		scanTypes:                        make(map[string]struct{}),
 		variableNameMatchers:             make([]*regexp.Regexp, len(conf.VariableNamePatterns)),
 		variableNameExclusionMatcher:     regexp.MustCompile(conf.VariableNameExclusionPattern),
-		xmlAttributeNameExclusionMatcher: regexp.MustCompile(conf.XmlAttributeNameExclusionPattern),
+		xmlAttributeNameExclusionMatcher: regexp.MustCompile(conf.XMLAttributeNameExclusionPattern),
 		valueIncludeMatchers:             make([]*regexp.Regexp, len(conf.ValueMatchPatterns)),
 		valueExcludeMatchers:             make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
 		Results:                          make([]Result, 0),
