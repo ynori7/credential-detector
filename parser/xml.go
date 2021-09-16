@@ -19,8 +19,18 @@ const (
 const (
 	xmlAttributePrefix = "-"
 	xmlElementPrefix   = "#"
+	xmlText            = "#text"
 
 	xmlNameAttr = "name"
+)
+
+var (
+	//These are attributes which might identify the real purpose of an element like: <property key="password">blah</property>
+	xmlElementAttributeIdentifierNames = map[string]struct{}{
+		"id":   {},
+		"key":  {},
+		"name": {},
+	}
 )
 
 func (p *Parser) isParsableXMLFile(filepath string) bool {
@@ -58,12 +68,17 @@ func (p *Parser) parseXMLFile(filepath string) {
 
 func (p *Parser) walkXMLMap(filepath string, m map[string]interface{}, parentKey string) {
 	siblings := make(map[string]string)
+	textBody := ""
 	for k, v := range m {
 		if reflect.TypeOf(v) == nil {
 			continue
 		}
 		switch reflect.TypeOf(v).Kind() {
 		case reflect.String:
+			if k == xmlText {
+				textBody = v.(string)
+			}
+
 			if strings.HasPrefix(k, xmlAttributePrefix) {
 				siblings[strings.TrimPrefix(k, xmlAttributePrefix)] = v.(string)
 			} else if strings.HasPrefix(k, xmlElementPrefix) && p.isPossiblyCredentialsVariable(parentKey, v.(string)) {
@@ -88,6 +103,14 @@ func (p *Parser) walkXMLMap(filepath string, m map[string]interface{}, parentKey
 				p.walkXMLMap(filepath, v2, k)
 			}
 		}
+	}
+	if textBody != "" && p.xmlAttributesContainCredentialsWithTextBody(textBody, siblings) {
+		p.Results = append(p.Results, Result{
+			File:  filepath,
+			Type:  TypeXMLAttribute,
+			Name:  parentKey,
+			Value: p.buildXMLElementLine(parentKey, siblings, textBody),
+		})
 	}
 	if p.xmlAttributesContainCredentials(siblings) {
 		p.Results = append(p.Results, Result{
@@ -179,6 +202,20 @@ func (p *Parser) xmlAttributesContainCredentials(siblings map[string]string) boo
 	return false
 }
 
+func (p *Parser) xmlAttributesContainCredentialsWithTextBody(body string, siblings map[string]string) bool {
+	for k, v := range siblings {
+		//ignore all attributes which aren't likely to be identifiers
+		if _, ok := xmlElementAttributeIdentifierNames[k]; !ok {
+			continue
+		}
+
+		if p.isPossiblyCredentialsVariable(v, body) {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Parser) buildXMLAttributeLine(parent string, siblings map[string]string) string {
 	attributes := make([]string, 0, len(siblings))
 	for k, v := range siblings {
@@ -187,4 +224,9 @@ func (p *Parser) buildXMLAttributeLine(parent string, siblings map[string]string
 	sort.Strings(attributes)
 
 	return fmt.Sprintf("<%s%s>", parent, strings.Join(attributes, ""))
+}
+
+func (p *Parser) buildXMLElementLine(parent string, siblings map[string]string, body string) string {
+	attrLine := p.buildXMLAttributeLine(parent, siblings)
+	return fmt.Sprintf("%s%s</%s>", attrLine, body, parent)
 }

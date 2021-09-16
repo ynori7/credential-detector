@@ -50,4 +50,7 @@
     <property name="token" type="asdfasdfasdf">
         <description>This is a token...</description>
     </property>
+
+    <parameter key="service.password">werawkljlwkejre</parameter>
+    <label index="Password">Please enter your password</label>
 </project>

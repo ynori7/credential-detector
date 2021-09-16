@@ -88,7 +88,6 @@ testDirectories:
   - tests
   - testdata
   - example
-  - data
 ignoreFiles: #files or directories to skip
   - vendor
   - .git

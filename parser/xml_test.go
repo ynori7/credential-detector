@@ -77,6 +77,13 @@ func TestParser_XML(t *testing.T) {
 			Name:  "property",
 			Value: `<property name="api_key" value="ajskdjlwlkej3k#kd3">`,
 		},
+		{
+			File:  file,
+			Type:  TypeXMLAttribute,
+			Line:  0,
+			Name:  "parameter",
+			Value: `<parameter key="service.password">werawkljlwkejre</parameter>`,
+		},
 	}
 
 	// when
