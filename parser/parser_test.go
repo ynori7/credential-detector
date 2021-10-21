@@ -139,6 +139,10 @@ xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a differen
 valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
+  - ^\$2[ayb]\$.{56}$  #bcrypt hash
+  - A[K|S]IA[A-Z0-9]{16} #AWS client id
+  - "^[A-Za-z][A-Za-z0-9+\\/]{38}[A-Za-z0-9]$" #AWS secret
+  - "\"[A-Za-z][A-Za-z0-9+\\/]{38}[A-Za-z0-9]\"" #AWS secret 
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing

@@ -1,10 +1,12 @@
 package parser
 
 import (
+	"bufio"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/ynori7/credential-detector/config"
@@ -44,12 +46,14 @@ func (p *Parser) parseGoFile(filepath string) {
 		return
 	}
 
+	foundLines := map[int]struct{}{}
+
 	for _, d := range f.Decls {
 		switch decl := d.(type) {
 		case *ast.FuncDecl:
 			//ignore
 		case *ast.GenDecl:
-			p.parseDeclaration(decl, filepath, fs)
+			p.parseDeclaration(decl, filepath, fs, foundLines)
 		default:
 			//ignore
 		}
@@ -66,11 +70,52 @@ func (p *Parser) parseGoFile(filepath string) {
 					Value: p.buildCommentString(d.List),
 				})
 			}
+			foundLines[fs.Position(d.Pos()).Line] = struct{}{}
 		}
+	}
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	lineNumber := 1
+	inComment := false
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+
+		//we already looked at comments
+		line = strings.Split(line, "//")[0]
+		if strings.Contains(line, "/*") {
+			inComment = true
+		}
+		if strings.Contains(line, "*/") {
+			inComment = false
+		}
+
+		_, alreadyFound := foundLines[lineNumber]
+
+		if p.isPossiblyCredentialValue(line) && !alreadyFound && !inComment {
+			p.Results = append(p.Results, Result{
+				File:  filepath,
+				Type:  TypeGoOther,
+				Line:  lineNumber,
+				Name:  "",
+				Value: strings.TrimSpace(line),
+			})
+		}
+
+		if err != nil {
+			return
+		}
+
+		lineNumber++
 	}
 }
 
-func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.FileSet) {
+func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.FileSet, foundLines map[int]struct{}) {
 	for _, spec := range decl.Specs {
 		switch spec := spec.(type) {
 		case *ast.ImportSpec:
@@ -92,6 +137,7 @@ func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.
 							Name:  id.Name,
 							Value: val.Value,
 						})
+						foundLines[fs.Position(val.Pos()).Line] = struct{}{}
 					}
 				case *ast.UnaryExpr:
 					//ignore
@@ -99,7 +145,6 @@ func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.
 					//ignore
 				}
 			}
-
 		}
 	}
 }

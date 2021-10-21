@@ -13,6 +13,7 @@ import (
 const (
 	TypeGoComment = iota
 	TypeGoVariable
+	TypeGoOther
 
 	TypeJSONVariable
 	TypeJSONListVal

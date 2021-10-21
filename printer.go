@@ -48,7 +48,9 @@ func PrintResults(results []parser.Result) {
 		case parser.TypeGoVariable:
 			printGoVariableResult(result)
 		case parser.TypeGoComment:
-			printGoCommentResult(result)
+			printGoOtherResult(result)
+		case parser.TypeGoOther:
+			printGoOtherResult(result)
 		case parser.TypeJSONVariable:
 			printJSONVariableResult(result)
 		case parser.TypeJSONListVal:
@@ -82,7 +84,7 @@ func printGoVariableResult(result parser.Result) {
 `, fgYellow, result.Line, reset, result.Name, result.Value)
 }
 
-func printGoCommentResult(result parser.Result) {
+func printGoOtherResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s
 
