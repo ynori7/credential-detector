@@ -114,9 +114,16 @@ EOF`,
 			Value: `"woieruwkljlekjrlkwjer"`,
 		},
 		{
+			File:  file,
+			Type:  TypePHPOther,
+			Line:  38,
+			Name:  "",
+			Value: `NewStaticCredentials("AKIAYTHMXXXGSVYYYWE6", "rP22kgSajDwOyWVU/iiii1UEdJk333QUbxwtiVCe");`,
+		},
+		{
 			File: file,
 			Type: TypePHPComment,
-			Line: 38,
+			Line: 42,
 			Name: "",
 			Value: `/*
 * This is a multiline comment

@@ -72,7 +72,9 @@ func PrintResults(results []parser.Result) {
 		case parser.TypePHPVariable, parser.TypePHPHeredoc, parser.TypePHPConstant:
 			printPhpVariableResult(result)
 		case parser.TypePHPComment:
-			printPhpCommentResult(result)
+			printPhpOtherResult(result)
+		case parser.TypePHPOther:
+			printPhpOtherResult(result)
 		}
 	}
 }
@@ -169,7 +171,7 @@ func printPhpVariableResult(result parser.Result) {
 `, fgYellow, result.Line, reset, result.Name, result.Value)
 }
 
-func printPhpCommentResult(result parser.Result) {
+func printPhpOtherResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s
 

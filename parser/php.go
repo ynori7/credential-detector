@@ -147,6 +147,16 @@ func (p *Parser) parsePhpFile(filepath string) {
 
 				lineNumber = newLineNumber
 			}
+		} else { //scan the whole line for possible value matches
+			if p.isPossiblyCredentialValue(trimmedLine) {
+				p.Results = append(p.Results, Result{
+					File:  filepath,
+					Type:  TypePHPOther,
+					Line:  lineNumber,
+					Name:  "",
+					Value: trimmedLine,
+				})
+			}
 		}
 
 		if err != nil {

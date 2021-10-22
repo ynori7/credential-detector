@@ -33,6 +33,7 @@ const (
 	TypePHPHeredoc
 	TypePHPConstant
 	TypePHPComment
+	TypePHPOther
 )
 
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results

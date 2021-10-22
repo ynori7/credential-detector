@@ -74,6 +74,11 @@ func (p *Parser) parseGoFile(filepath string) {
 		}
 	}
 
+	//Now scan the raw file line-by-line, just looking for potential value matches
+	p.parseGoFileLineByLine(filepath, foundLines)
+}
+
+func (p *Parser) parseGoFileLineByLine(filepath string, foundLines map[int]struct{}) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return
