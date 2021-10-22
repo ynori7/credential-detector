@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"os"
 	"strings"
 
@@ -35,36 +34,39 @@ func (p *Parser) parsePropertiesFile(filepath string) {
 	defer file.Close()
 
 	lineNumber := 1
-	reader := bufio.NewReader(file)
+	reader := getReader(file)
+	defer putReader(reader)
+
+	var line, key string
 	for {
-		line, err := reader.ReadString('\n')
+		line, err = reader.ReadString('\n')
 
 		if equal := strings.Index(line, "#"); equal == 0 { // it's a comment
 			if !p.config.ExcludeComments {
 				if p.isPossiblyCredentialValue(line) {
-					p.Results = append(p.Results, Result{
+					p.resultChan <- Result{
 						File:  filepath,
 						Type:  TypePropertiesComment,
 						Line:  lineNumber,
 						Name:  "",
 						Value: line,
-					})
+					}
 				}
 			}
 		} else if equal := strings.Index(line, "="); equal >= 0 { // it's a property
-			if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
+			if key = strings.TrimSpace(line[:equal]); len(key) > 0 {
 				value := ""
 				if len(line) > equal {
 					value = strings.TrimSpace(line[equal+1:])
 				}
 				if p.isPossiblyCredentialsVariable(key, value) {
-					p.Results = append(p.Results, Result{
+					p.resultChan <- Result{
 						File:  filepath,
 						Type:  TypePropertiesValue,
 						Line:  lineNumber,
 						Name:  key,
 						Value: value,
-					})
+					}
 				}
 			}
 		}

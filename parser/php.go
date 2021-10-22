@@ -43,11 +43,15 @@ func (p *Parser) parsePhpFile(filepath string) {
 	defer file.Close()
 
 	lineNumber := 1
-	reader := bufio.NewReader(file)
-	for {
-		line, err := reader.ReadString('\n')
+	reader := getReader(file)
+	defer putReader(reader)
 
-		trimmedLine := strings.TrimSpace(line)
+	var (
+		line, trimmedLine string
+	)
+	for {
+		line, err = reader.ReadString('\n')
+		trimmedLine = strings.TrimSpace(line)
 
 		//It's an assignment
 		if strings.HasPrefix(trimmedLine, "$") {
@@ -55,21 +59,21 @@ func (p *Parser) parsePhpFile(filepath string) {
 			if varName != "" && val != "" {
 				if p.isPossiblyCredentialsVariable(strings.TrimPrefix(varName, "$"), strings.Trim(val, "'\"")) {
 					if heredocID != "" {
-						p.Results = append(p.Results, Result{
+						p.resultChan <- Result{
 							File:  filepath,
 							Type:  TypePHPHeredoc,
 							Line:  lineNumber,
 							Name:  varName,
 							Value: fmt.Sprintf("<<<%s\n%s\n%s", heredocID, val, heredocID),
-						})
+						}
 					} else {
-						p.Results = append(p.Results, Result{
+						p.resultChan <- Result{
 							File:  filepath,
 							Type:  TypePHPVariable,
 							Line:  lineNumber,
 							Name:  varName,
 							Value: val,
-						})
+						}
 					}
 				}
 			}
@@ -84,13 +88,13 @@ func (p *Parser) parsePhpFile(filepath string) {
 			varName, val, _, newLineNumber, err2 := parsePhpAssignment(reader, trimmedLine, lineNumber)
 			if varName != "" && val != "" {
 				if p.isPossiblyCredentialsVariable(trimDeclarationPrefix(varName), strings.Trim(val, "'\"")) {
-					p.Results = append(p.Results, Result{
+					p.resultChan <- Result{
 						File:  filepath,
 						Type:  TypePHPVariable,
 						Line:  lineNumber,
 						Name:  varName,
 						Value: val,
-					})
+					}
 				}
 			}
 			lineNumber = newLineNumber
@@ -102,13 +106,13 @@ func (p *Parser) parsePhpFile(filepath string) {
 			varName, val, _, newLineNumber, err2 := parsePhpAssignment(reader, trimmedLine, lineNumber)
 			if varName != "" && val != "" {
 				if p.isPossiblyCredentialsVariable(trimDeclarationPrefix(varName), strings.Trim(val, "'\"")) {
-					p.Results = append(p.Results, Result{
+					p.resultChan <- Result{
 						File:  filepath,
 						Type:  TypePHPConstant,
 						Line:  lineNumber,
 						Name:  varName,
 						Value: val,
-					})
+					}
 				}
 			}
 			lineNumber = newLineNumber
@@ -119,26 +123,26 @@ func (p *Parser) parsePhpFile(filepath string) {
 		} else if strings.HasPrefix(trimmedLine, "//") { //It's a comment
 			if !p.config.ExcludeComments {
 				if p.isPossiblyCredentialValue(line) {
-					p.Results = append(p.Results, Result{
+					p.resultChan <- Result{
 						File:  filepath,
 						Type:  TypePHPComment,
 						Line:  lineNumber,
 						Name:  "",
 						Value: trimmedLine,
-					})
+					}
 				}
 			}
 		} else if strings.HasPrefix(trimmedLine, "/*") { //It's a multiline comment
 			if !p.config.ExcludeComments {
 				commentBody, newLineNumber, err2 := parseMultilinePhpComment(reader, trimmedLine, lineNumber)
 				if commentBody != "" && p.isPossiblyCredentialValue(commentBody) {
-					p.Results = append(p.Results, Result{
+					p.resultChan <- Result{
 						File:  filepath,
 						Type:  TypePHPComment,
 						Line:  lineNumber,
 						Name:  "",
 						Value: commentBody,
-					})
+					}
 
 					if err2 != nil {
 						return
@@ -149,13 +153,13 @@ func (p *Parser) parsePhpFile(filepath string) {
 			}
 		} else { //scan the whole line for possible value matches
 			if p.isPossiblyCredentialValue(trimmedLine) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypePHPOther,
 					Line:  lineNumber,
 					Name:  "",
 					Value: trimmedLine,
-				})
+				}
 			}
 		}
 

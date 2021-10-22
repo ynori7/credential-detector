@@ -123,6 +123,22 @@ func Test_isPossiblyCredentialValue(t *testing.T) {
 	}
 }
 
+func Test_Scan(t *testing.T) {
+	conf, err := config.ParseConfig(getTestConfig())
+	require.NoError(t, err)
+	parser := NewParser(conf)
+
+	err = parser.Scan("../testdata/")
+	require.NoError(t, err)
+	assert.Equal(t, 31, len(parser.Results))
+}
+
+func parseFileForTest(parser *Parser, filepath string) {
+	parser.ParseFile(filepath)
+	close(parser.resultChan) //tell the result builder we're done
+	<-parser.resultBuildDone //wait till result builder is done
+}
+
 func getTestConfig() []byte {
 	return []byte(`variableNamePatterns:
   - (?i)passwd|password
@@ -155,7 +171,7 @@ valueExcludePatterns:
   - \${.+\} #typically for values injected at build time
   - (?i){{.*}}
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
-excludeTests: true
+excludeTests: false
 testDirectories:
   - test
   - testdata

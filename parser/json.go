@@ -86,12 +86,12 @@ func (p *Parser) walkJSONMap(filepath string, m map[string]interface{}) {
 		switch reflect.TypeOf(v).Kind() {
 		case reflect.String:
 			if p.isPossiblyCredentialsVariable(k, v.(string)) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypeJSONVariable,
 					Name:  k,
 					Value: v.(string),
-				})
+				}
 			}
 		case reflect.Slice:
 			p.parseJSONSlice(filepath, k, v)
@@ -109,12 +109,12 @@ func (p *Parser) parseJSONSlice(filepath string, k string, v interface{}) {
 		switch v2 := s.Index(i).Interface().(type) {
 		case string:
 			if p.isPossiblyCredentialValue(v2) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypeJSONListVal,
 					Name:  k,
 					Value: v2,
-				})
+				}
 			}
 		case map[string]interface{}:
 			p.walkJSONMap(filepath, v2)

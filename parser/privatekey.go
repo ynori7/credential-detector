@@ -60,13 +60,13 @@ func (p *Parser) parsePrivateKeyFile(filepath string) {
 
 	for _, h := range privateKeyHeaders {
 		if firstLine == h {
-			p.Results = append(p.Results, Result{
+			p.resultChan <- Result{
 				File:  filepath,
 				Type:  TypePrivateKey,
 				Line:  1,
 				Name:  "",
 				Value: firstLine,
-			})
+			}
 		}
 	}
 }

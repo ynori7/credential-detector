@@ -134,7 +134,7 @@ EOF`,
 
 	// when
 	parser := NewParser(conf)
-	parser.ParseFile(file)
+	parseFileForTest(parser, file)
 
 	// then
 	res := parser.Results

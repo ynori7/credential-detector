@@ -52,12 +52,12 @@ func (p *Parser) walkYamlMap(filepath string, m map[string]interface{}) {
 		switch reflect.TypeOf(v).Kind() {
 		case reflect.String:
 			if p.isPossiblyCredentialsVariable(k, v.(string)) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypeYamlVariable,
 					Name:  k,
 					Value: v.(string),
-				})
+				}
 			}
 		case reflect.Slice:
 			p.parseYamlSlice(filepath, k, v)
@@ -82,12 +82,12 @@ func (p *Parser) parseYamlSlice(filepath string, k string, v interface{}) {
 		switch v2 := s.Index(i).Interface().(type) {
 		case string:
 			if p.isPossiblyCredentialValue(v2) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypeYamlListVal,
 					Name:  k,
 					Value: v2,
-				})
+				}
 			}
 		case map[interface{}]interface{}:
 			v3 := make(map[string]interface{})

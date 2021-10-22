@@ -82,19 +82,19 @@ func (p *Parser) walkXMLMap(filepath string, m map[string]interface{}, parentKey
 			if strings.HasPrefix(k, xmlAttributePrefix) {
 				siblings[strings.TrimPrefix(k, xmlAttributePrefix)] = v.(string)
 			} else if strings.HasPrefix(k, xmlElementPrefix) && p.isPossiblyCredentialsVariable(parentKey, v.(string)) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypeXMLElement,
 					Name:  parentKey,
 					Value: v.(string),
-				})
+				}
 			} else if p.isPossiblyCredentialsVariable(k, v.(string)) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypeXMLElement,
 					Name:  k,
 					Value: v.(string),
-				})
+				}
 			}
 		case reflect.Slice:
 			p.parseXMLSlice(filepath, k, v)
@@ -105,20 +105,20 @@ func (p *Parser) walkXMLMap(filepath string, m map[string]interface{}, parentKey
 		}
 	}
 	if textBody != "" && p.xmlAttributesContainCredentialsWithTextBody(textBody, siblings) {
-		p.Results = append(p.Results, Result{
+		p.resultChan <- Result{
 			File:  filepath,
 			Type:  TypeXMLAttribute,
 			Name:  parentKey,
 			Value: p.buildXMLElementLine(parentKey, siblings, textBody),
-		})
+		}
 	}
 	if p.xmlAttributesContainCredentials(siblings) {
-		p.Results = append(p.Results, Result{
+		p.resultChan <- Result{
 			File:  filepath,
 			Type:  TypeXMLAttribute,
 			Name:  parentKey,
 			Value: p.buildXMLAttributeLine(parentKey, siblings),
-		})
+		}
 	}
 }
 

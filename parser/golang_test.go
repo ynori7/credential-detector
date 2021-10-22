@@ -144,7 +144,7 @@ postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
 
 	// when
 	parser := NewParser(conf)
-	parser.ParseFile(file)
+	parseFileForTest(parser, file)
 
 	// then
 	res := parser.Results

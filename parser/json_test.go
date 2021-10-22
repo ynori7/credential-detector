@@ -89,7 +89,7 @@ func TestParser_Json(t *testing.T) {
 
 	// when
 	parser := NewParser(conf)
-	parser.ParseFile(file)
+	parseFileForTest(parser, file)
 
 	// then
 	res := parser.Results
@@ -121,7 +121,7 @@ func TestParser_JsonList(t *testing.T) {
 
 	// when
 	parser := NewParser(conf)
-	parser.ParseFile(file)
+	parseFileForTest(parser, file)
 
 	// then
 	res := parser.Results

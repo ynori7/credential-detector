@@ -1,12 +1,12 @@
 package parser
 
 import (
+	"github.com/ynori7/credential-detector/config"
 	"os"
 	fp "path/filepath"
 	"regexp"
 	"strings"
-
-	"github.com/ynori7/credential-detector/config"
+	"sync"
 )
 
 // Types indicate the credential finding type
@@ -49,7 +49,9 @@ type Parser struct {
 	valueExcludeMatchers             []*regexp.Regexp
 
 	// Results is the list of findings
-	Results []Result
+	Results         []Result
+	resultChan      chan Result
+	resultBuildDone chan struct{}
 }
 
 // Result is a hard-coded credential finding
@@ -62,8 +64,8 @@ type Result struct {
 }
 
 // NewParser returns a new parser with the given configuration
-func NewParser(conf *config.Config) Parser {
-	parser := Parser{
+func NewParser(conf *config.Config) *Parser {
+	parser := &Parser{
 		config:                           conf,
 		scanTypes:                        make(map[string]struct{}),
 		variableNameMatchers:             make([]*regexp.Regexp, len(conf.VariableNamePatterns)),
@@ -72,6 +74,8 @@ func NewParser(conf *config.Config) Parser {
 		valueIncludeMatchers:             make([]*regexp.Regexp, len(conf.ValueMatchPatterns)),
 		valueExcludeMatchers:             make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
 		Results:                          make([]Result, 0),
+		resultChan:                       make(chan Result, 10),
+		resultBuildDone:                  make(chan struct{}),
 	}
 
 	for k, v := range conf.VariableNamePatterns {
@@ -90,12 +94,23 @@ func NewParser(conf *config.Config) Parser {
 		parser.scanTypes[v] = struct{}{}
 	}
 
+	go parser.buildResults()
+
 	return parser
 }
 
+func (p *Parser) buildResults() {
+	for res := range p.resultChan {
+		p.Results = append(p.Results, res)
+	}
+	close(p.resultBuildDone)
+}
+
 // Scan initiates the recursive scan of all files/directories in the given path
-func (p *Parser) Scan(path string) error {
-	return fp.Walk(config.ScanPath,
+func (p *Parser) Scan(scanPath string) error {
+	wg := sync.WaitGroup{}
+
+	err := fp.Walk(scanPath,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -108,14 +123,24 @@ func (p *Parser) Scan(path string) error {
 				//skip test directories if we're excluding tests
 				return fp.SkipDir
 			}
-			p.ParseFile(path)
+
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				p.ParseFile(path)
+			}()
+
 			return nil
 		})
+
+	wg.Wait()           //wait for the whole scan to finish
+	close(p.resultChan) //tell the result builder we're done
+	<-p.resultBuildDone //wait till result builder is done
+	return err
 }
 
 // ParseFile parses the given file (if possible) and collects potential credentials
 func (p *Parser) ParseFile(filepath string) {
-	currentCount := len(p.Results)
 	switch {
 	case p.isParsableGoFile(filepath):
 		p.parseGoFile(filepath)
@@ -129,11 +154,6 @@ func (p *Parser) ParseFile(filepath string) {
 		p.parsePhpFile(filepath)
 	case p.isParsablePropertiesFile(filepath):
 		p.parsePropertiesFile(filepath)
-		if len(p.Results) > currentCount {
-			//we also handle hidden files with no extension here, so we should also check the next case, but
-			//only if we didn't find any results here already
-			return
-		}
 		fallthrough
 	case p.isParsablePrivateKeyFile(filepath):
 		p.parsePrivateKeyFile(filepath)

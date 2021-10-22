@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -62,13 +61,13 @@ func (p *Parser) parseGoFile(filepath string) {
 	if !p.config.ExcludeComments {
 		for _, d := range f.Comments {
 			if p.isPossiblyCredentialsInComment(d) {
-				p.Results = append(p.Results, Result{
+				p.resultChan <- Result{
 					File:  filepath,
 					Type:  TypeGoComment,
 					Line:  fs.Position(d.Pos()).Line,
 					Name:  "",
 					Value: p.buildCommentString(d.List),
-				})
+				}
 			}
 			foundLines[fs.Position(d.Pos()).Line] = struct{}{}
 		}
@@ -87,9 +86,16 @@ func (p *Parser) parseGoFileLineByLine(filepath string, foundLines map[int]struc
 
 	lineNumber := 1
 	inComment := false
-	reader := bufio.NewReader(file)
+
+	reader := getReader(file)
+	defer putReader(reader)
+
+	var (
+		line         string
+		alreadyFound bool
+	)
 	for {
-		line, err := reader.ReadString('\n')
+		line, err = reader.ReadString('\n')
 
 		//we already looked at comments
 		line = strings.Split(line, "//")[0]
@@ -100,16 +106,16 @@ func (p *Parser) parseGoFileLineByLine(filepath string, foundLines map[int]struc
 			inComment = false
 		}
 
-		_, alreadyFound := foundLines[lineNumber]
+		_, alreadyFound = foundLines[lineNumber]
 
 		if p.isPossiblyCredentialValue(line) && !alreadyFound && !inComment {
-			p.Results = append(p.Results, Result{
+			p.resultChan <- Result{
 				File:  filepath,
 				Type:  TypeGoOther,
 				Line:  lineNumber,
 				Name:  "",
 				Value: strings.TrimSpace(line),
-			})
+			}
 		}
 
 		if err != nil {
@@ -135,13 +141,13 @@ func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.
 				switch val := id.Obj.Decl.(*ast.ValueSpec).Values[0].(type) {
 				case *ast.BasicLit:
 					if p.isPossiblyCredentialsInGoVariable(id.Name, val) {
-						p.Results = append(p.Results, Result{
+						p.resultChan <- Result{
 							File:  filepath,
 							Type:  TypeGoVariable,
 							Line:  fs.Position(val.Pos()).Line,
 							Name:  id.Name,
 							Value: val.Value,
-						})
+						}
 						foundLines[fs.Position(val.Pos()).Line] = struct{}{}
 					}
 				case *ast.UnaryExpr:

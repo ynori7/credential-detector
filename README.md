@@ -244,6 +244,16 @@ sys	0m0,010s
 credential-detector was 16 times faster, found six values which gosec missed in go code, included six values from json 
 and yaml files which gosec did not check, and excluded a false-positive which gosec reported.
 
+## Comparison to Github Advanced Security and Spectral
+Tools like GHAS and Spectral are oriented around pattern-recognition only. This means that they search for well-known
+credential types which have a recognizable pattern like AWS client IDs or Google API keys. The limitation with that approach
+is that it can only detect well-known credentials and not custom ones like internal API keys or user passwords, etc. 
+
+This project differs in that it detects credentials through context in addition to patterns. It looks not only at how
+a value appears (if it matches some pattern), but how it seems to be used (e.g. based on the name of the variable it's assigned to).
+This makes credential-detector more robust because it can detect all sorts of credentials and secrets and not only well-known
+types.
+
 ## Usage as a library
 The credential scanner can also be used as a library like so:
 
