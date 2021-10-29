@@ -130,7 +130,7 @@ func Test_Scan(t *testing.T) {
 
 	err = parser.Scan("../testdata/")
 	require.NoError(t, err)
-	assert.Equal(t, 31, len(parser.Results))
+	assert.Equal(t, 32, len(parser.Results))
 }
 
 func parseFileForTest(parser *Parser, filepath string) {
