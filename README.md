@@ -47,6 +47,7 @@ Credential-detector can scan:
 - Private key / certificate files
 - XML files
 - PHP code
+- Generic text files
 
 ## Configuration
 When running the credential detector, it is possible to provide an optional `--root_config`, which supplies the base 
@@ -102,6 +103,15 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - privatekey
   - xml
   - php
+genericFileExtensions:
+  - txt
+  - java
+  - cpp
+  - c
+  - py
+  - md
+  - js
+  - html
 disableOutputColors: false
 verbose: false
 ```
@@ -120,6 +130,7 @@ Note that the above values are the defaults.
 |ignoreFiles|A list of directory or file names which should be ignored|A list of strings|
 |excludeComments|A boolean flag to exclude scanning comments in the code |true or false|
 |scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, yaml, properties, privatekey, xml, or php|
+|genericFileExtensions| A list of file extensions which can be parsed as plaintext. These will be scanned for possible value matches|
 |disableOutputColors|A boolean flag to disable colorized output when printing the results|true or false|
 |verbose|A boolean flag which toggles the output of warning messages which occur while parsing specific files|true or false|
 

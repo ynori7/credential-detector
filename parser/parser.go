@@ -34,6 +34,8 @@ const (
 	TypePHPConstant
 	TypePHPComment
 	TypePHPOther
+
+	TypeGeneric
 )
 
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
@@ -74,7 +76,7 @@ func NewParser(conf *config.Config) *Parser {
 		valueIncludeMatchers:             make([]*regexp.Regexp, len(conf.ValueMatchPatterns)),
 		valueExcludeMatchers:             make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
 		Results:                          make([]Result, 0),
-		resultChan:                       make(chan Result, 10),
+		resultChan:                       make(chan Result, 8),
 		resultBuildDone:                  make(chan struct{}),
 	}
 
@@ -157,6 +159,8 @@ func (p *Parser) ParseFile(filepath string) {
 		fallthrough
 	case p.isParsablePrivateKeyFile(filepath):
 		p.parsePrivateKeyFile(filepath)
+	case p.isParsableGenericFile(filepath):
+		p.parseGenericFile(filepath)
 	}
 }
 

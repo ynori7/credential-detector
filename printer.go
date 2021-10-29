@@ -75,6 +75,8 @@ func PrintResults(results []parser.Result) {
 			printPhpOtherResult(result)
 		case parser.TypePHPOther:
 			printPhpOtherResult(result)
+		case parser.TypeGeneric:
+			printGenericResult(result)
 		}
 	}
 }
@@ -172,6 +174,13 @@ func printPhpVariableResult(result parser.Result) {
 }
 
 func printPhpOtherResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s
+
+`, fgYellow, result.Line, reset, result.Value)
+}
+
+func printGenericResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
 %s
 

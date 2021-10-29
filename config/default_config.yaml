@@ -14,7 +14,24 @@ valueMatchPatterns:
   - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
   - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
   - ^\$2[ayb]\$.{56}$  #bcrypt hash
-  - A[K|S]IA[A-Z0-9]{16} #AWS client id
+  - (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16} #AWS client id
+  - SG\.[\w_-]{16,32}\.[\w_-]{16,64} #SendGrid API key
+  - amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} #Amazon MMS Key
+  - (?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}['\"] #Facebook Secret
+  - (?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}['\"] #Facebook client id
+  - (?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}['\"] #Twitter secret
+  - (?i)twitter(.{0,20})?['\"][0-9a-z]{18,25}['\"] #Twitter client id
+  - (?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}['\"] #Github Secret
+  - (?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"] #LinkedIn client id
+  - (?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"] #LinkedIn secret
+  - xox[baprs]-([0-9a-zA-Z]{10,48})? #Slack
+  - -----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?----- #Private Key
+  - AIza[0-9A-Za-z\\-_]{35} #Google API Key
+  - (?i)heroku(.{0,20})?['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"] #Heroku Key
+  - (?i)(mailchimp|mc)(.{0,20})?['"][0-9a-f]{32}-us[0-9]{1,2}['"] #MailChip Key
+  - (?i)(mailgun|mg)(.{0,20})?['"][0-9a-z]{32}['"] #MailGut Key
+  - https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8}\/[a-zA-Z0-9_]{24} #Slack WebHook
+  - (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"] #Twilio Key
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
@@ -46,5 +63,14 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - privatekey
   - xml
   - php
+genericFileExtensions:
+  - txt
+  - java
+  - cpp
+  - c
+  - py
+  - md
+  - js
+  - html
 disableOutputColors: false
 verbose: false
