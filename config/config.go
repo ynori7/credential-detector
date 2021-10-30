@@ -36,12 +36,12 @@ const (
 
 // Config contains all the configuration for the credential detector
 type Config struct {
-	VariableNamePatterns             []string `yaml:"variableNamePatterns,flow"`
-	VariableNameExclusionPattern     string   `yaml:"variableNameExclusionPattern"`
-	XMLAttributeNameExclusionPattern string   `yaml:"xmlAttributeNameExclusionPattern"`
-	ValueMatchPatterns               []string `yaml:"valueMatchPatterns,flow"`
-	ValueExcludePatterns             []string `yaml:"valueExcludePatterns,flow"`
-	MinPasswordLength                int      `yaml:"minPasswordLength"`
+	VariableNamePatterns             []string            `yaml:"variableNamePatterns,flow"`
+	VariableNameExclusionPattern     string              `yaml:"variableNameExclusionPattern"`
+	XMLAttributeNameExclusionPattern string              `yaml:"xmlAttributeNameExclusionPattern"`
+	ValueMatchPatterns               []ValueMatchPattern `yaml:"valueMatchPatterns,flow"`
+	ValueExcludePatterns             []string            `yaml:"valueExcludePatterns,flow"`
+	MinPasswordLength                int                 `yaml:"minPasswordLength"`
 
 	ExcludeTests    bool `yaml:"excludeTests"`
 	ExcludeComments bool `yaml:"excludeComments"`
@@ -54,6 +54,12 @@ type Config struct {
 
 	DisableOutputColors bool `yaml:"disableOutputColors"`
 	Verbose             bool `yaml:"verbose"`
+}
+
+// ValueMatchPattern is a tuple of pattern and name
+type ValueMatchPattern struct {
+	Name    string `yaml:"name"`
+	Pattern string `yaml:"pattern"`
 }
 
 // New returns a new configuration

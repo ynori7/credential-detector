@@ -60,13 +60,14 @@ func (p *Parser) parseGoFile(filepath string) {
 
 	if !p.config.ExcludeComments {
 		for _, d := range f.Comments {
-			if p.isPossiblyCredentialsInComment(d) {
+			if ok, credType := p.isPossiblyCredentialsInComment(d); ok {
 				p.resultChan <- Result{
-					File:  filepath,
-					Type:  TypeGoComment,
-					Line:  fs.Position(d.Pos()).Line,
-					Name:  "",
-					Value: p.buildCommentString(d.List),
+					File:           filepath,
+					Type:           TypeGoComment,
+					Line:           fs.Position(d.Pos()).Line,
+					Name:           "",
+					Value:          p.buildCommentString(d.List),
+					CredentialType: credType,
 				}
 			}
 			foundLines[fs.Position(d.Pos()).Line] = struct{}{}
@@ -91,8 +92,10 @@ func (p *Parser) parseGoFileLineByLine(filepath string, foundLines map[int]struc
 	defer putReader(reader)
 
 	var (
-		line         string
-		alreadyFound bool
+		line              string
+		alreadyFound      bool
+		isPossibleCredVal bool
+		credType          string
 	)
 	for {
 		line, err = reader.ReadString('\n')
@@ -108,13 +111,15 @@ func (p *Parser) parseGoFileLineByLine(filepath string, foundLines map[int]struc
 
 		_, alreadyFound = foundLines[lineNumber]
 
-		if p.isPossiblyCredentialValue(line) && !alreadyFound && !inComment {
+		isPossibleCredVal, credType = p.isPossiblyCredentialValue(line)
+		if isPossibleCredVal && !alreadyFound && !inComment {
 			p.resultChan <- Result{
-				File:  filepath,
-				Type:  TypeGoOther,
-				Line:  lineNumber,
-				Name:  "",
-				Value: strings.TrimSpace(line),
+				File:           filepath,
+				Type:           TypeGoOther,
+				Line:           lineNumber,
+				Name:           "",
+				Value:          strings.TrimSpace(line),
+				CredentialType: credType,
 			}
 		}
 
@@ -172,7 +177,7 @@ func (p *Parser) isPossiblyCredentialsInGoVariable(varName string, value *ast.Ba
 	return p.isPossiblyCredentialsVariable(varName, val)
 }
 
-func (p *Parser) isPossiblyCredentialsInComment(value *ast.CommentGroup) bool {
+func (p *Parser) isPossiblyCredentialsInComment(value *ast.CommentGroup) (bool, string) {
 	return p.isPossiblyCredentialValue(value.Text())
 }
 

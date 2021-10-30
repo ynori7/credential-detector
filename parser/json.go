@@ -108,12 +108,13 @@ func (p *Parser) parseJSONSlice(filepath string, k string, v interface{}) {
 	for i := 0; i < s.Len(); i++ {
 		switch v2 := s.Index(i).Interface().(type) {
 		case string:
-			if p.isPossiblyCredentialValue(v2) {
+			if ok, credType := p.isPossiblyCredentialValue(v2); ok {
 				p.resultChan <- Result{
-					File:  filepath,
-					Type:  TypeJSONListVal,
-					Name:  k,
-					Value: v2,
+					File:           filepath,
+					Type:           TypeJSONListVal,
+					Name:           k,
+					Value:          v2,
+					CredentialType: credType,
 				}
 			}
 		case map[string]interface{}:

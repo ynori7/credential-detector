@@ -61,11 +61,12 @@ func TestParser_Generic(t *testing.T) {
 	file := "../testdata/dummy.md"
 	expected := []Result{
 		{
-			File:  file,
-			Type:  TypeGeneric,
-			Line:  6,
-			Name:  "",
-			Value: `final SendGrid sendGrid = new SendGrid("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");`,
+			File:           file,
+			Type:           TypeGeneric,
+			Line:           6,
+			Name:           "",
+			Value:          `final SendGrid sendGrid = new SendGrid("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");`,
+			CredentialType: "SendGrid API Key",
 		},
 	}
 

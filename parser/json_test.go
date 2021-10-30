@@ -79,11 +79,12 @@ func TestParser_Json(t *testing.T) {
 			Value: `lkaskjlklejer#4`,
 		},
 		{
-			File:  file,
-			Type:  TypeJSONListVal,
-			Line:  0,
-			Name:  "stuff2",
-			Value: `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
+			File:           file,
+			Type:           TypeJSONListVal,
+			Line:           0,
+			Name:           "stuff2",
+			Value:          `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
+			CredentialType: "Postgres URI",
 		},
 	}
 

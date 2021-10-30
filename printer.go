@@ -90,9 +90,10 @@ func printGoVariableResult(result parser.Result) {
 
 func printGoOtherResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
+Possible %s
 %s
 
-`, fgYellow, result.Line, reset, result.Value)
+`, fgYellow, result.Line, reset, result.CredentialType, result.Value)
 }
 
 func printJSONVariableResult(result parser.Result) {
@@ -104,13 +105,14 @@ func printJSONVariableResult(result parser.Result) {
 
 func printJSONListValResult(result parser.Result) {
 	fmt.Printf(`%sJSON List Item:%s
+Possible %s
 "%s": [
 ...
 "%s",
 ...
 ]
 
-`, fgYellow, reset, result.Name, result.Value)
+`, fgYellow, reset, result.Name, result.CredentialType, result.Value)
 }
 
 func printYamlVariableResult(result parser.Result) {
@@ -122,13 +124,14 @@ func printYamlVariableResult(result parser.Result) {
 
 func printYamlListValResult(result parser.Result) {
 	fmt.Printf(`%sYAML List Item:%s
+Possible %s
 "%s": [
 ...
 - "%s",
 ...
 ]
 
-`, fgYellow, reset, result.Name, result.Value)
+`, fgYellow, reset, result.Name, result.CredentialType, result.Value)
 }
 
 func printPropertiesValueResult(result parser.Result) {
@@ -140,9 +143,10 @@ func printPropertiesValueResult(result parser.Result) {
 
 func printPropertiesCommentResult(result parser.Result) {
 	fmt.Printf(`%sLine %d:%s 
+Possible %s
 %s
 
-`, fgYellow, result.Line, reset, result.Value)
+`, fgYellow, result.Line, reset, result.CredentialType, result.Value)
 }
 
 func printPrivateKeyResult(result parser.Result) {
@@ -174,17 +178,19 @@ func printPhpVariableResult(result parser.Result) {
 }
 
 func printPhpOtherResult(result parser.Result) {
-	fmt.Printf(`%sLine %d:%s 
+	fmt.Printf(`%sLine %d:%s
+Possible %s
 %s
 
-`, fgYellow, result.Line, reset, result.Value)
+`, fgYellow, result.Line, reset, result.CredentialType, result.Value)
 }
 
 func printGenericResult(result parser.Result) {
-	fmt.Printf(`%sLine %d:%s 
+	fmt.Printf(`%sLine %d:%s
+Possible %s
 %s
 
-`, fgYellow, result.Line, reset, result.Value)
+`, fgYellow, result.Line, reset, result.CredentialType, result.Value)
 }
 
 func disableColors() {

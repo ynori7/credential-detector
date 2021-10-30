@@ -106,14 +106,14 @@ func TestParser_Go(t *testing.T) {
 			Type:  TypeGoVariable,
 			Line:  17,
 			Name:  "RealPostgresUri",
-			Value: `"postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"`,
+			Value: `"postgres://myuser:pas2sword123@blah.com:5432/mydb?sslmode=disable"`,
 		},
 		{
 			File:  file,
 			Type:  TypeGoVariable,
 			Line:  47,
 			Name:  "blahToken",
-			Value: `"password"`,
+			Value: `"pas2sword123"`,
 		},
 		{
 			File: file,
@@ -122,8 +122,9 @@ func TestParser_Go(t *testing.T) {
 			Name: "",
 			Value: `/*
 Multiline comment
-postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
+postgres://myuser:pas2sword123@somepostgresdb:5432/mydb?sslmode=disable
 */`,
+			CredentialType: "Postgres URI",
 		},
 		{
 			File: file,
@@ -132,13 +133,15 @@ postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
 			Name: "",
 			Value: `// this is a local comment
 // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
+			CredentialType: "JWT Token",
 		},
 		{
-			File:  file,
-			Type:  TypeGoOther,
-			Line:  54,
-			Name:  "",
-			Value: `NewStaticCredentials("AKIAYTHMXXXGSVYYYWE6", "rP22kgSajDwOyWVU/iiii1UEdJk333QUbxwtiVCe")`,
+			File:           file,
+			Type:           TypeGoOther,
+			Line:           54,
+			Name:           "",
+			Value:          `NewStaticCredentials("AKIAYTHMXXXGSVYYYWE6", "rP22kgSajDwOyWVU/iiii1UEdJk333QUbxwtiVCe")`,
+			CredentialType: "AWS Client ID",
 		},
 	}
 

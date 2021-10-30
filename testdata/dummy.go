@@ -14,12 +14,12 @@ const (
 	API_KEY_HEADER = "X-Api-Key"
 )
 
-var RealPostgresUri = "postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"
-var TestPostgresUri = "postgres://myuser:password123@localhost:5432/mydb?sslmode=disable"
+var RealPostgresUri = "postgres://myuser:pas2sword123@blah.com:5432/mydb?sslmode=disable"
+var TestPostgresUri = "postgres://myuser:pas2sword123@localhost:5432/mydb?sslmode=disable"
 
 /*
 Multiline comment
-postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
+postgres://myuser:pas2sword123@somepostgresdb:5432/mydb?sslmode=disable
 */
 
 func blah() {
@@ -44,7 +44,7 @@ var PasswordFormat = "([0-9]+):(.+)"
 
 var StatusAlternatives = "Alternatives" //variable name contains sAlt. Should not match the "salt" pattern
 
-var blahToken = "password"
+var blahToken = "pas2sword123"
 
 // blop is a function that does nothing
 func blop() {

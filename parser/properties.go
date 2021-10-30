@@ -43,13 +43,14 @@ func (p *Parser) parsePropertiesFile(filepath string) {
 
 		if equal := strings.Index(line, "#"); equal == 0 { // it's a comment
 			if !p.config.ExcludeComments {
-				if p.isPossiblyCredentialValue(line) {
+				if ok, credType := p.isPossiblyCredentialValue(line); ok {
 					p.resultChan <- Result{
-						File:  filepath,
-						Type:  TypePropertiesComment,
-						Line:  lineNumber,
-						Name:  "",
-						Value: line,
+						File:           filepath,
+						Type:           TypePropertiesComment,
+						Line:           lineNumber,
+						Name:           "",
+						Value:          line,
+						CredentialType: credType,
 					}
 				}
 			}

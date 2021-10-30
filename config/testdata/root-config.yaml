@@ -3,7 +3,8 @@ variableNamePatterns:
   - blah
 variableNameExclusionPattern: asdf|jkl
 valueMatchPatterns:
-  - postgres
+  - name: test
+    pattern: postgres
 valueExcludePatterns:
   - dummy
   - test

@@ -117,7 +117,7 @@ func Test_isPossiblyCredentialValue(t *testing.T) {
 	parser := NewParser(conf)
 
 	for testname, testdata := range testcases {
-		actual := parser.isPossiblyCredentialValue(testdata.varVal)
+		actual, _ := parser.isPossiblyCredentialValue(testdata.varVal)
 
 		assert.Equal(t, testdata.expected, actual, testname)
 	}
@@ -153,27 +153,68 @@ func getTestConfig() []byte {
 variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]
 xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
-  - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
-  - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
-  - ^\$2[ayb]\$.{56}$  #bcrypt hash
-  - (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16} #AWS client id
-  - SG\.[\w_-]{16,32}\.[\w_-]{16,64} #SendGrid API key
-  - amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} #Amazon MMS Key
-  - (?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}['\"] #Facebook Secret
-  - (?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}['\"] #Facebook client id
-  - (?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}['\"] #Twitter secret
-  - (?i)twitter(.{0,20})?['\"][0-9a-z]{18,25}['\"] #Twitter client id
-  - (?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}['\"] #Github Secret
-  - (?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"] #LinkedIn client id
-  - (?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"] #LinkedIn secret
-  - xox[baprs]-([0-9a-zA-Z]{10,48})? #Slack
-  - -----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?----- #Private Key
-  - AIza[0-9A-Za-z\\-_]{35} #Google API Key
-  - (?i)heroku(.{0,20})?['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"] #Heroku Key
-  - (?i)(mailchimp|mc)(.{0,20})?['"][0-9a-f]{32}-us[0-9]{1,2}['"] #MailChip Key
-  - (?i)(mailgun|mg)(.{0,20})?['"][0-9a-z]{32}['"] #MailGut Key
-  - https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8}\/[a-zA-Z0-9_]{24} #Slack WebHook
-  - (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"] #Twilio Key
+  - name: Postgres URI
+    pattern: postgres:\/\/.+:.+@.+:.+\/.+
+
+  - name: JWT Token
+    pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
+
+  - name: Bcrypt Hash
+    pattern: ^\$2[ayb]\$.{56}$
+
+  - name: AWS Client ID
+    pattern: (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}
+
+  - name: SendGrid API Key
+    pattern: SG\.[\w_-]{16,32}\.[\w_-]{16,64}
+
+  - name: Amazon MMS Key
+    pattern: amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+
+  - name: Facebook Secret
+    pattern: (?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}['\"]
+
+  - name: Facebook Client ID
+    pattern: (?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}['\"]
+
+  - name: Twitter Secret
+    pattern: (?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}['\"]
+
+  - name: Twitter Client ID
+    pattern: (?i)twitter(.{0,20})?['\"][0-9a-z]{18,25}['\"]
+
+  - name: Github Secret
+    pattern: (?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}['\"]
+
+  - name: LinkedIn Client ID
+    pattern: (?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]
+
+  - name: LinkedIn Secret
+    pattern: (?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"]
+
+  - name: Slack Token
+    pattern: xox[baprs]-([0-9a-zA-Z]{10,48})?
+
+  - name: Slack WebHook
+    pattern: https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8}\/[a-zA-Z0-9_]{24}
+
+  - name: Private Key
+    pattern: -----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----
+
+  - name: Google API Key
+    pattern: AIza[0-9A-Za-z\\-_]{35}
+
+  - name: Heroku Key
+    pattern: (?i)heroku(.{0,20})?['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"]
+
+  - name: MailChimp Key
+    pattern: (?i)(mailchimp|mc)(.{0,20})?['"][0-9a-f]{32}-us[0-9]{1,2}['"]
+
+  - name: MailGun Key
+    pattern: (?i)(mailgun|mg)(.{0,20})?['"][0-9a-z]{32}['"]
+
+  - name: Twilio Key
+    pattern: (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"]
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
@@ -189,9 +230,13 @@ minPasswordLength: 6 #don't consider anything shorter than this as a possible cr
 excludeTests: false
 testDirectories:
   - test
+  - tests
   - testdata
   - example
-  - data
+ignoreFiles: #files or directories to skip
+  - vendor
+  - .git
+  - .idea
 excludeComments: false
 scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - go

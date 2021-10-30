@@ -44,15 +44,14 @@ func (p *Parser) parseGenericFile(filepath string) {
 		line, err = reader.ReadString('\n')
 		line = strings.TrimSpace(line)
 
-		if p.isPossiblyCredentialValue(line) {
-			if p.isPossiblyCredentialValue(line) {
-				p.resultChan <- Result{
-					File:  filepath,
-					Type:  TypeGeneric,
-					Line:  lineNumber,
-					Name:  "",
-					Value: line,
-				}
+		if ok, credType := p.isPossiblyCredentialValue(line); ok {
+			p.resultChan <- Result{
+				File:           filepath,
+				Type:           TypeGeneric,
+				Line:           lineNumber,
+				Name:           "",
+				Value:          line,
+				CredentialType: credType,
 			}
 		}
 

@@ -47,7 +47,7 @@ type Parser struct {
 	variableNameMatchers             []*regexp.Regexp
 	variableNameExclusionMatcher     *regexp.Regexp
 	xmlAttributeNameExclusionMatcher *regexp.Regexp
-	valueIncludeMatchers             []*regexp.Regexp
+	valueIncludeMatchers             map[string]*regexp.Regexp
 	valueExcludeMatchers             []*regexp.Regexp
 
 	// Results is the list of findings
@@ -58,11 +58,12 @@ type Parser struct {
 
 // Result is a hard-coded credential finding
 type Result struct {
-	File  string
-	Type  int
-	Line  int
-	Name  string
-	Value string
+	File           string
+	Type           int
+	Line           int
+	Name           string
+	Value          string
+	CredentialType string //only filled for cases where it's not clear from the context
 }
 
 // NewParser returns a new parser with the given configuration
@@ -73,7 +74,7 @@ func NewParser(conf *config.Config) *Parser {
 		variableNameMatchers:             make([]*regexp.Regexp, len(conf.VariableNamePatterns)),
 		variableNameExclusionMatcher:     regexp.MustCompile(conf.VariableNameExclusionPattern),
 		xmlAttributeNameExclusionMatcher: regexp.MustCompile(conf.XMLAttributeNameExclusionPattern),
-		valueIncludeMatchers:             make([]*regexp.Regexp, len(conf.ValueMatchPatterns)),
+		valueIncludeMatchers:             make(map[string]*regexp.Regexp, len(conf.ValueMatchPatterns)),
 		valueExcludeMatchers:             make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
 		Results:                          make([]Result, 0),
 		resultChan:                       make(chan Result, 8),
@@ -84,8 +85,8 @@ func NewParser(conf *config.Config) *Parser {
 		parser.variableNameMatchers[k] = regexp.MustCompile(v)
 	}
 
-	for k, v := range conf.ValueMatchPatterns {
-		parser.valueIncludeMatchers[k] = regexp.MustCompile(v)
+	for _, v := range conf.ValueMatchPatterns {
+		parser.valueIncludeMatchers[v.Name] = regexp.MustCompile(v.Pattern)
 	}
 
 	for k, v := range conf.ValueExcludePatterns {
@@ -199,27 +200,27 @@ func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) boo
 	return false
 }
 
-func (p *Parser) isPossiblyCredentialValue(v string) bool {
+func (p *Parser) isPossiblyCredentialValue(v string) (bool, string) {
 	// no point in considering empty values
 	if len(v) < p.config.MinPasswordLength {
-		return false
+		return false, ""
 	}
 
 	// exclude any variables whose value is in our exclusion list (this would include things like defaults and test values)
 	for _, m := range p.valueExcludeMatchers {
 		if m.MatchString(v) {
-			return false
+			return false, ""
 		}
 	}
 
 	// include anything in our value inclusion list. This would include things like postgres uris regardless of the variable name
-	for _, m := range p.valueIncludeMatchers {
+	for n, m := range p.valueIncludeMatchers {
 		if m.MatchString(v) {
-			return true
+			return true, n
 		}
 	}
 
-	return false
+	return false, ""
 }
 
 func getFileNameAndExtension(filepath string) (string, string) {

@@ -11,7 +11,7 @@ func TestMergeConfigs(t *testing.T) {
 	expected := &Config{
 		VariableNamePatterns:         []string{"test", "blah", "whatever"},
 		VariableNameExclusionPattern: "werwer",
-		ValueMatchPatterns:           []string{"postgres"},
+		ValueMatchPatterns:           []ValueMatchPattern{{Name: "test", Pattern: "postgres"}},
 		ValueExcludePatterns:         []string{"dummy", "test"},
 		MinPasswordLength:            6,
 		ExcludeTests:                 false,
@@ -32,7 +32,7 @@ func TestMergeConfigs_NoAdditionalConfig(t *testing.T) {
 	expected := &Config{
 		VariableNamePatterns:         []string{"test", "blah"},
 		VariableNameExclusionPattern: "asdf|jkl",
-		ValueMatchPatterns:           []string{"postgres"},
+		ValueMatchPatterns:           []ValueMatchPattern{{Name: "test", Pattern: "postgres"}},
 		ValueExcludePatterns:         []string{"dummy", "test"},
 		MinPasswordLength:            6,
 		ExcludeTests:                 true,
@@ -74,7 +74,7 @@ func TestMergeConfigs_IsTestDirectory(t *testing.T) {
 	conf := &Config{
 		VariableNamePatterns:         []string{"test", "blah"},
 		VariableNameExclusionPattern: "asdf|jkl",
-		ValueMatchPatterns:           []string{"postgres"},
+		ValueMatchPatterns:           []ValueMatchPattern{{Name: "test", Pattern: "postgres"}},
 		ValueExcludePatterns:         []string{"dummy", "test"},
 		MinPasswordLength:            6,
 		ExcludeTests:                 true,

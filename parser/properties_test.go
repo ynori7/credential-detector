@@ -68,11 +68,12 @@ func TestParser_Properties(t *testing.T) {
 			Value: `2342342kjasdre`,
 		},
 		{
-			File:  file,
-			Type:  TypePropertiesComment,
-			Line:  5,
-			Name:  "",
-			Value: `#POSTGRES_URI=postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
+			File:           file,
+			Type:           TypePropertiesComment,
+			Line:           5,
+			Name:           "",
+			Value:          `#POSTGRES_URI=postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
+			CredentialType: "Postgres URI",
 		},
 	}
 

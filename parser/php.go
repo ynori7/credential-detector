@@ -48,6 +48,8 @@ func (p *Parser) parsePhpFile(filepath string) {
 
 	var (
 		line, trimmedLine string
+		isPossibleCredVal bool
+		credType          string
 	)
 	for {
 		line, err = reader.ReadString('\n')
@@ -122,26 +124,29 @@ func (p *Parser) parsePhpFile(filepath string) {
 			}
 		} else if strings.HasPrefix(trimmedLine, "//") { //It's a comment
 			if !p.config.ExcludeComments {
-				if p.isPossiblyCredentialValue(line) {
+				if isPossibleCredVal, credType = p.isPossiblyCredentialValue(line); isPossibleCredVal {
 					p.resultChan <- Result{
-						File:  filepath,
-						Type:  TypePHPComment,
-						Line:  lineNumber,
-						Name:  "",
-						Value: trimmedLine,
+						File:           filepath,
+						Type:           TypePHPComment,
+						Line:           lineNumber,
+						Name:           "",
+						Value:          trimmedLine,
+						CredentialType: credType,
 					}
 				}
 			}
 		} else if strings.HasPrefix(trimmedLine, "/*") { //It's a multiline comment
 			if !p.config.ExcludeComments {
 				commentBody, newLineNumber, err2 := parseMultilinePhpComment(reader, trimmedLine, lineNumber)
-				if commentBody != "" && p.isPossiblyCredentialValue(commentBody) {
+				isPossibleCredVal, credType = p.isPossiblyCredentialValue(commentBody)
+				if commentBody != "" && isPossibleCredVal {
 					p.resultChan <- Result{
-						File:  filepath,
-						Type:  TypePHPComment,
-						Line:  lineNumber,
-						Name:  "",
-						Value: commentBody,
+						File:           filepath,
+						Type:           TypePHPComment,
+						Line:           lineNumber,
+						Name:           "",
+						Value:          commentBody,
+						CredentialType: credType,
 					}
 
 					if err2 != nil {
@@ -152,13 +157,14 @@ func (p *Parser) parsePhpFile(filepath string) {
 				lineNumber = newLineNumber
 			}
 		} else { //scan the whole line for possible value matches
-			if p.isPossiblyCredentialValue(trimmedLine) {
+			if isPossibleCredVal, credType = p.isPossiblyCredentialValue(trimmedLine); isPossibleCredVal {
 				p.resultChan <- Result{
-					File:  filepath,
-					Type:  TypePHPOther,
-					Line:  lineNumber,
-					Name:  "",
-					Value: trimmedLine,
+					File:           filepath,
+					Type:           TypePHPOther,
+					Line:           lineNumber,
+					Name:           "",
+					Value:          trimmedLine,
+					CredentialType: credType,
 				}
 			}
 		}

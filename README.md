@@ -53,7 +53,7 @@ Credential-detector can scan:
 When running the credential detector, it is possible to provide an optional `--root_config`, which supplies the base 
 configuration and a `--config` which defines any additions/modifications to the base. 
 
-The following configuration options are available:
+The following configuration options are available (these values are simplified examples. See config/default_config.yaml for the full defaults):
 
 ```yaml
 variableNamePatterns:
@@ -61,39 +61,25 @@ variableNamePatterns:
   - (?i)secret
   - (?i)token
   - (?i)apiKey|api[_-]key
-  - (?i)accessKey|access[_-]key
-  - (?i)bearer
-  - (?i)credentials
-  - salt|SALT|Salt
-  - (?i)signature
-variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]|regex
+variableNameExclusionPattern: (?i)format|tokenizer|secretName
 xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
-  - postgres:\/\/.+:.+@.+:.+\/.+ #postgres connection uri with password
-  - eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+ #jwt token
-  - ^\$2y\$.* #bcrypt hash
+  - name: Postgres URI
+    pattern: postgres:\/\/.+:.+@.+:.+\/.+
+
+  - name: JWT Token
+    pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
 valueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
   - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
-  - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
-  - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
-  - (?i)^true$|^false$
-  - (?i)^bearer$|^Authorization$
-  - bootstrapper
-  - \${.+\} #typically for values injected at build time
-  - (?i){{.*}}
+  - (?i)^test$|password|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
 excludeTests: true
 testDirectories:
   - test
-  - tests
-  - testdata
-  - example
 ignoreFiles: #files or directories to skip
   - vendor
-  - .git
-  - .idea
 excludeComments: false
 scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - go
@@ -103,14 +89,10 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - privatekey
   - xml
   - php
+  - generic
 genericFileExtensions:
   - txt
   - java
-  - cpp
-  - c
-  - py
-  - md
-  - js
   - html
 disableOutputColors: false
 verbose: false
@@ -123,7 +105,7 @@ Note that the above values are the defaults.
 |variableNamePatterns|The regular expressions for matching potentially suspicious variable names|List of regular expressions| 
 |variableNameExclusionPattern|The regular expression for excluding variable names that are not interesting (for example a passwordFormat pattern)|A regular expression|
 |xmlAttributeNameExclusionPattern|The regular expression for excluding xml attributes since XML often describes a model rather than containing the data.|A regular expression|
-|valueMatchPatterns|A list of patterns to match potentially suspicious values, regardless of the variable name|List of regular expressions|
+|valueMatchPatterns|A list of patterns to match potentially suspicious values, regardless of the variable name|List of objects containing a name and regular expression|
 |valueExcludePatterns|A list of patterns to exclude for the value (for example for test data or constants defining header names, etc)|List of regular expressions|
 |excludeTests|A boolean flag to exclude scanning test files|true or false|
 |testDirectories|A list of directory names which are considered test data only|A list of strings|
@@ -141,7 +123,7 @@ configuration will be appended to the root.
 
 ## Comparison to Gosec
 Credential-detector is more flexible since it can be easily configured with more options than gosec and it's significantly 
-faster, especially when scanning large directories. Here is a comparison using the dummy file in the testdata directory:
+faster, especially when scanning large directories. Here is a comparison using the dummy.go file in the testdata directory:
 
 gosec: 
 ```bash
@@ -195,65 +177,34 @@ Line 13:
 AccessCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
 Line 17: 
-RealPostgresUri = "postgres://myuser:password123@blah.com:5432/mydb?sslmode=disable"
+RealPostgresUri = "postgres://myuser:pas2sword123@blah.com:5432/mydb?sslmode=disable"
 
 Line 20: 
+Possible Postgres URI
 /*
 Multiline comment
-postgres://myuser:password123@localhost:5432/mydb?sslmode=disable
+postgres://myuser:pas2sword123@somepostgresdb:5432/mydb?sslmode=disable
 */
 
 Line 47: 
-blahToken = "password"
+blahToken = "pas2sword123"
 
 Line 51: 
+Possible JWT Token
 // this is a local comment
 // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-
-
-
-In testdata/dummy.json
-
-JSON Variable: 
-"apiKey": "aslkdjflkjwe#Kjkjoi3"
-
-JSON Variable: 
-"secret": "23423Ksk3s"
-
-JSON List Item:
-"stuff2": [
-...
-"postgres://myuser:password123@localhost:5432/mydb?sslmode=disable",
-...
-]
-
-JSON Variable: 
-"token": "lkaskjlklejer#4"
-
-
-
-
-In testdata/dummy.yaml
-
-YAML Variable: 
-"accessKey": "2342342kjasdre"
-
-YAML List Item:
-"args": [
-...
-- "postgres://myuser:password123@localhost:5432/mydb?sslmode=disable",
-...
-]
-
+Line 54: 
+Possible AWS Client ID
+NewStaticCredentials("AKIAYTHMXXXGSVYYYWE6", "rP22kgSajDwOyWVU/iiii1UEdJk333QUbxwtiVCe")
 
 real	0m0,008s
 user	0m0,000s
 sys	0m0,010s
 ```
 
-credential-detector was 16 times faster, found six values which gosec missed in go code, included six values from json 
-and yaml files which gosec did not check, and excluded a false-positive which gosec reported.
+credential-detector was 16 times faster, found seven values which gosec missed in go code, and additionally found 24 results in
+ other files which gosec did not check, and excluded a false-positive which gosec reported.
 
 ## Comparison to Github Advanced Security and Spectral
 Tools like GHAS and Spectral are oriented around pattern-recognition only. This means that they search for well-known
@@ -264,6 +215,9 @@ This project differs in that it detects credentials through context in addition 
 a value appears (if it matches some pattern), but how it seems to be used (e.g. based on the name of the variable it's assigned to).
 This makes credential-detector more robust because it can detect all sorts of credentials and secrets and not only well-known
 types.
+
+GHAS and similar tools like GitGuardian only detected two credentials in the test files of this repository (the dummy 
+SendGrid API Key and the dummy AWS Client ID) compared to the 32 results detected by credential-detector.
 
 ## Usage as a library
 The credential scanner can also be used as a library like so:

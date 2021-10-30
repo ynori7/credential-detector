@@ -73,11 +73,12 @@ func TestParser_Yaml(t *testing.T) {
 			Value: `2342342kjasdre`,
 		},
 		{
-			File:  file,
-			Type:  TypeYamlListVal,
-			Line:  0,
-			Name:  "args",
-			Value: `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
+			File:           file,
+			Type:           TypeYamlListVal,
+			Line:           0,
+			Name:           "args",
+			Value:          `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
+			CredentialType: "Postgres URI",
 		},
 	}
 

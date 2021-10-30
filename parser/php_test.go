@@ -100,11 +100,12 @@ EOF`,
 			Value: `'kiu#pKJSDK;LE'`,
 		},
 		{
-			File:  file,
-			Type:  TypePHPComment,
-			Line:  33,
-			Name:  "",
-			Value: `// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
+			File:           file,
+			Type:           TypePHPComment,
+			Line:           33,
+			Name:           "",
+			Value:          `// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"`,
+			CredentialType: "JWT Token",
 		},
 		{
 			File:  file,
@@ -114,11 +115,12 @@ EOF`,
 			Value: `"woieruwkljlekjrlkwjer"`,
 		},
 		{
-			File:  file,
-			Type:  TypePHPOther,
-			Line:  38,
-			Name:  "",
-			Value: `NewStaticCredentials("AKIAYTHMXXXGSVYYYWE6", "rP22kgSajDwOyWVU/iiii1UEdJk333QUbxwtiVCe");`,
+			File:           file,
+			Type:           TypePHPOther,
+			Line:           38,
+			Name:           "",
+			Value:          `NewStaticCredentials("AKIAYTHMXXXGSVYYYWE6", "rP22kgSajDwOyWVU/iiii1UEdJk333QUbxwtiVCe");`,
+			CredentialType: "AWS Client ID",
 		},
 		{
 			File: file,
@@ -129,6 +131,7 @@ EOF`,
 * This is a multiline comment
 * it contains postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
 */`,
+			CredentialType: "Postgres URI",
 		},
 	}
 
