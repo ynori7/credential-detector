@@ -40,11 +40,15 @@ func (p *Parser) parseGenericFile(filepath string) {
 
 	var line string
 
+	var (
+		ok       bool
+		credType string
+	)
 	for {
 		line, err = reader.ReadString('\n')
 		line = strings.TrimSpace(line)
 
-		if ok, credType := p.isPossiblyCredentialValue(line); ok {
+		if ok, credType = p.isPossiblyCredentialValue(line); ok {
 			p.resultChan <- Result{
 				File:           filepath,
 				Type:           TypeGeneric,

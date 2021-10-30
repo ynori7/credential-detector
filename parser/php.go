@@ -51,13 +51,19 @@ func (p *Parser) parsePhpFile(filepath string) {
 		isPossibleCredVal bool
 		credType          string
 	)
+	var (
+		varName, val, heredocID string
+		commentBody             string
+		newLineNumber           int
+		err2                    error
+	)
 	for {
 		line, err = reader.ReadString('\n')
 		trimmedLine = strings.TrimSpace(line)
 
 		//It's an assignment
 		if strings.HasPrefix(trimmedLine, "$") {
-			varName, val, heredocID, newLineNumber, err2 := parsePhpAssignment(reader, trimmedLine, lineNumber)
+			varName, val, heredocID, newLineNumber, err2 = parsePhpAssignment(reader, trimmedLine, lineNumber)
 			if varName != "" && val != "" {
 				if p.isPossiblyCredentialsVariable(strings.TrimPrefix(varName, "$"), strings.Trim(val, "'\"")) {
 					if heredocID != "" {
@@ -87,7 +93,7 @@ func (p *Parser) parsePhpFile(filepath string) {
 		} else if strings.HasPrefix(trimmedLine, "private ") || strings.HasPrefix(trimmedLine, "protected ") ||
 			strings.HasPrefix(trimmedLine, "public ") { //It's a class variable
 
-			varName, val, _, newLineNumber, err2 := parsePhpAssignment(reader, trimmedLine, lineNumber)
+			varName, val, _, newLineNumber, err2 = parsePhpAssignment(reader, trimmedLine, lineNumber)
 			if varName != "" && val != "" {
 				if p.isPossiblyCredentialsVariable(trimDeclarationPrefix(varName), strings.Trim(val, "'\"")) {
 					p.resultChan <- Result{
@@ -105,7 +111,7 @@ func (p *Parser) parsePhpFile(filepath string) {
 				return
 			}
 		} else if strings.HasPrefix(trimmedLine, "const ") { //It's a constant
-			varName, val, _, newLineNumber, err2 := parsePhpAssignment(reader, trimmedLine, lineNumber)
+			varName, val, _, newLineNumber, err2 = parsePhpAssignment(reader, trimmedLine, lineNumber)
 			if varName != "" && val != "" {
 				if p.isPossiblyCredentialsVariable(trimDeclarationPrefix(varName), strings.Trim(val, "'\"")) {
 					p.resultChan <- Result{
@@ -137,7 +143,7 @@ func (p *Parser) parsePhpFile(filepath string) {
 			}
 		} else if strings.HasPrefix(trimmedLine, "/*") { //It's a multiline comment
 			if !p.config.ExcludeComments {
-				commentBody, newLineNumber, err2 := parseMultilinePhpComment(reader, trimmedLine, lineNumber)
+				commentBody, newLineNumber, err2 = parseMultilinePhpComment(reader, trimmedLine, lineNumber)
 				isPossibleCredVal, credType = p.isPossiblyCredentialValue(commentBody)
 				if commentBody != "" && isPossibleCredVal {
 					p.resultChan <- Result{
@@ -231,8 +237,12 @@ func parseMultilinePhpComment(r *bufio.Reader, line string, lineNumber int) (str
 	}
 
 	lines := []string{line}
+	var (
+		line2 string
+		err   error
+	)
 	for {
-		line2, err := r.ReadString('\n')
+		line2, err = r.ReadString('\n')
 		line2 = strings.TrimSpace(line2)
 		lines = append(lines, line2)
 

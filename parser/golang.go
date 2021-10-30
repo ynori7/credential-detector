@@ -132,6 +132,7 @@ func (p *Parser) parseGoFileLineByLine(filepath string, foundLines map[int]struc
 }
 
 func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.FileSet, foundLines map[int]struct{}) {
+	var id *ast.Ident
 	for _, spec := range decl.Specs {
 		switch spec := spec.(type) {
 		case *ast.ImportSpec:
@@ -139,7 +140,7 @@ func (p *Parser) parseDeclaration(decl *ast.GenDecl, filepath string, fs *token.
 		case *ast.TypeSpec:
 			//ignore
 		case *ast.ValueSpec:
-			for _, id := range spec.Names {
+			for _, id = range spec.Names {
 				if len(id.Obj.Decl.(*ast.ValueSpec).Values) == 0 {
 					continue
 				}

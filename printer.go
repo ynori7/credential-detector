@@ -20,6 +20,13 @@ func init() {
 	}
 }
 
+// PrintStatistics outputs the statistics related to the credential scan
+func PrintStatistics(stats parser.Statistics) {
+	fmt.Printf("Files found: %d\n", stats.FilesFound)
+	fmt.Printf("Files scanned: %d\n", stats.FilesScanned)
+	fmt.Printf("Results found: %d\n\n", stats.ResultsFound)
+}
+
 // PrintResults outputs the results of the credential scan
 func PrintResults(results []parser.Result) {
 	// sort the results by file and then by line

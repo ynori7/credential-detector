@@ -22,5 +22,6 @@ func main() {
 		disableColors()
 	}
 
+	PrintStatistics(p.Statistics)
 	PrintResults(p.Results)
 }

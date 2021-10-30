@@ -1,12 +1,14 @@
 package parser
 
 import (
-	"github.com/ynori7/credential-detector/config"
+	"context"
 	"os"
 	fp "path/filepath"
 	"regexp"
 	"strings"
-	"sync"
+
+	"github.com/ynori7/credential-detector/config"
+	"github.com/ynori7/workerpool"
 )
 
 // Types indicate the credential finding type
@@ -38,6 +40,8 @@ const (
 	TypeGeneric
 )
 
+const workerCount = 8 //number of cores
+
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
 type Parser struct {
 	config *config.Config
@@ -52,6 +56,7 @@ type Parser struct {
 
 	// Results is the list of findings
 	Results         []Result
+	Statistics      Statistics
 	resultChan      chan Result
 	resultBuildDone chan struct{}
 }
@@ -66,6 +71,13 @@ type Result struct {
 	CredentialType string //only filled for cases where it's not clear from the context
 }
 
+// Statistics contains information about the findings
+type Statistics struct {
+	FilesFound   int
+	FilesScanned int
+	ResultsFound int
+}
+
 // NewParser returns a new parser with the given configuration
 func NewParser(conf *config.Config) *Parser {
 	parser := &Parser{
@@ -77,7 +89,7 @@ func NewParser(conf *config.Config) *Parser {
 		valueIncludeMatchers:             make(map[string]*regexp.Regexp, len(conf.ValueMatchPatterns)),
 		valueExcludeMatchers:             make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
 		Results:                          make([]Result, 0),
-		resultChan:                       make(chan Result, 8),
+		resultChan:                       make(chan Result, workerCount*2),
 		resultBuildDone:                  make(chan struct{}),
 	}
 
@@ -111,7 +123,7 @@ func (p *Parser) buildResults() {
 
 // Scan initiates the recursive scan of all files/directories in the given path
 func (p *Parser) Scan(scanPath string) error {
-	wg := sync.WaitGroup{}
+	files := make([]string, 0, 0)
 
 	err := fp.Walk(scanPath,
 		func(path string, info os.FileInfo, err error) error {
@@ -127,23 +139,35 @@ func (p *Parser) Scan(scanPath string) error {
 				return fp.SkipDir
 			}
 
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				p.ParseFile(path)
-			}()
+			files = append(files, path)
 
 			return nil
 		})
 
-	wg.Wait()           //wait for the whole scan to finish
+	p.Statistics.FilesFound = len(files)
+
+	workerPool := workerpool.NewWorkerPool(
+		func(result interface{}) { //On success
+			if result.(bool) {
+				p.Statistics.FilesScanned++
+			}
+		},
+		func(err error) {}, //On error do nothing (never called)
+		func(job interface{}) (result interface{}, err error) { //Do work
+			j := job.(string)
+			return p.ParseFile(j), nil
+		})
+
+	err = workerPool.Work(context.Background(), workerCount, files)
+
 	close(p.resultChan) //tell the result builder we're done
 	<-p.resultBuildDone //wait till result builder is done
+	p.Statistics.ResultsFound = len(p.Results)
 	return err
 }
 
-// ParseFile parses the given file (if possible) and collects potential credentials
-func (p *Parser) ParseFile(filepath string) {
+// ParseFile parses the given file (if possible) and collects potential credentials. Returns true if file was scanned
+func (p *Parser) ParseFile(filepath string) bool {
 	switch {
 	case p.isParsableGoFile(filepath):
 		p.parseGoFile(filepath)
@@ -162,7 +186,11 @@ func (p *Parser) ParseFile(filepath string) {
 		p.parsePrivateKeyFile(filepath)
 	case p.isParsableGenericFile(filepath):
 		p.parseGenericFile(filepath)
+	default:
+		return false
 	}
+
+	return true
 }
 
 func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) bool {
