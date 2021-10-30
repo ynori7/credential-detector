@@ -18,7 +18,7 @@ valueMatchPatterns:
     pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
 
   - name: Bcrypt Hash
-    pattern: ^\$2[ayb]\$.{56}$
+    pattern: ^\$2[ayb]\$.{56,57}$ #57 in case it's in a string and the $ is escaped
 
   - name: AWS Client ID
     pattern: (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}
