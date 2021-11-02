@@ -215,10 +215,11 @@ valueMatchPatterns:
 
   - name: Twilio Key
     pattern: (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"]
-valueExcludePatterns:
+fullTextValueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
   - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
+variableValueExcludePatterns:
   - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
   - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
   - (?i)^true$|^false$

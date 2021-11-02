@@ -5,9 +5,11 @@ variableNameExclusionPattern: asdf|jkl
 valueMatchPatterns:
   - name: test
     pattern: postgres
-valueExcludePatterns:
+variableValueExcludePatterns:
   - dummy
   - test
+fullTextValueExcludePatterns:
+  - asdf
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
 excludeTests: true
 testDirectories:

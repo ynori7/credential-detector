@@ -36,12 +36,14 @@ const (
 
 // Config contains all the configuration for the credential detector
 type Config struct {
-	VariableNamePatterns             []string            `yaml:"variableNamePatterns,flow"`
-	VariableNameExclusionPattern     string              `yaml:"variableNameExclusionPattern"`
-	XMLAttributeNameExclusionPattern string              `yaml:"xmlAttributeNameExclusionPattern"`
-	ValueMatchPatterns               []ValueMatchPattern `yaml:"valueMatchPatterns,flow"`
-	ValueExcludePatterns             []string            `yaml:"valueExcludePatterns,flow"`
-	MinPasswordLength                int                 `yaml:"minPasswordLength"`
+	VariableNamePatterns             []string `yaml:"variableNamePatterns,flow"`
+	VariableNameExclusionPattern     string   `yaml:"variableNameExclusionPattern"`
+	XMLAttributeNameExclusionPattern string   `yaml:"xmlAttributeNameExclusionPattern"`
+
+	ValueMatchPatterns           []ValueMatchPattern `yaml:"valueMatchPatterns,flow"`
+	FullTextValueExcludePatterns []string            `yaml:"fullTextValueExcludePatterns,flow"`
+	VariableValueExcludePatterns []string            `yaml:"variableValueExcludePatterns,flow"`
+	MinPasswordLength            int                 `yaml:"minPasswordLength"`
 
 	ExcludeTests    bool `yaml:"excludeTests"`
 	ExcludeComments bool `yaml:"excludeComments"`
@@ -176,7 +178,8 @@ func mergeConfigs(root *Config, additions *Config) *Config {
 	root.TestDirectories = append(root.TestDirectories, additions.TestDirectories...)
 	root.IgnoreFiles = append(root.IgnoreFiles, additions.IgnoreFiles...)
 	root.VariableNamePatterns = append(root.VariableNamePatterns, additions.VariableNamePatterns...)
-	root.ValueExcludePatterns = append(root.ValueExcludePatterns, additions.ValueExcludePatterns...)
+	root.VariableValueExcludePatterns = append(root.VariableValueExcludePatterns, additions.VariableValueExcludePatterns...)
+	root.FullTextValueExcludePatterns = append(root.FullTextValueExcludePatterns, additions.FullTextValueExcludePatterns...)
 	root.ValueMatchPatterns = append(root.ValueMatchPatterns, additions.ValueMatchPatterns...)
 	root.GenericFileExtensions = append(root.GenericFileExtensions, additions.GenericFileExtensions...)
 

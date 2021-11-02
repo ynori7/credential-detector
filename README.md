@@ -69,11 +69,12 @@ valueMatchPatterns:
 
   - name: JWT Token
     pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
-valueExcludePatterns:
+variableValueExcludePatterns:
+  - (?i)^test$|password|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
+fullTextValueExcludePatterns:
   - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
   - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
-  - (?i)^test$|password|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
 excludeTests: true
 testDirectories:
@@ -106,7 +107,8 @@ Note that the above values are the defaults.
 |variableNameExclusionPattern|The regular expression for excluding variable names that are not interesting (for example a passwordFormat pattern)|A regular expression|
 |xmlAttributeNameExclusionPattern|The regular expression for excluding xml attributes since XML often describes a model rather than containing the data.|A regular expression|
 |valueMatchPatterns|A list of patterns to match potentially suspicious values, regardless of the variable name|List of objects containing a name and regular expression|
-|valueExcludePatterns|A list of patterns to exclude for the value (for example for test data or constants defining header names, etc)|List of regular expressions|
+|variableValueExcludePatterns|A list of patterns to exclude for the value (for example for test data or constants defining header names, etc). These are only applied if we're looking at a variable assignment.|List of regular expressions|
+|fullTextValueExcludePatterns|A list of patterns to exclude for the value (for example for test data or constants defining header names, etc). These are applied for variable assignments and general full text scans.|List of regular expressions|
 |excludeTests|A boolean flag to exclude scanning test files|true or false|
 |testDirectories|A list of directory names which are considered test data only|A list of strings|
 |ignoreFiles|A list of directory or file names which should be ignored|A list of strings|

@@ -52,7 +52,8 @@ type Parser struct {
 	variableNameExclusionMatcher     *regexp.Regexp
 	xmlAttributeNameExclusionMatcher *regexp.Regexp
 	valueIncludeMatchers             map[string]*regexp.Regexp
-	valueExcludeMatchers             []*regexp.Regexp
+	variableValueExcludeMatchers     []*regexp.Regexp
+	fullTextValueExcludeMatchers     []*regexp.Regexp
 
 	// Results is the list of findings
 	Results         []Result
@@ -87,7 +88,8 @@ func NewParser(conf *config.Config) *Parser {
 		variableNameExclusionMatcher:     regexp.MustCompile(conf.VariableNameExclusionPattern),
 		xmlAttributeNameExclusionMatcher: regexp.MustCompile(conf.XMLAttributeNameExclusionPattern),
 		valueIncludeMatchers:             make(map[string]*regexp.Regexp, len(conf.ValueMatchPatterns)),
-		valueExcludeMatchers:             make([]*regexp.Regexp, len(conf.ValueExcludePatterns)),
+		variableValueExcludeMatchers:     make([]*regexp.Regexp, len(conf.VariableValueExcludePatterns)),
+		fullTextValueExcludeMatchers:     make([]*regexp.Regexp, len(conf.FullTextValueExcludePatterns)),
 		Results:                          make([]Result, 0),
 		resultChan:                       make(chan Result, workerCount*2),
 		resultBuildDone:                  make(chan struct{}),
@@ -101,8 +103,12 @@ func NewParser(conf *config.Config) *Parser {
 		parser.valueIncludeMatchers[v.Name] = regexp.MustCompile(v.Pattern)
 	}
 
-	for k, v := range conf.ValueExcludePatterns {
-		parser.valueExcludeMatchers[k] = regexp.MustCompile(v)
+	for k, v := range conf.VariableValueExcludePatterns {
+		parser.variableValueExcludeMatchers[k] = regexp.MustCompile(v)
+	}
+
+	for k, v := range conf.FullTextValueExcludePatterns {
+		parser.fullTextValueExcludeMatchers[k] = regexp.MustCompile(v)
 	}
 
 	for _, v := range conf.ScanTypes {
@@ -199,15 +205,22 @@ func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) boo
 		return false
 	}
 
+	var m *regexp.Regexp
+
 	// exclude any variables whose value is in our exclusion list (this would include things like defaults and test values)
-	for _, m := range p.valueExcludeMatchers {
+	for _, m = range p.variableValueExcludeMatchers {
+		if m.MatchString(value) {
+			return false
+		}
+	}
+	for _, m = range p.fullTextValueExcludeMatchers {
 		if m.MatchString(value) {
 			return false
 		}
 	}
 
 	// include anything in our value inclusion list. This would include things like postgres uris regardless of the variable name
-	for _, m := range p.valueIncludeMatchers {
+	for _, m = range p.valueIncludeMatchers {
 		if m.MatchString(value) {
 			return true
 		}
@@ -218,7 +231,7 @@ func (p *Parser) isPossiblyCredentialsVariable(varName string, value string) boo
 		return false
 	}
 
-	for _, m := range p.variableNameMatchers {
+	for _, m = range p.variableNameMatchers {
 		// include variables which have potentially suspicious names, but only if the value does not also match (to exclude constants like const Token = "token")
 		if m.MatchString(varName) && !m.MatchString(value) {
 			return true
@@ -234,15 +247,19 @@ func (p *Parser) isPossiblyCredentialValue(v string) (bool, string) {
 		return false, ""
 	}
 
+	var m *regexp.Regexp
+
 	// exclude any variables whose value is in our exclusion list (this would include things like defaults and test values)
-	for _, m := range p.valueExcludeMatchers {
+	for _, m = range p.fullTextValueExcludeMatchers {
 		if m.MatchString(v) {
 			return false, ""
 		}
 	}
 
+	var n string
+
 	// include anything in our value inclusion list. This would include things like postgres uris regardless of the variable name
-	for n, m := range p.valueIncludeMatchers {
+	for n, m = range p.valueIncludeMatchers {
 		if m.MatchString(v) {
 			return true, n
 		}

@@ -178,7 +178,7 @@ func (p *Parser) xmlAttributesContainCredentials(siblings map[string]string) boo
 		}
 
 		// exclude any variables whose value is in our exclusion list (this would include things like defaults and test values)
-		for _, m := range p.valueExcludeMatchers {
+		for _, m := range p.variableValueExcludeMatchers {
 			if m.MatchString(v) {
 				return false
 			}
