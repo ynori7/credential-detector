@@ -109,11 +109,22 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
 genericFileExtensions:
   - txt
   - java
+  - swift
   - cpp
   - c
+  - h
   - py
   - md
   - js
+  - ts
+  - coffee
   - html
+  - rb
+  - kt
+  - sh
+  - bat
+  - conf
+  - groovy
+  - gradle
 disableOutputColors: false
 verbose: false
