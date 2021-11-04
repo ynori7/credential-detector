@@ -12,7 +12,7 @@ variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPol
 xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
   - name: Postgres URI
-    pattern: postgres:\/\/.+:.+@.+:.+\/.+
+    pattern: postgres(?:ql)?:\/\/.+:.+@.+:.+\/.+
 
   - name: JWT Token
     pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
@@ -74,9 +74,9 @@ valueMatchPatterns:
   - name: Twilio Key
     pattern: (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"]
 fullTextValueExcludePatterns:
-  - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
-  - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
-  - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
+  - postgres(?:ql)?:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
+  - postgres(?:ql)?:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
+  - postgres(?:ql)?:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
 variableValueExcludePatterns:
   - (?i)^test$|password|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
   - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
