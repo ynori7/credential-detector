@@ -43,3 +43,7 @@ class UserController extends BaseController
  * This is a multiline comment
  * it contains postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
  */
+
+define("BLAH", "blop");
+define("GREAT_PASSWORD", "aslkjfwelkrjwlerj"); //some comment
+ define ("OTHER_PASSWORD", "qwroiuj23lkjlkd", true);

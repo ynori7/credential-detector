@@ -128,6 +128,19 @@ func (p *Parser) parsePhpFile(filepath string) {
 			if err2 != nil {
 				return
 			}
+		} else if strings.HasPrefix(trimmedLine, "define") { //It's a named constant
+			varName, val = parsePhpDefineCall(trimmedLine)
+			if varName != "" && val != "" {
+				if p.isPossiblyCredentialsVariable(trimDeclarationPrefix(varName), strings.Trim(val, "'\"")) {
+					p.resultChan <- Result{
+						File:  filepath,
+						Type:  TypePHPConstant,
+						Line:  lineNumber,
+						Name:  varName,
+						Value: val,
+					}
+				}
+			}
 		} else if strings.HasPrefix(trimmedLine, "//") { //It's a comment
 			if !p.config.ExcludeComments {
 				if isPossibleCredVal, credType = p.isPossiblyCredentialValue(line); isPossibleCredVal {
@@ -228,6 +241,22 @@ func parsePhpAssignment(r *bufio.Reader, line string, lineNumber int) (string, s
 	}
 
 	return "", "", "", lineNumber, nil
+}
+
+//returns const name and value if valid
+func parsePhpDefineCall(line string) (string, string) {
+	paramBody := functionRegex.FindStringSubmatch(line) //Doesn't work when it's split across multiple lines
+	if len(paramBody) != 2 {
+		return "", ""
+	}
+
+	//Naive implementation since the params could have commas in them, but it's not worth the extra effort of parsing char-by-char
+	params := strings.Split(paramBody[1], ",")
+	if len(params) < 2 {
+		return "", ""
+	}
+
+	return strings.Trim(params[0], "\"' "), strings.TrimSpace(params[1]) //the quotes are trimmed in the value later
 }
 
 //returns the comment body, line number, and error (if present)

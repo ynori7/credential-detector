@@ -32,6 +32,9 @@ valueMatchPatterns:
   - name: Facebook Secret
     pattern: (?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}['\"]
 
+  - name: Facebook Access Token
+    pattern: EAA[\w0-9]{9}BA[0-9A-Za-z]+
+
   - name: Facebook Client ID
     pattern: (?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}['\"]
 
@@ -126,5 +129,6 @@ genericFileExtensions:
   - conf
   - groovy
   - gradle
+  - tf
 disableOutputColors: false
 verbose: false

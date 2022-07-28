@@ -133,6 +133,20 @@ EOF`,
 */`,
 			CredentialType: "Postgres URI",
 		},
+		{
+			File:  file,
+			Type:  TypePHPConstant,
+			Line:  48,
+			Name:  "GREAT_PASSWORD",
+			Value: `"aslkjfwelkrjwlerj"`,
+		},
+		{
+			File:  file,
+			Type:  TypePHPConstant,
+			Line:  49,
+			Name:  "OTHER_PASSWORD",
+			Value: `"qwroiuj23lkjlkd"`,
+		},
 	}
 
 	// when

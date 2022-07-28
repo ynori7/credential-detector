@@ -42,6 +42,8 @@ const (
 
 const workerCount = 8 //number of cores
 
+var functionRegex = regexp.MustCompile(`\(\s*([^)]+?)\s*\)`) //extracts the group of parameters out of a function call. e.g. func(xxxxx);
+
 // Parser searches the given files and maintains a list of hard-coded credentials stored in Results
 type Parser struct {
 	config *config.Config
