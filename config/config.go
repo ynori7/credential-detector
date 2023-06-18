@@ -32,6 +32,8 @@ const (
 	ScanTypePHP = "php"
 	// ScanTypeGeneric indicates a file parsable as generic text
 	ScanTypeGeneric = "generic"
+	// ScanTypeGenericCode indicates a file parsable as generic code
+	ScanTypeGenericCode = "generic_code"
 )
 
 // Config contains all the configuration for the credential detector
@@ -53,6 +55,7 @@ type Config struct {
 
 	ScanTypes             []string `yaml:"scanTypes,flow"`
 	GenericFileExtensions []string `yaml:"genericFileExtensions"`
+	GenericCodeFileExtensions []string `yaml:"genericCodeFileExtensions"`
 
 	DisableOutputColors bool `yaml:"disableOutputColors"`
 	Verbose             bool `yaml:"verbose"`
@@ -182,6 +185,7 @@ func mergeConfigs(root *Config, additions *Config) *Config {
 	root.FullTextValueExcludePatterns = append(root.FullTextValueExcludePatterns, additions.FullTextValueExcludePatterns...)
 	root.ValueMatchPatterns = append(root.ValueMatchPatterns, additions.ValueMatchPatterns...)
 	root.GenericFileExtensions = append(root.GenericFileExtensions, additions.GenericFileExtensions...)
+	root.GenericCodeFileExtensions = append(root.GenericCodeFileExtensions, additions.GenericCodeFileExtensions...)
 
 	if additions.VariableNameExclusionPattern != "" {
 		root.VariableNameExclusionPattern = additions.VariableNameExclusionPattern

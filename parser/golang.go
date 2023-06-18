@@ -173,7 +173,7 @@ func (p *Parser) isPossiblyCredentialsInGoVariable(varName string, value *ast.Ba
 	}
 
 	// remove quotes around the string
-	val := value.Value[1 : len(value.Value)-1]
+	val := trimQuotes(value.Value)
 
 	return p.isPossiblyCredentialsVariable(varName, val)
 }

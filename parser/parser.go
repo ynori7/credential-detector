@@ -38,6 +38,7 @@ const (
 	TypePHPOther
 
 	TypeGeneric
+	TypeGenericCode //TODO
 )
 
 const workerCount = 8 //number of cores
@@ -192,6 +193,8 @@ func (p *Parser) ParseFile(filepath string) bool {
 		fallthrough
 	case p.isParsablePrivateKeyFile(filepath):
 		p.parsePrivateKeyFile(filepath)
+	case p.isParsableGenericCodeFile(filepath):
+		p.parseGenericCodeFile(filepath)
 	case p.isParsableGenericFile(filepath):
 		p.parseGenericFile(filepath)
 	default:
@@ -279,4 +282,12 @@ func getFileNameAndExtension(filepath string) (string, string) {
 	name = strings.TrimSuffix(name, extension)
 
 	return name, extension
+}
+
+func trimQuotes(str string) string {
+	return strings.Trim(str, "\"'`")
+}
+
+func trimSemiColon(str string) string {
+	return strings.TrimRight(str, ";")
 }

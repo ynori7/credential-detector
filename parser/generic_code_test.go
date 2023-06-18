@@ -8,7 +8,7 @@ import (
 	"github.com/ynori7/credential-detector/config"
 )
 
-func Test_isParsableGenericFile(t *testing.T) {
+func Test_isParsableGenericCodeFile(t *testing.T) {
 	testcases := map[string]struct {
 		path     string
 		expected bool
@@ -31,14 +31,14 @@ func Test_isParsableGenericFile(t *testing.T) {
 		},
 		"Generic extension, hidden file": {
 			path:     "/home/blah/.blah.txt",
-			expected: true,
+			expected: false,
 		},
 		"No extension, hidden file": {
 			path:     "/home/blah/.env",
 			expected: false,
 		},
 		"Generic extension": {
-			path:     "/home/blah/blah.py",
+			path:     "/home/blah/blah.java",
 			expected: true,
 		},
 	}
@@ -48,25 +48,25 @@ func Test_isParsableGenericFile(t *testing.T) {
 	parser := NewParser(conf)
 
 	for testcase, testdata := range testcases {
-		actual := parser.isParsableGenericFile(testdata.path)
+		actual := parser.isParsableGenericCodeFile(testdata.path)
 
 		assert.Equal(t, testdata.expected, actual, testcase)
 	}
 }
 
-func TestParser_Generic(t *testing.T) {
+func TestParser_GenericCode(t *testing.T) {
 	// given
 	conf, err := config.ParseConfig(getTestConfig())
 	require.NoError(t, err)
-	file := "../testdata/dummy.md"
+	file := "../testdata/dummy.java"
 	expected := []Result{
 		{
 			File:           file,
 			Type:           TypeGeneric,
-			Line:           6,
+			Line:           10,
 			Name:           "",
-			Value:          `final SendGrid sendGrid = new SendGrid("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");`,
-			CredentialType: "SendGrid API Key",
+			Value:          `private String someTokenPassword = "AERWEk33se";`,
+			CredentialType: "",
 		},
 	}
 

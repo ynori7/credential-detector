@@ -1,13 +1,14 @@
 package parser
 
 import (
-	"github.com/ynori7/credential-detector/config"
 	"os"
 	"strings"
+
+	"github.com/ynori7/credential-detector/config"
 )
 
 func (p *Parser) isParsableGenericFile(filepath string) bool {
-	if _, ok := p.scanTypes[config.ScanTypeGeneric]; !ok {
+	if _, ok := p.scanTypes[config.ScanTypeGeneric]; !ok { //TODO
 		return false
 	}
 

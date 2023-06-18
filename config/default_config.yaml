@@ -111,11 +111,6 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - generic
 genericFileExtensions:
   - txt
-  - java
-  - swift
-  - cpp
-  - c
-  - h
   - py
   - md
   - js
@@ -130,5 +125,11 @@ genericFileExtensions:
   - groovy
   - gradle
   - tf
+genericCodeFileExtensions:
+  - java
+  - swift
+  - cpp
+  - c
+  - h
 disableOutputColors: false
 verbose: false
