@@ -84,6 +84,8 @@ func PrintResults(results []parser.Result) {
 			printPhpOtherResult(result)
 		case parser.TypeGeneric:
 			printGenericResult(result)
+		case parser.TypeGenericCode:
+			printGenericCodeVariableResult(result)
 		}
 	}
 }
@@ -198,6 +200,13 @@ Possible %s
 %s
 
 `, fgYellow, result.Line, reset, result.CredentialType, result.Value)
+}
+
+func printGenericCodeVariableResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s
+
+`, fgYellow, result.Line, reset, result.Value)
 }
 
 func disableColors() {

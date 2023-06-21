@@ -38,7 +38,7 @@ const (
 	TypePHPOther
 
 	TypeGeneric
-	TypeGenericCode //TODO
+	TypeGenericCode
 )
 
 const workerCount = 8 //number of cores

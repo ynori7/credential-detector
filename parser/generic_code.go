@@ -70,7 +70,7 @@ func (p *Parser) parseGenericCodeFile(filepath string) {
 				if ok = p.isPossiblyCredentialsVariable(varName, value); ok {
 					p.resultChan <- Result{
 						File:  filepath,
-						Type:  TypeGeneric,
+						Type:  TypeGenericCode,
 						Line:  lineNumber,
 						Name:  "",
 						Value: line,
