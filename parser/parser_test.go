@@ -228,7 +228,6 @@ variableValueExcludePatterns:
   - bootstrapper
   - \${.+\} #typically for values injected at build time
   - (?i){{.*}}
-  - [1-6][0-9]{5}[a-zA-Z0-9]{7}[0-9]{3}$ #payment tokens
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
 excludeTests: false
 testDirectories:
