@@ -30,6 +30,8 @@ const (
 	ScanTypeXML = "xml"
 	// ScanTypePHP indicates PHP files
 	ScanTypePHP = "php"
+	// ScanTypeBash indicates Bash files
+	ScanTypeBash = "bash"
 	// ScanTypeGeneric indicates a file parsable as generic text
 	ScanTypeGeneric = "generic"
 	// ScanTypeGenericCode indicates a file parsable as generic code

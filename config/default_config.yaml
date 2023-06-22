@@ -14,6 +14,9 @@ valueMatchPatterns:
   - name: Postgres URI
     pattern: postgres(?:ql)?:\/\/.+:.+@.+:.+\/.+
 
+  - name: URL With Basic Auth
+    pattern: (ftp|sftp|http|https):\/\/[a-zA-Z0-9%-]+:[a-zA-Z0-9%-]+@([a-z0-9-]{0,61}\.[a-z]{2,})
+
   - name: JWT Token
     pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
 
@@ -108,7 +111,9 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - privatekey
   - xml
   - php
+  - bash
   - generic
+  - generic_code
 genericFileExtensions:
   - txt
   - py
@@ -119,17 +124,18 @@ genericFileExtensions:
   - html
   - rb
   - kt
-  - sh
   - bat
   - conf
   - groovy
   - gradle
   - tf
+  - sql
 genericCodeFileExtensions:
   - java
   - swift
   - cpp
   - c
   - h
+  - hpp
 disableOutputColors: false
 verbose: false

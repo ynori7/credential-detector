@@ -8,18 +8,19 @@ import (
 )
 
 var declarationPrefixes = map[string]bool{
-	"public":    true,
-	"private":   true,
-	"protected": true,
-	"static":    true,
-	"var":       true,
-	"const":     true,
-	"string":    true,
-	"final":     true,
+	"public":      true,
+	"private":     true,
+	"protected":   true,
+	"static":      true,
+	"var":         true,
+	"const":       true,
+	"string":      true,
+	"std::string": true,
+	"final":       true,
 }
 
 func (p *Parser) isParsableGenericCodeFile(filepath string) bool {
-	if _, ok := p.scanTypes[config.ScanTypeGeneric]; !ok {
+	if _, ok := p.scanTypes[config.ScanTypeGenericCode]; !ok {
 		return false
 	}
 
@@ -67,7 +68,7 @@ func (p *Parser) parseGenericCodeFile(filepath string) {
 
 			valueWithoutQuotes := trimQuotes(value)
 			if value != valueWithoutQuotes { //we only want assignments to string literals
-				if ok = p.isPossiblyCredentialsVariable(varName, value); ok {
+				if ok = p.isPossiblyCredentialsVariable(varName, valueWithoutQuotes); ok {
 					p.resultChan <- Result{
 						File:  filepath,
 						Type:  TypeGenericCode,

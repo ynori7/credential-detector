@@ -2,9 +2,10 @@ package parser
 
 import (
 	"bufio"
-	"github.com/ynori7/credential-detector/config"
 	"os"
 	"strings"
+
+	"github.com/ynori7/credential-detector/config"
 )
 
 var privateKeyExtensions = map[string]struct{}{
@@ -24,6 +25,7 @@ var privateKeyExtensions = map[string]struct{}{
 }
 
 var privateKeyHeaders = []string{
+	"-----BEGIN PRIVATE KEY-----",
 	"-----BEGIN CERTIFICATE-----",
 	"-----BEGIN RSA PRIVATE KEY-----",
 	"-----BEGIN ENCRYPTED PRIVATE KEY-----",

@@ -8,7 +8,7 @@ import (
 	"github.com/ynori7/credential-detector/config"
 )
 
-func Test_isParsableGenericCodeFile(t *testing.T) {
+func Test_isParsableBashFile(t *testing.T) {
 	testcases := map[string]struct {
 		path     string
 		expected bool
@@ -17,28 +17,12 @@ func Test_isParsableGenericCodeFile(t *testing.T) {
 			path:     "/etc/passwd",
 			expected: false,
 		},
-		"No extension, name is generic": {
-			path:     "/etc/generic",
-			expected: false,
-		},
-		"Not generic extension": {
+		"Not bash extension": {
 			path:     "/home/blah/test.blah",
 			expected: false,
 		},
-		"Not generic extension, hidden file": {
-			path:     "/home/blah/.test.swp",
-			expected: false,
-		},
-		"Generic extension, hidden file": {
-			path:     "/home/blah/.blah.txt",
-			expected: false,
-		},
-		"No extension, hidden file": {
-			path:     "/home/blah/.env",
-			expected: false,
-		},
-		"Generic extension": {
-			path:     "/home/blah/blah.java",
+		"Bash extension": {
+			path:     "/home/blah/blah.sh",
 			expected: true,
 		},
 	}
@@ -48,24 +32,24 @@ func Test_isParsableGenericCodeFile(t *testing.T) {
 	parser := NewParser(conf)
 
 	for testcase, testdata := range testcases {
-		actual := parser.isParsableGenericCodeFile(testdata.path)
+		actual := parser.isParsableBashFile(testdata.path)
 
 		assert.Equal(t, testdata.expected, actual, testcase)
 	}
 }
 
-func TestParser_GenericCode(t *testing.T) {
+func TestParser_Bash(t *testing.T) {
 	// given
 	conf, err := config.ParseConfig(getTestConfig())
 	require.NoError(t, err)
-	file := "../testdata/dummy.java"
+	file := "../testdata/dummy.sh"
 	expected := []Result{
 		{
 			File:           file,
-			Type:           TypeGenericCode,
-			Line:           10,
+			Type:           TypeBashVariable,
+			Line:           13,
 			Name:           "",
-			Value:          `private String someTokenPassword = "AERWEk33se";`,
+			Value:          `PASSWORD="123blahblah"`,
 			CredentialType: "",
 		},
 	}

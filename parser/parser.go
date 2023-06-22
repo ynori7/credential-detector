@@ -37,6 +37,8 @@ const (
 	TypePHPComment
 	TypePHPOther
 
+	TypeBashVariable
+
 	TypeGeneric
 	TypeGenericCode
 )
@@ -193,6 +195,8 @@ func (p *Parser) ParseFile(filepath string) bool {
 		fallthrough
 	case p.isParsablePrivateKeyFile(filepath):
 		p.parsePrivateKeyFile(filepath)
+	case p.isParsableBashFile(filepath):
+		p.parseBashFile(filepath)
 	case p.isParsableGenericCodeFile(filepath):
 		p.parseGenericCodeFile(filepath)
 	case p.isParsableGenericFile(filepath):

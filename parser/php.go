@@ -28,7 +28,7 @@ func (p *Parser) isParsablePhpFile(filepath string) bool {
 		return true
 	}
 
-	return extension == phpFileExtension
+	return false
 }
 
 func (p *Parser) parsePhpFile(filepath string) {

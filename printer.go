@@ -84,7 +84,7 @@ func PrintResults(results []parser.Result) {
 			printPhpOtherResult(result)
 		case parser.TypeGeneric:
 			printGenericResult(result)
-		case parser.TypeGenericCode:
+		case parser.TypeGenericCode, parser.TypeBashVariable:
 			printGenericCodeVariableResult(result)
 		}
 	}

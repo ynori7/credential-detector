@@ -1,9 +1,10 @@
 package parser
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"github.com/ynori7/credential-detector/config"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -130,7 +131,7 @@ func Test_Scan(t *testing.T) {
 
 	err = parser.Scan("../testdata/")
 	require.NoError(t, err)
-	assert.Equal(t, 35, len(parser.Results))
+	assert.Equal(t, 36, len(parser.Results))
 }
 
 func parseFileForTest(parser *Parser, filepath string) {
@@ -227,6 +228,7 @@ variableValueExcludePatterns:
   - bootstrapper
   - \${.+\} #typically for values injected at build time
   - (?i){{.*}}
+  - [1-6][0-9]{5}[a-zA-Z0-9]{7}[0-9]{3}$ #payment tokens
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
 excludeTests: false
 testDirectories:
@@ -247,7 +249,9 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - privatekey
   - xml
   - php
+  - bash
   - generic
+  - generic_code
 genericFileExtensions:
   - txt
   - py
