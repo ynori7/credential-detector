@@ -62,11 +62,46 @@ func TestParser_GenericCode(t *testing.T) {
 	expected := []Result{
 		{
 			File:           file,
-			Type:           TypeGenericCode,
+			Type:           TypeGenericCodeVariable,
 			Line:           10,
-			Name:           "",
-			Value:          `private String someTokenPassword = "AERWEk33se";`,
+			Name:           "someTokenPassword",
+			Value:          "\"AERWEk33se\"",
 			CredentialType: "",
+		},
+		{
+			File:           file,
+			Type:           TypeGenericCodeVariable,
+			Line:           20,
+			Name:           "INTERNAL_API_KEY",
+			Value:          "\"kiu#pKJSDK;LE\"",
+			CredentialType: "",
+		},
+		{
+			File:           file,
+			Type:           TypeGenericCodeComment,
+			Line:           22,
+			Name:           "",
+			Value:          "// \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\"",
+			CredentialType: "JWT Token",
+		},
+		{
+			File:           file,
+			Type:           TypeGenericCodeOther,
+			Line:           25,
+			Name:           "",
+			Value:          `NewStaticCredentials("AKIAYTHMXXXGSVYYYWE6", "rP22kgSajDwOyWVU/iiii1UEdJk333QUbxwtiVCe");`,
+			CredentialType: "AWS Client ID",
+		},
+		{
+			File: file,
+			Type: TypeGenericCodeComment,
+			Line: 29,
+			Name: "",
+			Value: `/*
+* This is a multiline comment
+* it contains postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable
+*/`,
+			CredentialType: "Postgres URI",
 		},
 	}
 

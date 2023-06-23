@@ -37,6 +37,10 @@ func Test_isParsablePropertiesFile(t *testing.T) {
 			path:     "/home/blah/.env",
 			expected: true,
 		},
+		".ini file": {
+			path:     "/home/blah/blah.ini",
+			expected: true,
+		},
 		"Properties extension": {
 			path:     "/home/blah/blah.properties",
 			expected: true,

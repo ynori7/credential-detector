@@ -156,7 +156,7 @@ func (p *Parser) parsePhpFile(filepath string) {
 			}
 		} else if strings.HasPrefix(trimmedLine, "/*") { //It's a multiline comment
 			if !p.config.ExcludeComments {
-				commentBody, newLineNumber, err2 = parseMultilinePhpComment(reader, trimmedLine, lineNumber)
+				commentBody, newLineNumber, err2 = parseMultilineCStyleComment(reader, trimmedLine, lineNumber)
 				isPossibleCredVal, credType = p.isPossiblyCredentialValue(commentBody)
 				if commentBody != "" && isPossibleCredVal {
 					p.resultChan <- Result{
@@ -209,7 +209,7 @@ func parsePhpAssignment(r *bufio.Reader, line string, lineNumber int) (string, s
 		valPartsStr = strings.TrimSpace(parts[1])
 
 		// cut off comments
-		valPartsStr = trimAfter(valPartsStr, "//")
+		valPartsStr = trimAfter(valPartsStr, "//") //Note that this is flawed if the comment is in a string
 		valPartsStr = trimAfter(valPartsStr, "/*")
 
 		if strings.Contains(valPartsStr, ";") && (strings.HasPrefix(valPartsStr, "'") || strings.HasPrefix(valPartsStr, "\"")) {
@@ -257,34 +257,6 @@ func parsePhpDefineCall(line string) (string, string) {
 	}
 
 	return strings.Trim(params[0], "\"' "), strings.TrimSpace(params[1]) //the quotes are trimmed in the value later
-}
-
-//returns the comment body, line number, and error (if present)
-func parseMultilinePhpComment(r *bufio.Reader, line string, lineNumber int) (string, int, error) {
-	if strings.Contains(line, "*/") {
-		return line, lineNumber, nil
-	}
-
-	lines := []string{line}
-	var (
-		line2 string
-		err   error
-	)
-	for {
-		line2, err = r.ReadString('\n')
-		line2 = strings.TrimSpace(line2)
-		lines = append(lines, line2)
-
-		if strings.Contains(line2, "*/") {
-			return strings.Join(lines, "\n"), lineNumber + 1, err
-		}
-
-		if err != nil {
-			return "", lineNumber, err
-		}
-
-		lineNumber++
-	}
 }
 
 func trimAfter(s string, tok string) string {

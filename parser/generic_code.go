@@ -54,7 +54,10 @@ func (p *Parser) parseGenericCodeFile(filepath string) {
 	var line string
 
 	var (
-		ok bool
+		ok                                       bool
+		isPossibleCredVal                        bool
+		credType                                 string
+		varName, valPartsStr, valueWithoutQuotes string
 	)
 	for {
 		line, err = reader.ReadString('\n')
@@ -63,19 +66,68 @@ func (p *Parser) parseGenericCodeFile(filepath string) {
 		if isVariableDeclaration(line) {
 			parts := strings.SplitN(line, "=", 2) //there must be an = if we entered this block
 			varNameParts := strings.Split(strings.TrimSpace(parts[0]), " ")
-			varName := varNameParts[len(varNameParts)-1]
-			value := trimSemiColon(strings.TrimSpace(parts[1]))
+			varName = varNameParts[len(varNameParts)-1]
 
-			valueWithoutQuotes := trimQuotes(value)
-			if value != valueWithoutQuotes { //we only want assignments to string literals
+			// cut off comments and semicolon
+			valPartsStr = trimAfter(strings.TrimSpace(parts[1]), "//") //note that this is flawed if there's a // in the string
+			valPartsStr = trimAfter(valPartsStr, "/*")
+			valPartsStr = trimSemiColon(valPartsStr)
+
+			valueWithoutQuotes = trimQuotes(valPartsStr)
+			if valPartsStr != valueWithoutQuotes { //we only want assignments to string literals
 				if ok = p.isPossiblyCredentialsVariable(varName, valueWithoutQuotes); ok {
 					p.resultChan <- Result{
 						File:  filepath,
-						Type:  TypeGenericCode,
+						Type:  TypeGenericCodeVariable,
 						Line:  lineNumber,
-						Name:  "",
-						Value: line,
+						Name:  varName,
+						Value: valPartsStr,
 					}
+				}
+			}
+		} else if strings.HasPrefix(line, "//") { //It's a comment
+			if !p.config.ExcludeComments {
+				if isPossibleCredVal, credType = p.isPossiblyCredentialValue(line); isPossibleCredVal {
+					p.resultChan <- Result{
+						File:           filepath,
+						Type:           TypeGenericCodeComment,
+						Line:           lineNumber,
+						Name:           "",
+						Value:          line,
+						CredentialType: credType,
+					}
+				}
+			}
+		} else if strings.HasPrefix(line, "/*") { //It's a multiline comment
+			if !p.config.ExcludeComments {
+				commentBody, newLineNumber, err2 := parseMultilineCStyleComment(reader, line, lineNumber)
+				isPossibleCredVal, credType = p.isPossiblyCredentialValue(commentBody)
+				if commentBody != "" && isPossibleCredVal {
+					p.resultChan <- Result{
+						File:           filepath,
+						Type:           TypeGenericCodeComment,
+						Line:           lineNumber,
+						Name:           "",
+						Value:          commentBody,
+						CredentialType: credType,
+					}
+
+					if err2 != nil {
+						return
+					}
+				}
+
+				lineNumber = newLineNumber
+			}
+		} else { //scan the whole line for possible value matches
+			if isPossibleCredVal, credType = p.isPossiblyCredentialValue(line); isPossibleCredVal {
+				p.resultChan <- Result{
+					File:           filepath,
+					Type:           TypeGenericCodeOther,
+					Line:           lineNumber,
+					Name:           "",
+					Value:          line,
+					CredentialType: credType,
 				}
 			}
 		}

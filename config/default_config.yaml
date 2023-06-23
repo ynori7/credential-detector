@@ -115,21 +115,42 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - generic
   - generic_code
 genericFileExtensions:
+  # text files
   - txt
-  - py
+  - data
+  - dat
   - md
+
+  #config files
+  - local
+  - conf
+  - config
+  - dist
+
+  #code
+  - py
   - js
   - ts
   - coffee
   - html
+  - xhtml
   - rb
   - kt
   - bat
-  - conf
   - groovy
   - gradle
   - tf
   - sql
+  - sqlite
+  - twig
+
+  #other
+  - csv
+  - temp
+  - dump
+  - swagger
+  - out
+  - log
 genericCodeFileExtensions:
   - java
   - swift

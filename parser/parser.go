@@ -1,8 +1,9 @@
 package parser
 
 import (
+	"bufio"
 	"context"
-	"os"
+	"io/fs"
 	fp "path/filepath"
 	"regexp"
 	"strings"
@@ -39,8 +40,11 @@ const (
 
 	TypeBashVariable
 
+	TypeGenericCodeVariable
+	TypeGenericCodeComment
+	TypeGenericCodeOther
+
 	TypeGeneric
-	TypeGenericCode
 )
 
 const workerCount = 8 //number of cores
@@ -134,10 +138,10 @@ func (p *Parser) buildResults() {
 
 // Scan initiates the recursive scan of all files/directories in the given path
 func (p *Parser) Scan(scanPath string) error {
-	files := make([]string, 0, 0)
+	files := make([]string, 0)
 
-	err := fp.Walk(scanPath,
-		func(path string, info os.FileInfo, err error) error {
+	err := fp.WalkDir(scanPath,
+		func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -154,6 +158,9 @@ func (p *Parser) Scan(scanPath string) error {
 
 			return nil
 		})
+	if err != nil {
+		return err
+	}
 
 	p.Statistics.FilesFound = len(files)
 
@@ -293,5 +300,33 @@ func trimQuotes(str string) string {
 }
 
 func trimSemiColon(str string) string {
-	return strings.TrimRight(str, ";")
+	return strings.TrimRight(strings.TrimSpace(str), ";")
+}
+
+// returns the comment body, line number, and error (if present)
+func parseMultilineCStyleComment(r *bufio.Reader, line string, lineNumber int) (string, int, error) {
+	if strings.Contains(line, "*/") {
+		return line, lineNumber, nil
+	}
+
+	lines := []string{line}
+	var (
+		line2 string
+		err   error
+	)
+	for {
+		line2, err = r.ReadString('\n')
+		line2 = strings.TrimSpace(line2)
+		lines = append(lines, line2)
+
+		if strings.Contains(line2, "*/") {
+			return strings.Join(lines, "\n"), lineNumber + 1, err
+		}
+
+		if err != nil {
+			return "", lineNumber, err
+		}
+
+		lineNumber++
+	}
 }

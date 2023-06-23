@@ -9,6 +9,7 @@ import (
 
 const (
 	propertiesFileExtension = ".properties"
+	iniFileExtension        = ".ini"
 )
 
 func (p *Parser) isParsablePropertiesFile(filepath string) bool {
@@ -19,7 +20,7 @@ func (p *Parser) isParsablePropertiesFile(filepath string) bool {
 	name, extension := getFileNameAndExtension(filepath)
 
 	//consider empty file names in case the file is named something like ".env"
-	return name == "" || extension == propertiesFileExtension
+	return name == "" || extension == propertiesFileExtension || extension == iniFileExtension
 }
 
 func (p *Parser) parsePropertiesFile(filepath string) {
