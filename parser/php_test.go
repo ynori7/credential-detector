@@ -112,7 +112,7 @@ EOF`,
 			Type:  TypePHPVariable,
 			Line:  35,
 			Name:  "private $password",
-			Value: `"woieruwkljlek//jrlkwjer"`,
+			Value: `"woieruwkljlekjrlkwjer"`,
 		},
 		{
 			File:           file,

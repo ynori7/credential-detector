@@ -73,7 +73,7 @@ func TestParser_GenericCode(t *testing.T) {
 			Type:           TypeGenericCodeVariable,
 			Line:           20,
 			Name:           "INTERNAL_API_KEY",
-			Value:          "\"kiu#pKJSDK;LE\"",
+			Value:          "'kiu#pKJSDK;LE'",
 			CredentialType: "",
 		},
 		{
