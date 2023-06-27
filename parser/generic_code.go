@@ -68,10 +68,8 @@ func (p *Parser) parseGenericCodeFile(filepath string) {
 			varNameParts := strings.Split(strings.TrimSpace(parts[0]), " ")
 			varName = varNameParts[len(varNameParts)-1]
 
-			// cut off comments and semicolon
-			valPartsStr = trimAfter(strings.TrimSpace(parts[1]), "//") //note that this is flawed if there's a // in the string
-			valPartsStr = trimAfter(valPartsStr, "/*")
-			valPartsStr = trimSemiColon(valPartsStr)
+			// cut off semicolon
+			valPartsStr = trimSemiColon(parts[1])
 
 			valueWithoutQuotes = trimQuotes(valPartsStr)
 			if valPartsStr != valueWithoutQuotes { //we only want assignments to string literals

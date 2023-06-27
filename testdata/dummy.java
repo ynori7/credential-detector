@@ -7,7 +7,7 @@ import org.apache.ws.security.WSSConfig;
 import org.apache.ws.security.WSSecurityException;
 
 public class SomethingHandler implements SOAPHandler<SOAPMessageContext> {
-    private String someTokenPassword = "AERWEk33se"; // default value
+    private String someTokenPassword = "AERWEk33se";
 
     public SomethingHandler(ServiceProperties properties) throws FileNotFoundException {
         this.serviceProperties = properties;

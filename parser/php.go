@@ -208,10 +208,6 @@ func parsePhpAssignment(r *bufio.Reader, line string, lineNumber int) (string, s
 		name = strings.TrimSpace(parts[0])
 		valPartsStr = strings.TrimSpace(parts[1])
 
-		// cut off comments
-		valPartsStr = trimAfter(valPartsStr, "//") //Note that this is flawed if the comment is in a string
-		valPartsStr = trimAfter(valPartsStr, "/*")
-
 		if strings.Contains(valPartsStr, ";") && (strings.HasPrefix(valPartsStr, "'") || strings.HasPrefix(valPartsStr, "\"")) {
 			// normal assignment
 			// maybe not ideal, but it'll consider a value of "string" . $var but not $var . "string"

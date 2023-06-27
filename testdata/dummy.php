@@ -8,7 +8,7 @@ This is some text.
 It spans multiple lines
 EOF;
 
-$apiKey = "asfwe3#eswer"; //this is a comment;
+$apiKey = "asfwe3#eswer";
 
 $appToken = <<<EOF
 KJEKJEKJeke
