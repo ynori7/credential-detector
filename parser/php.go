@@ -84,6 +84,17 @@ func (p *Parser) parsePhpFile(filepath string) {
 						}
 					}
 				}
+			} else { //scan the whole line for possible value matches
+				if isPossibleCredVal, credType = p.isPossiblyCredentialValue(trimmedLine); isPossibleCredVal {
+					p.resultChan <- Result{
+						File:           filepath,
+						Type:           TypePHPOther,
+						Line:           lineNumber,
+						Name:           "",
+						Value:          trimmedLine,
+						CredentialType: credType,
+					}
+				}
 			}
 			lineNumber = newLineNumber
 
@@ -102,6 +113,17 @@ func (p *Parser) parsePhpFile(filepath string) {
 						Line:  lineNumber,
 						Name:  varName,
 						Value: val,
+					}
+				}
+			} else { //scan the whole line for possible value matches
+				if isPossibleCredVal, credType = p.isPossiblyCredentialValue(trimmedLine); isPossibleCredVal {
+					p.resultChan <- Result{
+						File:           filepath,
+						Type:           TypePHPOther,
+						Line:           lineNumber,
+						Name:           "",
+						Value:          trimmedLine,
+						CredentialType: credType,
 					}
 				}
 			}

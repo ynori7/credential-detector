@@ -147,6 +147,14 @@ EOF`,
 			Name:  "OTHER_PASSWORD",
 			Value: `"qwroiuj23lkjlkd"`,
 		},
+		{
+			File:           file,
+			Type:           TypePHPOther,
+			Line:           50,
+			Name:           "",
+			Value:          `$ch = curl_init('https://hooks.slack.com/services/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');`,
+			CredentialType: "Slack WebHook",
+		},
 	}
 
 	// when
