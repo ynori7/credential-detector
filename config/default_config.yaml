@@ -60,7 +60,7 @@ valueMatchPatterns:
     pattern: xox[baprs]-([0-9a-zA-Z]{10,48})?
 
   - name: Slack WebHook
-    pattern: https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8}\/[a-zA-Z0-9_]{24}
+    pattern: https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8,10}\/[a-zA-Z0-9_]{24}
 
   - name: Private Key
     pattern: -----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----
