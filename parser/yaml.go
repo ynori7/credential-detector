@@ -1,12 +1,13 @@
 package parser
 
 import (
-	"fmt"
-	"github.com/ynori7/credential-detector/config"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"reflect"
+	"strings"
+
+	"github.com/ynori7/credential-detector/config"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -33,7 +34,20 @@ func (p *Parser) parseYamlFile(filepath string) {
 		return
 	}
 
-	err = yaml.Unmarshal(data, &yamlData)
+	// Try to fix yaml files that have placeholders with % signs
+	lines := strings.Split(string(data), "\n")
+	for i, l := range lines {
+		l2 := strings.SplitN(l, ":", 2)
+		if len(l2) < 2 {
+			continue
+		}
+		l2[1] = strings.TrimSpace(l2[1])
+		if strings.HasPrefix(l2[1], "%") {
+			lines[i] = l2[0] + `: "` + l2[1] + `"`
+		}
+	}
+
+	err = yaml.Unmarshal([]byte(strings.Join(lines, "\n")), &yamlData)
 	if err != nil {
 		if p.config.Verbose {
 			log.Printf("unmarshal yaml from %s: %v", filepath, err)
@@ -62,14 +76,9 @@ func (p *Parser) walkYamlMap(filepath string, m map[string]interface{}) {
 		case reflect.Slice:
 			p.parseYamlSlice(filepath, k, v)
 		case reflect.Map:
-			if v2, ok := v.(map[interface{}]interface{}); ok {
+			if v2, ok := v.(map[string]interface{}); ok {
 				if len(v2) > 0 {
-					v3 := make(map[string]interface{})
-					for i, j := range v2 {
-						//use sprintf instead of type assertion because sometimes it might be an int
-						v3[fmt.Sprintf("%v", i)] = j
-					}
-					p.walkYamlMap(filepath, v3)
+					p.walkYamlMap(filepath, v2)
 				}
 			}
 		}
@@ -90,10 +99,10 @@ func (p *Parser) parseYamlSlice(filepath string, k string, v interface{}) {
 					CredentialType: credType,
 				}
 			}
-		case map[interface{}]interface{}:
+		case map[string]interface{}:
 			v3 := make(map[string]interface{})
 			for i, j := range v2 {
-				v3[i.(string)] = j
+				v3[i] = j
 			}
 			p.walkYamlMap(filepath, v3)
 		}
