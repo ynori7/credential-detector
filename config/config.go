@@ -55,8 +55,8 @@ type Config struct {
 	TestDirectories []string `yaml:"testDirectories,flow"`
 	IgnoreFiles     []string `yaml:"ignoreFiles,flow"`
 
-	ScanTypes             []string `yaml:"scanTypes,flow"`
-	GenericFileExtensions []string `yaml:"genericFileExtensions"`
+	ScanTypes                 []string `yaml:"scanTypes,flow"`
+	GenericFileExtensions     []string `yaml:"genericFileExtensions"`
 	GenericCodeFileExtensions []string `yaml:"genericCodeFileExtensions"`
 
 	DisableOutputColors bool `yaml:"disableOutputColors"`

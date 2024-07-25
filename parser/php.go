@@ -218,7 +218,7 @@ func (p *Parser) parsePhpFile(filepath string) {
 	}
 }
 
-//returns variable name, value, heredoc idenfifier (if present), line number, and error (if present)
+// returns variable name, value, heredoc idenfifier (if present), line number, and error (if present)
 func parsePhpAssignment(r *bufio.Reader, line string, lineNumber int) (string, string, string, int, error) {
 	var (
 		name        string
@@ -261,7 +261,7 @@ func parsePhpAssignment(r *bufio.Reader, line string, lineNumber int) (string, s
 	return "", "", "", lineNumber, nil
 }
 
-//returns const name and value if valid
+// returns const name and value if valid
 func parsePhpDefineCall(line string) (string, string) {
 	paramBody := functionRegex.FindStringSubmatch(line) //Doesn't work when it's split across multiple lines
 	if len(paramBody) != 2 {

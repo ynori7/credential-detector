@@ -90,6 +90,8 @@ func PrintResults(results []parser.Result) {
 			printGenericCodeOtherResult(result)
 		case parser.TypeGenericCodeOther:
 			printGenericCodeOtherResult(result)
+		case parser.TypeBashVariable:
+			printGenericCodeOtherResult(result)
 		}
 	}
 }
@@ -214,11 +216,18 @@ func printGenericVariableResult(result parser.Result) {
 }
 
 func printGenericCodeOtherResult(result parser.Result) {
-	fmt.Printf(`%sLine %d:%s
+	if result.CredentialType != "" {
+		fmt.Printf(`%sLine %d:%s
 Possible %s
 %s
 
 `, fgYellow, result.Line, reset, result.CredentialType, result.Value)
+	} else {
+		fmt.Printf(`%sLine %d:%s
+%s
+
+`, fgYellow, result.Line, reset, result.Value)
+	}
 }
 
 func disableColors() {
