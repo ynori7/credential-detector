@@ -32,6 +32,9 @@ secret = "Dklj34k3oi23kD"
 
 If the config flag is omitted, default configuration will be used.
 
+For convenience, there is also a script called [detect-credentials-in-github-org.sh](scripts/detect-credentials-in-github-org.sh) which 
+can be used to fetch all repos in your Github organization to scan them.
+
 ## Features
 This highly configurable tool scans a multitude of file types searching for potential credentials. It reports
 suspiciously named variables (excluding variables whose value indicates that it's obviously test data or some constant 
