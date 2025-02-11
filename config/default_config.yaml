@@ -81,7 +81,7 @@ valueMatchPatterns:
     pattern: (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"]
 
   - name: Basic Auth Credentials
-    pattern: (?i)basic (.{10})[a-z0-9_-][a-z0-9_-]*={0,2}('|"|$)
+    pattern: (?i)basic ([a-z0-9_-][a-z0-9_-]{10})[a-z0-9_-][a-z0-9_-]*={0,2}('|"|$)
 fullTextValueExcludePatterns:
   - postgres(?:ql)?:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres(?:ql)?:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
