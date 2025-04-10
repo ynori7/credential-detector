@@ -5,6 +5,7 @@ import (
 
 	"github.com/ynori7/credential-detector/config"
 	"github.com/ynori7/credential-detector/parser"
+	"github.com/ynori7/credential-detector/printer"
 )
 
 func main() {
@@ -19,9 +20,9 @@ func main() {
 	}
 
 	if conf.DisableOutputColors {
-		disableColors()
+		printer.DisableColors()
 	}
 
-	PrintStatistics(p.Statistics)
-	PrintResults(p.Results)
+	printer.PrintStatistics(p.Statistics)
+	printer.PrintResults(p.Results)
 }

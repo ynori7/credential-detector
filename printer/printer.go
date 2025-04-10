@@ -1,4 +1,4 @@
-package main
+package printer
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ var (
 
 func init() {
 	if runtime.GOOS == "windows" {
-		disableColors()
+		DisableColors()
 	}
 }
 
@@ -230,7 +230,7 @@ Possible %s
 	}
 }
 
-func disableColors() {
+func DisableColors() {
 	fgYellow = ""
 	bgRed = ""
 	reset = ""
