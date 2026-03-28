@@ -45,6 +45,12 @@ const (
 	TypeGenericCodeOther
 
 	TypeGeneric
+
+	TypeJSVariable
+	TypeJSComment
+	TypeJSOther
+
+	TypeHTMLScript
 )
 
 const workerCount = 8 //number of cores
@@ -204,6 +210,10 @@ func (p *Parser) ParseFile(filepath string) bool {
 		p.parsePrivateKeyFile(filepath)
 	case p.isParsableBashFile(filepath):
 		p.parseBashFile(filepath)
+	case p.isParsableJavaScriptFile(filepath):
+		p.parseJavaScriptFile(filepath)
+	case p.isParsableHTMLFile(filepath):
+		p.parseHTMLFile(filepath)
 	case p.isParsableGenericCodeFile(filepath):
 		p.parseGenericCodeFile(filepath)
 	case p.isParsableGenericFile(filepath):

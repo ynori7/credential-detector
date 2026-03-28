@@ -36,6 +36,10 @@ const (
 	ScanTypeGeneric = "generic"
 	// ScanTypeGenericCode indicates a file parsable as generic code
 	ScanTypeGenericCode = "generic_code"
+	// ScanTypeJavaScript indicates JavaScript files
+	ScanTypeJavaScript = "javascript"
+	// ScanTypeHTML indicates HTML files
+	ScanTypeHTML = "html"
 )
 
 // Config contains all the configuration for the credential detector

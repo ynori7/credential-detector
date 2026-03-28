@@ -1,5 +1,5 @@
 variableNamePatterns:
-  - (?i)passwd|password
+  - (?i)passwd|password|pw
   - (?i)secret
   - (?i)token
   - (?i)apiKey|api[_-]key
@@ -119,7 +119,7 @@ ignoreFiles: #files or directories to skip
   - .git
   - .idea
 excludeComments: false
-scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php|javascript|html|generic|generic_code
   - go
   - yaml
   - json
@@ -130,6 +130,8 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - bash
   - generic
   - generic_code
+  - javascript
+  - html
 genericFileExtensions:
   # text files
   - txt
@@ -145,11 +147,8 @@ genericFileExtensions:
 
   #code
   - py
-  - js
   - ts
   - coffee
-  - html
-  - xhtml
   - rb
   - kt
   - bat

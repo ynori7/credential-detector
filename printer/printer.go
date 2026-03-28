@@ -92,6 +92,14 @@ func PrintResults(results []parser.Result) {
 			printGenericCodeOtherResult(result)
 		case parser.TypeBashVariable:
 			printGenericCodeOtherResult(result)
+		case parser.TypeJSVariable:
+			printJSVariableResult(result)
+		case parser.TypeJSComment:
+			printJSOtherResult(result)
+		case parser.TypeJSOther:
+			printJSOtherResult(result)
+		case parser.TypeHTMLScript:
+			printJSOtherResult(result)
 		}
 	}
 }
@@ -234,4 +242,26 @@ func DisableColors() {
 	fgYellow = ""
 	bgRed = ""
 	reset = ""
+}
+
+func printJSVariableResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s = %s;
+
+`, fgYellow, result.Line, reset, result.Name, result.Value)
+}
+
+func printJSOtherResult(result parser.Result) {
+	if result.CredentialType != "" {
+		fmt.Printf(`%sLine %d:%s
+Possible %s
+%s
+
+`, fgYellow, result.Line, reset, result.CredentialType, result.Value)
+	} else {
+		fmt.Printf(`%sLine %d:%s
+%s
+
+`, fgYellow, result.Line, reset, result.Value)
+	}
 }

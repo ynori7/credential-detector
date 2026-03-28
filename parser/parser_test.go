@@ -131,7 +131,7 @@ func Test_Scan(t *testing.T) {
 
 	err = parser.Scan("../testdata/")
 	require.NoError(t, err)
-	assert.Equal(t, 41, len(parser.Results))
+	assert.Equal(t, 59, len(parser.Results))
 }
 
 func parseFileForTest(parser *Parser, filepath string) {
@@ -251,12 +251,12 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - bash
   - generic
   - generic_code
+  - javascript
+  - html
 genericFileExtensions:
   - txt
   - py
   - md
-  - js
-  - html
 genericCodeFileExtensions:
   - java
   - swift

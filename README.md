@@ -85,7 +85,7 @@ testDirectories:
 ignoreFiles: #files or directories to skip
   - vendor
 excludeComments: false
-scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php|javascript|html|generic|generic_code
   - go
   - yaml
   - json
@@ -96,6 +96,8 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
   - bash
   - generic
   - generic_code
+  - javascript
+  - html
 genericFileExtensions:
   - txt
   - md
@@ -122,7 +124,7 @@ Note that the above values are the defaults.
 |testDirectories|A list of directory names which are considered test data only|A list of strings|
 |ignoreFiles|A list of directory or file names which should be ignored|A list of strings|
 |excludeComments|A boolean flag to exclude scanning comments in the code |true or false|
-|scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, yaml, properties, privatekey, xml, php, bash, generic, or generic_code|
+|scanTypes|A list of file types which should be scanned|A list of strings with values: go, json, yaml, properties, privatekey, xml, php, bash, javascript, html, generic, or generic_code|
 |genericFileExtensions|A list of file extensions which can be parsed as plaintext. These will be scanned for possible value matches|
 |genericCodeFileExtensions|A list of file extensions which can be parsed as generic code.|
 |disableOutputColors|A boolean flag to disable colorized output when printing the results|true or false|
