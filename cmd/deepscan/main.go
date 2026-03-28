@@ -27,6 +27,8 @@ func main() {
 	repo, commitIter, refHash := openGitRepo(config.ScanPath)
 
 	// Iterate over the commits
+	resultsSet := make(map[string]struct{}) // To store unique credential values to avoid duplicates
+
 	err = commitIter.ForEach(func(c *object.Commit) error {
 		// Check out the commit
 		fmt.Printf("Checking out commit: %s\n", c.Hash.String())
@@ -43,9 +45,21 @@ func main() {
 			log.Fatal(err.Error())
 		}
 
-		if len(p.Results) > 0 {
-			fmt.Printf("Found %d results in commit %s:\n", len(p.Results), c.Hash.String())
-			printer.PrintResults(p.Results)
+		// Filter duplicates
+		finalResults := make([]parser.Result, 0)
+		for _, result := range p.Results {
+			// Check if the result is already in the set
+			if _, exists := resultsSet[result.Value]; !exists {
+				// If not, add it to the set
+				resultsSet[result.Value] = struct{}{}
+				finalResults = append(finalResults, result)
+			}
+		}
+
+		// Print the results
+		if len(finalResults) > 0 {
+			fmt.Printf("Found %d results in commit %s:\n", len(finalResults), c.Hash.String())
+			printer.PrintResults(finalResults)
 			fmt.Printf("\n\n")
 		} else {
 			fmt.Printf("No results found in commit %s\n", c.Hash.String())
