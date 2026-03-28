@@ -82,6 +82,18 @@ valueMatchPatterns:
 
   - name: Basic Auth Credentials
     pattern: (?i)basic ([a-z0-9_-][a-z0-9_-]{10})[a-z0-9_-][a-z0-9_-]*={0,2}('|"|$)
+
+  - name: OpenAI API Key
+    pattern: (?i)sk-[-_a-zA-Z0-9]{22,48}
+
+  - name: Anthropic API Key
+    pattern: (?i)sk-ant-[A-Za-z0-9_-]{90,}
+
+  - name: Gemini API Key
+    pattern: (?i)AIza[A-Za-z0-9_-]{35}
+
+  - name: Hugging Face API Key
+    pattern: (?i)hf_[A-Za-z0-9]{30,}
 fullTextValueExcludePatterns:
   - postgres(?:ql)?:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
   - postgres(?:ql)?:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
