@@ -280,7 +280,7 @@ func unminifyJS(data []byte) string {
 }
 
 // endsWithOpenBrace checks if a trimmed line ends with '{', indicating the start of an object literal.
-// It skips lines that are control flow statements.
+// It skips lines that are control flow statements and function expressions.
 func endsWithOpenBrace(trimmedLine string) bool {
 	if !strings.HasSuffix(trimmedLine, "{") {
 		return false
@@ -290,6 +290,10 @@ func endsWithOpenBrace(trimmedLine string) bool {
 		if strings.HasPrefix(trimmedLine, prefix) {
 			return false
 		}
+	}
+	// Skip function expressions (IIFEs, callbacks, arrow functions)
+	if strings.Contains(trimmedLine, "function") || strings.Contains(trimmedLine, "=>") {
+		return false
 	}
 	return true
 }
