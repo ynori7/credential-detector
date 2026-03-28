@@ -131,6 +131,15 @@ func (p *Parser) parseJavaScriptContent(filepath string, content string, lineOff
 			if err2 != nil {
 				return
 			}
+		} else if endsWithOpenBracket(trimmedLine) { // potential array literal — collect and parse as JSON
+			block, newLineNumber, err2 := p.collectJSArrayBlock(reader, trimmedLine, lineNumber)
+			if block != "" {
+				p.tryParseJSArrayAsJSON(filepath, block)
+			}
+			lineNumber = newLineNumber
+			if err2 != nil {
+				return
+			}
 		} else if p.parseJSObjectProperty(filepath, trimmedLine, lineNumber+lineOffset) {
 			// handled
 		} else { // full-line scan for credential values
@@ -285,6 +294,11 @@ func endsWithOpenBrace(trimmedLine string) bool {
 	return true
 }
 
+// endsWithOpenBracket checks if a trimmed line ends with '[', indicating the start of an array literal.
+func endsWithOpenBracket(trimmedLine string) bool {
+	return strings.HasSuffix(trimmedLine, "[")
+}
+
 // collectJSObjectBlock reads lines from the reader, accumulating them into a block
 // starting from the opening '{'. It tracks brace depth to find the matching '}'.
 // Returns the collected block, the updated line number, and any read error.
@@ -327,6 +341,45 @@ func (p *Parser) collectJSObjectBlock(reader *bufio.Reader, firstLine string, li
 	return strings.Join(lines, "\n"), lineNumber, nil
 }
 
+// collectJSArrayBlock reads lines from the reader, accumulating them into a block
+// starting from the opening '['. It tracks bracket depth to find the matching ']'.
+func (p *Parser) collectJSArrayBlock(reader *bufio.Reader, firstLine string, lineNumber int) (string, int, error) {
+	bracketIdx := strings.LastIndex(firstLine, "[")
+	if bracketIdx < 0 {
+		return "", lineNumber, nil
+	}
+
+	var lines []string
+	lines = append(lines, firstLine[bracketIdx:])
+
+	depth := 1
+	for depth > 0 {
+		next, err := reader.ReadString('\n')
+		next = strings.TrimSpace(next)
+		lineNumber++
+
+		for _, ch := range next {
+			if ch == '[' {
+				depth++
+			} else if ch == ']' {
+				depth--
+			}
+		}
+
+		if depth == 0 {
+			if closingIdx := strings.LastIndex(next, "]"); closingIdx >= 0 {
+				next = next[:closingIdx+1]
+			}
+		}
+		lines = append(lines, next)
+
+		if err != nil {
+			return strings.Join(lines, "\n"), lineNumber, err
+		}
+	}
+	return strings.Join(lines, "\n"), lineNumber, nil
+}
+
 // jsObjectToJSON normalizes a JavaScript object literal into valid JSON by:
 // - quoting unquoted keys
 // - converting single quotes to double quotes on values
@@ -356,4 +409,17 @@ func (p *Parser) tryParseJSObjectAsJSON(filepath string, block string) {
 	}
 
 	p.walkJSONMap(filepath, jsonData)
+}
+
+// tryParseJSArrayAsJSON attempts to normalize a JS array block to JSON and walk it
+// through the existing JSON slice walker for credential detection.
+func (p *Parser) tryParseJSArrayAsJSON(filepath string, block string) {
+	jsonStr := jsObjectToJSON(block)
+
+	var jsonData []interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &jsonData); err != nil {
+		return
+	}
+
+	p.parseJSONSlice(filepath, "", jsonData)
 }
