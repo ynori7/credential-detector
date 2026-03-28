@@ -385,8 +385,13 @@ func (p *Parser) collectJSArrayBlock(reader *bufio.Reader, firstLine string, lin
 // - converting single quotes to double quotes on values
 // - removing trailing commas
 var jsUnquotedKeyPattern = regexp.MustCompile(`(?m)(^|[{,])\s*(\w+)\s*:`)
+var jsSingleLineCommentPattern = regexp.MustCompile(`(?m)//.*$`)
+var jsMultiLineCommentPattern = regexp.MustCompile(`(?s)/\*.*?\*/`)
 
 func jsObjectToJSON(block string) string {
+	// Strip comments before normalizing
+	block = jsMultiLineCommentPattern.ReplaceAllString(block, "")
+	block = jsSingleLineCommentPattern.ReplaceAllString(block, "")
 	// Replace single-quoted string values with double-quoted
 	block = strings.ReplaceAll(block, "'", "\"")
 	// Remove trailing commas before } or ]

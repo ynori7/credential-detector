@@ -185,4 +185,22 @@ func Test_jsObjectToJSON(t *testing.T) {
 		assert.Equal(t, "myappvalue12345678", m["secret"])
 		assert.Equal(t, "myapp", m["name"])
 	}
+
+	// With single-line comments
+	blockWithComment := "{\n    // database credentials\n    secret: \"myappvalue12345678\",\n    name: \"myapp\",\n}"
+	result2 := jsObjectToJSON(blockWithComment)
+	err = json.Unmarshal([]byte(result2), &m)
+	assert.NoError(t, err, "should parse as valid JSON after stripping single-line comments")
+	if err == nil {
+		assert.Equal(t, "myappvalue12345678", m["secret"])
+	}
+
+	// With multiline comments
+	blockWithMultiline := "{\n    /* config */\n    secret: \"myappvalue12345678\",\n    name: \"myapp\",\n}"
+	result3 := jsObjectToJSON(blockWithMultiline)
+	err = json.Unmarshal([]byte(result3), &m)
+	assert.NoError(t, err, "should parse as valid JSON after stripping multiline comments")
+	if err == nil {
+		assert.Equal(t, "myappvalue12345678", m["secret"])
+	}
 }
