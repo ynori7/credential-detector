@@ -22,13 +22,27 @@
 .results-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
 }
 
 .results-header h3 {
     margin: 0;
+}
+
+.results-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.reveal-all-btn {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+    margin: 0;
+    white-space: nowrap;
 }
 
 .stats {
@@ -70,12 +84,32 @@
     color:#fff;
 }
 
+.file-summary-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
 .file-count {
     font-weight: normal;
     font-size: 0.85rem;
     opacity: 0.85;
     white-space: nowrap;
-    margin-left: 1rem;
+}
+
+.dismiss-file-btn {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    margin: 0;
+    white-space: nowrap;
+    color: #fff;
+    border-color: rgba(255,255,255,0.5);
+}
+
+.dismiss-file-btn:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: #fff;
 }
 
 .file-results {

@@ -75,6 +75,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("GET /scan/{id}/progress", s.handleProgress)
 	s.mux.HandleFunc("GET /scan/{id}/results", s.handleResults)
 	s.mux.HandleFunc("DELETE /scan/{id}/dismiss/{index}", s.handleDismiss)
+	s.mux.HandleFunc("DELETE /scan/{id}/dismiss-file", s.handleDismissFile)
 }
 
 // ServeHTTP implements http.Handler, applying security headers to every response.

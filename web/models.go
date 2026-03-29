@@ -55,6 +55,20 @@ type ScanSession struct {
 	dismissed map[int]bool
 }
 
+// DismissFile marks all results for a given file as dismissed
+func (s *ScanSession) DismissFile(file string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.dismissed == nil {
+		s.dismissed = make(map[int]bool)
+	}
+	for i, r := range s.Results {
+		if r.File == file {
+			s.dismissed[i] = true
+		}
+	}
+}
+
 // Dismiss marks a result index as dismissed
 func (s *ScanSession) Dismiss(index int) {
 	s.mu.Lock()

@@ -3,10 +3,24 @@
     <header>
         <div class="results-header">
             <h3>Scan Results for <code>{{.Target}}</code></h3>
-            <div class="stats">
-                <span>Files found: <strong>{{.Stats.FilesFound}}</strong></span>
-                <span>Files scanned: <strong>{{.Stats.FilesScanned}}</strong></span>
-                <span>Results: <strong>{{.ActiveCount}}</strong>{{if ne .ActiveCount .TotalCount}} / {{.TotalCount}}{{end}}</span>
+            <div class="results-header-right">
+                <div class="stats">
+                    <span>Files found: <strong>{{.Stats.FilesFound}}</strong></span>
+                    <span>Files scanned: <strong>{{.Stats.FilesScanned}}</strong></span>
+                    <span>Results: <strong>{{.ActiveCount}}</strong>{{if ne .ActiveCount .TotalCount}} / {{.TotalCount}}{{end}}</span>
+                </div>
+                <button id="reveal-all-btn" class="outline secondary reveal-all-btn" data-revealed="false"
+                        onclick="(function(){
+                            var btn = document.getElementById('reveal-all-btn');
+                            var isRevealed = btn.dataset.revealed === 'true';
+                            document.querySelectorAll('#results-list .var-value').forEach(function(el){
+                                if (isRevealed) { el.classList.add('masked'); } else { el.classList.remove('masked'); }
+                            });
+                            btn.dataset.revealed = isRevealed ? 'false' : 'true';
+                            btn.textContent = isRevealed ? 'Reveal All' : 'Censor All';
+                        })()">
+                    Reveal All
+                </button>
             </div>
         </div>
     </header>
@@ -27,7 +41,17 @@
         <details class="file-group" open>
             <summary class="file-header">
                 <span class="file-name">{{$group.File}}</span>
-                <span class="file-count">{{len $group.Results}} finding{{if ne (len $group.Results) 1}}s{{end}}</span>
+                <div class="file-summary-right">
+                    <span class="file-count">{{len $group.Results}} finding{{if ne (len $group.Results) 1}}s{{end}}</span>
+                    <button class="outline secondary dismiss-file-btn"
+                            hx-delete="/scan/{{$sessionID}}/dismiss-file?file={{$group.File | urlquery}}"
+                            hx-target="closest details"
+                            hx-swap="outerHTML"
+                            onclick="event.stopPropagation()"
+                            title="Dismiss all findings in this file">
+                        Dismiss File
+                    </button>
+                </div>
             </summary>
 
             <div class="file-results">

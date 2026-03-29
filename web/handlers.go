@@ -195,3 +195,24 @@ func (s *Server) handleDismiss(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte("<!-- dismissed -->"))
 }
+
+func (s *Server) handleDismissFile(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	file := r.URL.Query().Get("file")
+
+	sess, ok := s.sessions.Get(id)
+	if !ok {
+		http.Error(w, "Session not found", http.StatusNotFound)
+		return
+	}
+
+	if file == "" {
+		http.Error(w, "File is required", http.StatusBadRequest)
+		return
+	}
+
+	sess.DismissFile(file)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte("<!-- dismissed -->"))
+}
