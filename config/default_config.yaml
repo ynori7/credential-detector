@@ -1,5 +1,6 @@
 variableNamePatterns:
-  - (?i)passwd|password|pw
+  - (?i)passwd|password
+  - (?i)pw$
   - (?i)secret
   - (?i)token
   - (?i)apiKey|api[_-]key

@@ -59,7 +59,7 @@ func TestParser_JavaScript(t *testing.T) {
 
 	// then
 	res := parser.Results
-	assert.Equal(t, 11, len(res))
+	assert.Equal(t, 12, len(res))
 
 	// Separate JS-parsed results from JSON-walked results
 	jsResults := make([]Result, 0)
@@ -113,7 +113,7 @@ func TestParser_JavaScript(t *testing.T) {
 	assert.Equal(t, 2, len(commentResults))
 
 	// 3 results from JSON object parsing
-	assert.Equal(t, 3, len(jsonResults))
+	assert.Equal(t, 4, len(jsonResults))
 
 	jsonByName := make(map[string]Result)
 	for _, r := range jsonResults {
@@ -122,6 +122,7 @@ func TestParser_JavaScript(t *testing.T) {
 	assert.Equal(t, "myappvalue12345678", jsonByName["secret"].Value)
 	assert.Equal(t, "nestedDbP@ss9876", jsonByName["password"].Value)
 	assert.Equal(t, "nested-tok-abc1234", jsonByName["token"].Value)
+	assert.Equal(t, "supersecret", jsonByName["DefaultPw"].Value)
 }
 
 func TestParser_JavaScriptMinified(t *testing.T) {

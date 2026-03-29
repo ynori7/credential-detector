@@ -36,5 +36,7 @@ const dbConfig = {
     credentials: {
         password: "nestedDbP@ss9876",
         token: "nested-tok-abc1234"
-    }
+    },
+    PreferredBackupWindow: "01:00-02:00",
+    DefaultPw: "supersecret"
 };

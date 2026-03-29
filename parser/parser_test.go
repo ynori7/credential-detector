@@ -143,6 +143,7 @@ func parseFileForTest(parser *Parser, filepath string) {
 func getTestConfig() []byte {
 	return []byte(`variableNamePatterns:
   - (?i)passwd|password
+  - (?i)pw$
   - (?i)secret
   - (?i)token
   - (?i)apiKey|api[_-]key
