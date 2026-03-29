@@ -233,6 +233,13 @@ types.
 GHAS and similar tools like GitGuardian only detected two credentials in the test files of this repository (the dummy 
 SendGrid API Key and the dummy AWS Client ID) compared to the 32 results detected by credential-detector.
 
+## Web App
+There exists a web app which encompasses the various features available in this tool and presents them in a convenient way. Run the app locally with:
+
+```
+go run cmd/web/main.go
+```
+
 ## Usage as a library
 The credential scanner can also be used as a library like so:
 

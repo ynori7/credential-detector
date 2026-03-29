@@ -1,0 +1,34 @@
+{{define "result_row.html"}}
+<div class="result-row" id="result-{{.SessionID}}-{{.Index}}">
+    <div class="result-content">
+        <div class="result-meta">
+            <span class="badge type-badge">{{resultTypeName .Result.Type}}</span>
+            {{if gt .Result.Line 0}}
+            <span class="line-number">Line {{.Result.Line}}</span>
+            {{end}}
+            {{if .Result.CredentialType}}
+            <span class="badge cred-badge">{{.Result.CredentialType}}</span>
+            {{end}}
+        </div>
+        <div class="result-detail">
+            {{if .Result.Name}}
+            <span class="var-name">{{.Result.Name}}</span>
+            <span class="equals"> = </span>
+            {{end}}
+            <span class="var-value masked" onclick="this.classList.toggle('masked')" title="Click to reveal/hide">
+                <span class="value-masked">{{maskValue .Result.Value}}</span>
+                <span class="value-plain">{{.Result.Value}}</span>
+            </span>
+        </div>
+    </div>
+    <div class="result-actions">
+        <button class="outline secondary dismiss-btn"
+                hx-delete="/scan/{{.SessionID}}/dismiss/{{.Index}}"
+                hx-target="#result-{{.SessionID}}-{{.Index}}"
+                hx-swap="outerHTML"
+                title="Dismiss this finding">
+            Dismiss
+        </button>
+    </div>
+</div>
+{{end}}

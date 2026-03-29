@@ -1,0 +1,57 @@
+{{define "progress.html"}}
+<article id="progress-container">
+    <header>
+        <h3>Scan in Progress</h3>
+    </header>
+
+    <div id="progress-log" class="progress-log">
+        <p class="progress-entry" aria-busy="true">Starting scan...</p>
+    </div>
+</article>
+
+<script>
+(function() {
+    var sessionId = '{{.SessionID}}';
+    var evtSource = new EventSource('/scan/' + sessionId + '/progress');
+    var log = document.getElementById('progress-log');
+
+    evtSource.addEventListener('progress', function(e) {
+        var entry = document.createElement('p');
+        entry.className = 'progress-entry';
+        entry.textContent = e.data;
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+    });
+
+    evtSource.addEventListener('complete', function(e) {
+        evtSource.close();
+        var h3 = document.querySelector('#progress-container header h3');
+        if (h3) h3.textContent = 'Scan Complete';
+        var spinner = document.querySelector('#progress-container [aria-busy="true"]');
+        if (spinner) spinner.removeAttribute('aria-busy');
+        htmx.ajax('GET', '/scan/' + e.data + '/results', {target: '#results-area', swap: 'innerHTML'});
+    });
+
+    evtSource.addEventListener('scan-error', function(e) {
+        evtSource.close();
+        var h3 = document.querySelector('#progress-container header h3');
+        if (h3) h3.textContent = 'Scan Failed';
+        var spinner = document.querySelector('#progress-container [aria-busy="true"]');
+        if (spinner) spinner.removeAttribute('aria-busy');
+        var article = document.createElement('article');
+        article.className = 'error-card';
+        var header = document.createElement('header');
+        var title = document.createElement('h3');
+        title.textContent = 'Scan Failed';
+        header.appendChild(title);
+        var msg = document.createElement('p');
+        msg.textContent = e.data;
+        article.appendChild(header);
+        article.appendChild(msg);
+        var area = document.getElementById('results-area');
+        area.textContent = '';
+        area.appendChild(article);
+    });
+})();
+</script>
+{{end}}

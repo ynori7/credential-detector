@@ -1,0 +1,226 @@
+/* Credential Detector Web UI — custom styles on top of Pico CSS */
+
+/* Progress log */
+.progress-log {
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--pico-card-background-color, #f8f9fa);
+    border: 1px solid var(--pico-muted-border-color, #dee2e6);
+    border-radius: var(--pico-border-radius);
+    padding: 1rem;
+    font-family: var(--pico-font-family-monospace, monospace);
+    font-size: 0.85rem;
+}
+
+.progress-entry {
+    margin: 0.25rem 0;
+    padding: 0;
+    line-height: 1.4;
+}
+
+/* Results header */
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.results-header h3 {
+    margin: 0;
+}
+
+.stats {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--pico-muted-color);
+}
+
+/* File groups */
+.file-group {
+    margin-bottom: 1rem;
+    border: 1px solid var(--pico-muted-border-color, #dee2e6);
+    border-radius: var(--pico-border-radius);
+}
+
+.file-group summary {
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    background: var(--pico-secondary-background, #6c757d);
+    color: var(--pico-secondary-inverse, #fff);
+    border-radius: var(--pico-border-radius) var(--pico-border-radius) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+.file-group[open] summary {
+    border-radius: var(--pico-border-radius) var(--pico-border-radius) 0 0;
+}
+
+.file-group:not([open]) summary {
+    border-radius: var(--pico-border-radius);
+}
+
+.file-name {
+    word-break: break-all;
+    color:#fff;
+}
+
+.file-count {
+    font-weight: normal;
+    font-size: 0.85rem;
+    opacity: 0.85;
+    white-space: nowrap;
+    margin-left: 1rem;
+}
+
+.file-results {
+    padding: 0.5rem;
+}
+
+/* Result rows */
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--pico-muted-border-color, #dee2e6);
+    gap: 1rem;
+}
+
+.result-row:last-child {
+    border-bottom: none;
+}
+
+.result-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.result-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 0.4rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.type-badge {
+    background: var(--pico-secondary-background);
+    color: var(--pico-secondary-inverse);
+}
+
+.cred-badge {
+    background: #dc3545;
+    color: #fff;
+}
+
+.line-number {
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+    font-family: var(--pico-font-family-monospace, monospace);
+}
+
+.result-detail {
+    font-family: var(--pico-font-family-monospace, monospace);
+    font-size: 0.85rem;
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+.var-name {
+    color: var(--pico-primary);
+    font-weight: 600;
+}
+
+.equals {
+    color: var(--pico-muted-color);
+}
+
+/* Value masking */
+.var-value {
+    cursor: pointer;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    background: var(--pico-card-background-color, #f8f9fa);
+}
+
+.var-value:hover {
+    background: var(--pico-muted-border-color, #dee2e6);
+}
+
+.var-value.masked .value-plain {
+    display: none;
+}
+
+.var-value:not(.masked) .value-masked {
+    display: none;
+}
+
+.value-masked {
+    color: var(--pico-muted-color);
+    letter-spacing: 1px;
+}
+
+/* Dismiss button */
+.result-actions {
+    flex-shrink: 0;
+}
+
+.dismiss-btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+/* Error card */
+.error-card {
+    border-color: #dc3545;
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Empty results */
+.empty-results {
+    text-align: center;
+    padding: 2rem;
+    color: var(--pico-muted-color);
+    font-style: italic;
+}
+
+/* Notice for rate limiting */
+.notice {
+    padding: 1rem;
+    border-radius: var(--pico-border-radius);
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    margin-bottom: 1rem;
+}
+
+/* Hide HTMX indicator by default */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+
+.htmx-request #scan-btn {
+    opacity: 0.7;
+    pointer-events: none;
+}

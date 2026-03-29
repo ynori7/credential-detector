@@ -26,6 +26,10 @@ lint:
 	$(ROOT_DIR)/scripts/lint.sh
 .PHONY: lint
 
+web:
+	go run ./cmd/web
+.PHONY: web
+
 test:
 	go test -race -test.timeout "$(TEST_TIMEOUT_IN_SECONDS)s" ./... 
 .PHONY: test

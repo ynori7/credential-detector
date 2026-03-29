@@ -1,0 +1,43 @@
+{{define "results.html"}}
+<article>
+    <header>
+        <div class="results-header">
+            <h3>Scan Results for <code>{{.Target}}</code></h3>
+            <div class="stats">
+                <span>Files found: <strong>{{.Stats.FilesFound}}</strong></span>
+                <span>Files scanned: <strong>{{.Stats.FilesScanned}}</strong></span>
+                <span>Results: <strong>{{.ActiveCount}}</strong>{{if ne .ActiveCount .TotalCount}} / {{.TotalCount}}{{end}}</span>
+            </div>
+        </div>
+    </header>
+
+    {{if .Error}}
+    <div class="notice error-card" role="alert">
+        <strong>Error:</strong> {{.Error}}
+    </div>
+    {{end}}
+
+    {{$sessionID := .SessionID}}
+
+    {{if eq .ActiveCount 0}}
+    <p class="empty-results">No credentials found. The scan completed successfully with no results.</p>
+    {{else}}
+    <div id="results-list">
+        {{range $group := groupByFile .Results}}
+        <details class="file-group" open>
+            <summary class="file-header">
+                <span class="file-name">{{$group.File}}</span>
+                <span class="file-count">{{len $group.Results}} finding{{if ne (len $group.Results) 1}}s{{end}}</span>
+            </summary>
+
+            <div class="file-results">
+                {{range $group.Results}}
+                {{template "result_row.html" (makeRowData $sessionID .)}}
+                {{end}}
+            </div>
+        </details>
+        {{end}}
+    </div>
+    {{end}}
+</article>
+{{end}}

@@ -1,0 +1,111 @@
+{{define "index.html"}}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credential Detector</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var observer = new MutationObserver(function(mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    var m = mutations[i];
+                    for (var j = 0; j < m.removedNodes.length; j++) {
+                        var node = m.removedNodes[j];
+                        if (node.nodeType === 1 && node.classList.contains('result-row')) {
+                            var group = m.target.closest && m.target.closest('.file-group');
+                            if (group && group.querySelectorAll('.result-row').length === 0) {
+                                group.remove();
+                            }
+                        }
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+
+        // Allow HTMX to swap HTML error responses (4xx/5xx) into the target element
+        // so validation errors returned by the server are displayed instead of silently dropped.
+        document.addEventListener('htmx:beforeSwap', function(evt) {
+            var status = evt.detail.xhr.status;
+            if (status >= 400) {
+                evt.detail.shouldSwap = true;
+                evt.detail.isError = false;
+            }
+        });
+    </script>
+</head>
+<body>
+    <header class="container">
+        <nav>
+            <ul>
+                <li><strong>Credential Detector</strong></li>
+            </ul>
+            <ul>
+                <li><a href="/">New Scan</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="container">
+        <article>
+            <header>
+                <h2>Start a Scan</h2>
+                <p>Scan a repository, GitHub organization, or local directory for hard-coded credentials.</p>
+            </header>
+
+            <form hx-post="/scan" hx-target="#results-area" hx-swap="innerHTML">
+                <fieldset>
+                    <legend>Scan Type</legend>
+                    <div class="grid">
+                        <label>
+                            <input type="radio" name="mode" value="repo" checked
+                                   onclick="document.getElementById('target-label').textContent='Repository URL'; document.getElementById('target').placeholder='https://github.com/owner/repo or owner/repo'; document.getElementById('depth-fieldset').style.display=''">
+                            Repository
+                        </label>
+                        <label>
+                            <input type="radio" name="mode" value="org"
+                                   onclick="document.getElementById('target-label').textContent='Organization Name'; document.getElementById('target').placeholder='my-org'; document.getElementById('depth-fieldset').style.display=''">
+                            GitHub Org
+                        </label>
+                        <label>
+                            <input type="radio" name="mode" value="local"
+                                   onclick="document.getElementById('target-label').textContent='Local Path'; document.getElementById('target').placeholder='/path/to/directory'; document.getElementById('depth-fieldset').style.display='none'">
+                            Local Path
+                        </label>
+                    </div>
+                </fieldset>
+
+                <label id="target-label" for="target">Repository URL</label>
+                <input type="text" id="target" name="target" placeholder="https://github.com/owner/repo or owner/repo" required>
+
+                <fieldset id="depth-fieldset">
+                    <legend>Scan Depth</legend>
+                    <div class="grid">
+                        <label>
+                            <input type="radio" name="depth" value="head" checked>
+                            HEAD only (current state)
+                        </label>
+                        <label>
+                            <input type="radio" name="depth" value="deep">
+                            Deep scan (full git history)
+                        </label>
+                    </div>
+                </fieldset>
+
+                <button type="submit" id="scan-btn">
+                    Start Scan
+                </button>
+            </form>
+        </article>
+
+        <div id="results-area"></div>
+    </main>
+    <footer class="container">
+        <small>Credential Detector &mdash; Local scanning tool. All data stays on your machine.</small>
+    </footer>
+</body>
+</html>
+{{end}}
