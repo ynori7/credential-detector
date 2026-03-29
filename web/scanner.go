@@ -23,6 +23,20 @@ var (
 	orgNameRegex = regexp.MustCompile(`^[a-zA-Z0-9_.-]+$`)
 	// Only allow well-known Git hosting providers
 	allowedHosts = []string{"github.com", "gitlab.com", "bitbucket.org"}
+
+	// Sensitive system paths that must not be scanned via the web UI
+	deniedLocalPrefixes = []string{
+		"/etc",
+		"/root",
+		"/proc",
+		"/sys",
+		"/dev",
+		"/run",
+		"/boot",
+		"/private/etc",   // macOS
+		"/private/var",   // macOS
+		"/Users/root",
+	}
 )
 
 // Scanner handles cloning and scanning operations
@@ -183,6 +197,12 @@ func (sc *Scanner) RunLocalScan(ctx context.Context, sess *ScanSession) {
 	defer close(sess.Progress)
 
 	target := sess.Request.Target
+
+	// Block sensitive system directories
+	if err := validateLocalPath(target); err != nil {
+		sc.failSession(sess, fmt.Sprintf("Forbidden path: %s", err))
+		return
+	}
 
 	// Validate path exists
 	info, err := os.Stat(target)
@@ -428,4 +448,19 @@ func sortResults(results []parser.Result) {
 		}
 		return results[i].File < results[j].File
 	})
+}
+
+func validateLocalPath(target string) error {
+	// Resolve symlinks and clean the path to prevent traversal bypasses
+	resolved, err := filepath.EvalSymlinks(target)
+	if err != nil {
+		// Path may not exist yet; fall back to lexical clean
+		resolved = filepath.Clean(target)
+	}
+	for _, prefix := range deniedLocalPrefixes {
+		if resolved == prefix || strings.HasPrefix(resolved, prefix+string(filepath.Separator)) {
+			return fmt.Errorf("scanning %q is not permitted", resolved)
+		}
+	}
+	return nil
 }

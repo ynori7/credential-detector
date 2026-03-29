@@ -33,6 +33,7 @@ func (s *SessionStore) Create(req ScanRequest) *ScanSession {
 		Status:    ScanStatusRunning,
 		Progress:  make(chan string, 64),
 		dismissed: make(map[int]bool),
+		CreatedAt: time.Now(),
 	}
 	s.mu.Lock()
 	s.sessions[id] = session
@@ -61,18 +62,12 @@ func (s *SessionStore) cleanup() {
 	for range ticker.C {
 		s.mu.Lock()
 		for id, sess := range s.sessions {
-			if sess.Status != ScanStatusRunning && time.Since(s.createdAt(sess)) > sessionTimeout {
+			if sess.Status != ScanStatusRunning && time.Since(sess.CreatedAt) > sessionTimeout {
 				delete(s.sessions, id)
 			}
 		}
 		s.mu.Unlock()
 	}
-}
-
-func (s *SessionStore) createdAt(_ *ScanSession) time.Time {
-	// Sessions don't track creation time; use a conservative default
-	// In practice the cleanup just removes completed sessions older than timeout
-	return time.Now().Add(-sessionTimeout - 1*time.Minute)
 }
 
 func generateID() string {

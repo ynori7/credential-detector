@@ -77,8 +77,12 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("DELETE /scan/{id}/dismiss/{index}", s.handleDismiss)
 }
 
-// ServeHTTP implements http.Handler
+// ServeHTTP implements http.Handler, applying security headers to every response.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+	w.Header().Set("Referrer-Policy", "no-referrer")
+	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'")
 	s.mux.ServeHTTP(w, r)
 }
 
