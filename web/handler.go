@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"fmt"
+	"html"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -223,7 +224,7 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 func httpErrorHTML(w http.ResponseWriter, message string, code int) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(code)
-	fmt.Fprintf(w, `<article class="error-card"><header><h3>Error</h3></header><p>%s</p><a href="/">← Start a new scan</a></article>`, message)
+	fmt.Fprintf(w, `<article class="error-card"><header><h3>Error</h3></header><p>%s</p><a href="/">← Start a new scan</a></article>`, html.EscapeString(message))
 }
 
 func (s *Server) handleProgress(w http.ResponseWriter, r *http.Request) {
@@ -389,6 +390,7 @@ func (s *Server) handleConfigDelete(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	defaults, err := s.scanner.DefaultConfig()
