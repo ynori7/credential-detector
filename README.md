@@ -51,6 +51,46 @@ Credential-detector can scan:
 - XML files
 - PHP code
 - Generic text files
+- Bash files
+- Javascript/HTML files
+
+## Web App
+There exists a web app which encompasses the various features available in this tool and presents them in a convenient way. Run the app locally with:
+
+```
+go run cmd/web/main.go
+```
+
+Note that fetching remote repos relies on the `gh` command.
+
+## Usage as a library
+The credential scanner can also be used as a library like so:
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/ynori7/credential-detector/config"
+	"github.com/ynori7/credential-detector/parser"
+)
+
+func main() {
+	//Specify the configuration file paths. Use empty string as root config to use default root
+	conf, err := config.LoadConfig("myconfig.yaml", "myrootconfig.yaml")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	p := parser.NewParser(conf)
+	if err := p.Scan("/myScanPath"); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	//results are in p.Results
+}
+```
 
 ## Configuration
 When running the credential detector, it is possible to provide an optional `--root_config`, which supplies the base 
@@ -232,42 +272,6 @@ types.
 
 GHAS and similar tools like GitGuardian only detected two credentials in the test files of this repository (the dummy 
 SendGrid API Key and the dummy AWS Client ID) compared to the 32 results detected by credential-detector.
-
-## Web App
-There exists a web app which encompasses the various features available in this tool and presents them in a convenient way. Run the app locally with:
-
-```
-go run cmd/web/main.go
-```
-
-## Usage as a library
-The credential scanner can also be used as a library like so:
-
-```go
-package main
-
-import (
-	"log"
-
-	"github.com/ynori7/credential-detector/config"
-	"github.com/ynori7/credential-detector/parser"
-)
-
-func main() {
-	//Specify the configuration file paths. Use empty string as root config to use default root
-	conf, err := config.LoadConfig("myconfig.yaml", "myrootconfig.yaml")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	p := parser.NewParser(conf)
-	if err := p.Scan("/myScanPath"); err != nil {
-		log.Fatal(err.Error())
-	}
-
-	//results are in p.Results
-}
-```
 
 ## Limitations
 The Go scanner is only scanning global variables and constants. It will not detect things like this:

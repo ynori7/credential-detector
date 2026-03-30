@@ -101,6 +101,16 @@
             </form>
         </article>
 
+        <details class="config-outer-details" {{if .HasOverride}}open{{end}}>
+            <summary>
+                &#9881; Configure Detection Settings
+                {{if .HasOverride}}<span class="config-active-badge">Custom config active</span>{{end}}
+            </summary>
+            <article class="config-article">
+                {{template "config_editor.html" .}}
+            </article>
+        </details>
+
         <div id="results-area"></div>
     </main>
     <footer class="container">

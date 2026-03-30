@@ -18,20 +18,22 @@ var staticFS embed.FS
 
 // Server is the web UI HTTP server
 type Server struct {
-	mux       *http.ServeMux
-	templates *template.Template
-	sessions  *SessionStore
-	scanner   *Scanner
-	scanSem   chan struct{} // limits concurrent scans to 1
+	mux         *http.ServeMux
+	templates   *template.Template
+	sessions    *SessionStore
+	scanner     *Scanner
+	scanSem     chan struct{} // limits concurrent scans to 1
+	configStore *ConfigStore
 }
 
 // NewServer creates and configures the web server
 func NewServer(scanner *Scanner) *Server {
 	s := &Server{
-		mux:      http.NewServeMux(),
-		sessions: NewSessionStore(),
-		scanner:  scanner,
-		scanSem:  make(chan struct{}, 1),
+		mux:         http.NewServeMux(),
+		sessions:    NewSessionStore(),
+		scanner:     scanner,
+		scanSem:     make(chan struct{}, 1),
+		configStore: newConfigStore(),
 	}
 
 	s.loadTemplates()
@@ -47,6 +49,17 @@ func (s *Server) loadTemplates() {
 		"add":            func(a, b int) int { return a + b },
 		"sub":            func(a, b int) int { return a - b },
 		"groupByFile":    groupByFile,
+		"joinLines": func(lines []string) string {
+			return strings.Join(lines, "\n")
+		},
+		"contains": func(slice []string, item string) bool {
+			for _, s := range slice {
+				if s == item {
+					return true
+				}
+			}
+			return false
+		},
 		"dict": func(pairs ...interface{}) map[string]interface{} {
 			m := make(map[string]interface{}, len(pairs)/2)
 			for i := 0; i < len(pairs)-1; i += 2 {
@@ -76,6 +89,12 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("GET /scan/{id}/results", s.handleResults)
 	s.mux.HandleFunc("DELETE /scan/{id}/dismiss/{index}", s.handleDismiss)
 	s.mux.HandleFunc("DELETE /scan/{id}/dismiss-file", s.handleDismissFile)
+
+	// Config
+	s.mux.HandleFunc("GET /config", s.handleConfigGet)
+	s.mux.HandleFunc("POST /config", s.handleConfigSave)
+	s.mux.HandleFunc("DELETE /config", s.handleConfigDelete)
+	s.mux.HandleFunc("POST /config/export", s.handleConfigExport)
 }
 
 // ServeHTTP implements http.Handler, applying security headers to every response.

@@ -57,6 +57,20 @@ func (sc *Scanner) loadConfig() (*config.Config, error) {
 	return config.LoadConfig(sc.configPath, sc.rootConfigPath)
 }
 
+// DefaultConfig returns the effective base configuration (no session override applied).
+func (sc *Scanner) DefaultConfig() (*config.Config, error) {
+	return sc.loadConfig()
+}
+
+// loadConfigWithOverride loads the base config and merges the session's config override on top.
+func (sc *Scanner) loadConfigWithOverride(override *config.Config) (*config.Config, error) {
+	conf, err := sc.loadConfig()
+	if err != nil || override == nil {
+		return conf, err
+	}
+	return config.MergeConfigs(conf, override), nil
+}
+
 // RunRepoScan clones a repo and scans it, sending progress to the session
 func (sc *Scanner) RunRepoScan(ctx context.Context, sess *ScanSession) {
 	defer close(sess.Progress)
@@ -68,7 +82,7 @@ func (sc *Scanner) RunRepoScan(ctx context.Context, sess *ScanSession) {
 		return
 	}
 
-	conf, err := sc.loadConfig()
+	conf, err := sc.loadConfigWithOverride(sess.ConfigOverride)
 	if err != nil {
 		sc.failSession(sess, fmt.Sprintf("Failed to load config: %s", err))
 		return
@@ -114,7 +128,7 @@ func (sc *Scanner) RunOrgScan(ctx context.Context, sess *ScanSession) {
 		return
 	}
 
-	conf, err := sc.loadConfig()
+	conf, err := sc.loadConfigWithOverride(sess.ConfigOverride)
 	if err != nil {
 		sc.failSession(sess, fmt.Sprintf("Failed to load config: %s", err))
 		return
@@ -212,7 +226,7 @@ func (sc *Scanner) RunLocalScan(ctx context.Context, sess *ScanSession) {
 	}
 	_ = info
 
-	conf, err := sc.loadConfig()
+	conf, err := sc.loadConfigWithOverride(sess.ConfigOverride)
 	if err != nil {
 		sc.failSession(sess, fmt.Sprintf("Failed to load config: %s", err))
 		return

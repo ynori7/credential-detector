@@ -1,0 +1,324 @@
+{{define "config_editor.html"}}
+<div class="config-editor" id="config-editor-inner">
+  {{if .HasOverride}}
+  <p class="config-override-active" role="status">
+    <strong>&#10003; Custom configuration active</strong> — modifications below will be applied to your next scan.
+    Reset to remove all customisations.
+  </p>
+  {{end}}
+
+  <form id="config-form"
+        hx-post="/config"
+        hx-target="#config-result"
+        hx-swap="innerHTML">
+
+    <!-- ── Detection: Variable Name Patterns ─────────────────────────── -->
+    <div class="config-section">
+      <h4>Variable Name Patterns <span class="config-badge config-badge-append">Appended to defaults</span></h4>
+      <p class="field-desc">
+        Regex patterns that match suspicious variable / field names (e.g.&nbsp;<code>(?i)mySecret</code>,
+        <code>(?i)internalKey</code>). Entries here are <strong>appended</strong> to the defaults — existing
+        default patterns stay active.
+      </p>
+      <label for="variableNamePatterns">Additional patterns <small>(one per line)</small></label>
+      <textarea id="variableNamePatterns" name="variableNamePatterns" rows="4"
+                placeholder="(?i)myCustomSecret&#10;(?i)internalToken">{{joinLines .ExtraVariableNamePatterns}}</textarea>
+      <details class="defaults-ref">
+        <summary>Default patterns (already active)</summary>
+        <pre class="defaults-pre">{{joinLines .Defaults.VariableNamePatterns}}</pre>
+      </details>
+    </div>
+
+    <!-- ── Detection: Exclusion Patterns ─────────────────────────────── -->
+    <div class="config-section">
+      <h4>Variable Name Exclusion Pattern <span class="config-badge config-badge-replace">Replaces default if set</span></h4>
+      <p class="field-desc">
+        A regex to <em>exclude</em> variable names that would otherwise trigger false positives
+        (e.g.&nbsp;<code>(?i)format|tokenizer|secretName</code>).
+        If left blank the default exclusion pattern stays in effect.
+      </p>
+      <label for="variableNameExclusionPattern">Exclusion pattern <small>(blank = keep default)</small></label>
+      <input type="text" id="variableNameExclusionPattern" name="variableNameExclusionPattern"
+             value="{{.VariableNameExclusionPattern}}"
+             placeholder="Default: {{.Defaults.VariableNameExclusionPattern}}">
+
+      <label for="xmlAttributeNameExclusionPattern" style="margin-top:1rem">
+        XML Attribute Name Exclusion <span class="config-badge config-badge-replace">Replaces default if set</span>
+      </label>
+      <p class="field-desc">
+        XML often describes a model rather than containing data, so attribute names like
+        <code>token</code> tend to have a different meaning. Leave blank to keep the default.
+      </p>
+      <input type="text" id="xmlAttributeNameExclusionPattern" name="xmlAttributeNameExclusionPattern"
+             value="{{.XMLAttributeNameExclusionPattern}}"
+             placeholder="Default: {{.Defaults.XMLAttributeNameExclusionPattern}}">
+    </div>
+
+    <!-- ── Detection: Value Match Patterns ───────────────────────────── -->
+    <div class="config-section">
+      <h4>Value Match Patterns <span class="config-badge config-badge-append">Appended to defaults</span></h4>
+      <p class="field-desc">
+        Detect specific credential formats by their value (e.g.&nbsp;AWS keys, JWT tokens,
+        PostgreSQL URIs). Each entry has a display name and a regex. These are
+        <strong>appended</strong> to the built-in patterns.
+      </p>
+
+      <div id="vmp-rows">
+        {{range $i, $vmp := .ExtraValueMatchPatterns}}
+        <div class="vmp-row">
+          <div class="vmp-fields">
+            <input type="text" name="vmpName[{{$i}}]" value="{{$vmp.Name}}"
+                   placeholder="Pattern name (e.g. My API Key)" aria-label="Pattern name">
+            <input type="text" name="vmpPattern[{{$i}}]" value="{{$vmp.Pattern}}"
+                   placeholder="Regex (e.g. mykey_[A-Za-z0-9]{32})" aria-label="Regex pattern"
+                   class="vmp-pattern-input">
+          </div>
+          <button type="button" class="outline secondary vmp-remove-btn"
+                  onclick="this.closest('.vmp-row').remove()" aria-label="Remove pattern">&#x2715;</button>
+        </div>
+        {{end}}
+      </div>
+      <button type="button" class="outline secondary vmp-add-btn" id="vmp-add-btn"
+              onclick="addVmpRow()">+ Add pattern</button>
+
+      <details class="defaults-ref">
+        <summary>Default value match patterns (already active)</summary>
+        {{range .Defaults.ValueMatchPatterns}}
+        <div class="default-vmp-row">
+          <strong>{{.Name}}:</strong> <code>{{.Pattern}}</code>
+        </div>
+        {{end}}
+      </details>
+    </div>
+
+    <!-- ── Exclusions: Variable Values ───────────────────────────────── -->
+    <div class="config-section">
+      <h4>Value Exclusion Patterns <span class="config-badge config-badge-append">Appended to defaults</span></h4>
+      <p class="field-desc">
+        Regex patterns to exclude known-safe variable values, e.g.&nbsp;<code>(?i)^placeholder$</code>.
+        Applied only to variable assignments. <strong>Appended</strong> to defaults.
+      </p>
+      <label for="variableValueExcludePatterns">
+        Additional variable value exclusions <small>(one per line)</small>
+      </label>
+      <textarea id="variableValueExcludePatterns" name="variableValueExcludePatterns" rows="3"
+                placeholder="(?i)^myDummyValue$">{{joinLines .ExtraVariableValueExcludePatterns}}</textarea>
+      <details class="defaults-ref">
+        <summary>Default variable value exclusions (already active)</summary>
+        <pre class="defaults-pre">{{joinLines .Defaults.VariableValueExcludePatterns}}</pre>
+      </details>
+
+      <label for="fullTextValueExcludePatterns" style="margin-top:1rem">
+        Full-text exclusion patterns <small>(one per line)</small>
+        <span class="config-badge config-badge-append">Appended to defaults</span>
+      </label>
+      <p class="field-desc">
+        Applied to both variable assignments and full-text scans. Useful for local dev URIs
+        (e.g.&nbsp;<code>postgres://.*@localhost:.*/.*</code>). <strong>Appended</strong> to defaults.
+      </p>
+      <textarea id="fullTextValueExcludePatterns" name="fullTextValueExcludePatterns" rows="3"
+                placeholder="postgres:\/\/.+:.+@mydevhost:.+\/.+">{{joinLines .ExtraFullTextValueExcludePatterns}}</textarea>
+      <details class="defaults-ref">
+        <summary>Default full-text exclusions (already active)</summary>
+        <pre class="defaults-pre">{{joinLines .Defaults.FullTextValueExcludePatterns}}</pre>
+      </details>
+    </div>
+
+    <!-- ── Scan Settings ─────────────────────────────────────────────── -->
+    <div class="config-section">
+      <h4>Scan Settings <span class="config-badge config-badge-replace">Replaces defaults</span></h4>
+
+      <label for="minPasswordLength">Minimum credential length</label>
+      <p class="field-desc">
+        Values shorter than this are ignored. Default:&nbsp;<strong>{{.Defaults.MinPasswordLength}}</strong>.
+      </p>
+      <input type="number" id="minPasswordLength" name="minPasswordLength"
+             value="{{.MinPasswordLength}}" min="1" max="256" style="max-width:8rem">
+
+      <div class="config-checkboxes">
+        <label>
+          <input type="checkbox" name="excludeTests" value="on" {{if .ExcludeTests}}checked{{end}}>
+          <span class="checkbox-label-text">
+            Exclude test directories
+            <small>Skip files inside directories named <code>test</code>, <code>testdata</code>, etc.</small>
+          </span>
+        </label>
+        <label>
+          <input type="checkbox" name="excludeComments" value="on" {{if .ExcludeComments}}checked{{end}}>
+          <span class="checkbox-label-text">
+            Exclude code comments
+            <small>Do not scan comments in source-code files.</small>
+          </span>
+        </label>
+        <label>
+          <input type="checkbox" name="verbose" value="on" {{if .Verbose}}checked{{end}}>
+          <span class="checkbox-label-text">
+            Verbose mode
+            <small>Print warnings when files are skipped or parsing fails.</small>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── Scan Types ────────────────────────────────────────────────── -->
+    <div class="config-section">
+      <h4>Scan Types <span class="config-badge config-badge-replace">Replaces defaults</span></h4>
+      <p class="field-desc">
+        File types to include. Unchecking a type removes it from the scan entirely.
+        At least one type must remain checked.
+      </p>
+      <div class="scan-types-grid">
+        {{$activeScanTypes := .ScanTypes}}
+        {{range .AllScanTypes}}
+        <label class="scan-type-label">
+          <input type="checkbox" name="scanTypes" value="{{.}}"
+                 {{if contains $activeScanTypes .}}checked{{end}}>
+          {{.}}
+        </label>
+        {{end}}
+      </div>
+    </div>
+
+    <!-- ── File Filters ──────────────────────────────────────────────── -->
+    <div class="config-section">
+      <h4>File Filters <span class="config-badge config-badge-append">Appended to defaults</span></h4>
+
+      <label for="testDirectories">
+        Additional test directories <small>(one per line)</small>
+      </label>
+      <p class="field-desc">
+        Directory names treated as test-only when "Exclude test directories" is enabled.
+        <strong>Appended</strong> to defaults.
+      </p>
+      <textarea id="testDirectories" name="testDirectories" rows="2"
+                placeholder="mocks&#10;fixtures">{{joinLines .ExtraTestDirectories}}</textarea>
+      <details class="defaults-ref">
+        <summary>Default test directories (already active)</summary>
+        <pre class="defaults-pre">{{joinLines .Defaults.TestDirectories}}</pre>
+      </details>
+
+      <label for="ignoreFiles" style="margin-top:1rem">
+        Additional ignored files / directories <small>(one per line)</small>
+      </label>
+      <p class="field-desc">
+        Names of files or directories to skip entirely. <strong>Appended</strong> to defaults.
+      </p>
+      <textarea id="ignoreFiles" name="ignoreFiles" rows="2"
+                placeholder="node_modules&#10;dist">{{joinLines .ExtraIgnoreFiles}}</textarea>
+      <details class="defaults-ref">
+        <summary>Default ignored files (already active)</summary>
+        <pre class="defaults-pre">{{joinLines .Defaults.IgnoreFiles}}</pre>
+      </details>
+
+      <label for="genericFileExtensions" style="margin-top:1rem">
+        Additional generic text extensions <small>(one per line)</small>
+      </label>
+      <p class="field-desc">
+        Extensions scanned as plain text for credential values (e.g.&nbsp;<code>env</code>, <code>secrets</code>).
+        <strong>Appended</strong> to defaults.
+      </p>
+      <textarea id="genericFileExtensions" name="genericFileExtensions" rows="2"
+                placeholder="env&#10;secrets">{{joinLines .ExtraGenericFileExtensions}}</textarea>
+      <details class="defaults-ref">
+        <summary>Default generic text extensions (already active)</summary>
+        <pre class="defaults-pre">{{joinLines .Defaults.GenericFileExtensions}}</pre>
+      </details>
+
+      <label for="genericCodeFileExtensions" style="margin-top:1rem">
+        Additional generic code extensions <small>(one per line)</small>
+      </label>
+      <p class="field-desc">
+        Extensions scanned as generic code (detects variable assignments).
+        <strong>Appended</strong> to defaults.
+      </p>
+      <textarea id="genericCodeFileExtensions" name="genericCodeFileExtensions" rows="2"
+                placeholder="rs&#10;scala">{{joinLines .ExtraGenericCodeFileExtensions}}</textarea>
+      <details class="defaults-ref">
+        <summary>Default generic code extensions (already active)</summary>
+        <pre class="defaults-pre">{{joinLines .Defaults.GenericCodeFileExtensions}}</pre>
+      </details>
+    </div>
+
+    <!-- ── Actions ───────────────────────────────────────────────────── -->
+    <div class="config-actions">
+      <div id="config-result"></div>
+      <div class="config-action-btns">
+        <button type="submit">Apply Configuration</button>
+        <button type="button" class="outline secondary" onclick="exportConfigYAML()">&#x2913; Download as YAML</button>
+        <button type="button" class="outline contrast"
+                hx-delete="/config"
+                hx-target="#config-editor-inner"
+                hx-swap="outerHTML">Reset to Defaults</button>
+      </div>
+    </div>
+  </form>
+
+  <script>
+  // Counter is seeded from the current number of pre-rendered rows so that
+  // dynamically added rows never collide with server-rendered name indices.
+  // Reading from the DOM here (rather than using a Go template action in JS)
+  // also means the counter resets correctly after an HTMX swap.
+  var _vmpCounter = document.getElementById('vmp-rows').querySelectorAll('.vmp-row').length;
+
+  function exportConfigYAML() {
+    var form = document.getElementById('config-form');
+    var params = new URLSearchParams(new FormData(form));
+    fetch('/config/export', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: params.toString()
+    }).then(function(resp) {
+      if (!resp.ok) {
+        return resp.text().then(function(t) { alert('Export failed: ' + t); });
+      }
+      return resp.blob().then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'credential-detector-config.yaml';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    });
+  }
+
+  function addVmpRow() {
+    var i = _vmpCounter++;
+    var row = document.createElement('div');
+    row.className = 'vmp-row';
+
+    var fields = document.createElement('div');
+    fields.className = 'vmp-fields';
+
+    var nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.name = 'vmpName[' + i + ']';
+    nameInput.placeholder = 'Pattern name (e.g. My API Key)';
+    nameInput.setAttribute('aria-label', 'Pattern name');
+
+    var patternInput = document.createElement('input');
+    patternInput.type = 'text';
+    patternInput.name = 'vmpPattern[' + i + ']';
+    patternInput.placeholder = 'Regex (e.g. mykey_[A-Za-z0-9]{32})';
+    patternInput.setAttribute('aria-label', 'Regex pattern');
+    patternInput.className = 'vmp-pattern-input';
+
+    fields.appendChild(nameInput);
+    fields.appendChild(patternInput);
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'outline secondary vmp-remove-btn';
+    removeBtn.setAttribute('aria-label', 'Remove pattern');
+    removeBtn.textContent = '\u2715';
+    removeBtn.addEventListener('click', function() { row.remove(); });
+
+    row.appendChild(fields);
+    row.appendChild(removeBtn);
+    document.getElementById('vmp-rows').appendChild(row);
+  }
+  </script>
+</div>
+{{end}}

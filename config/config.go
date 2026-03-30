@@ -120,7 +120,7 @@ func LoadConfig(configPath, rootConfigPath string) (*Config, error) {
 		return nil, err
 	}
 
-	return mergeConfigs(rootConfig, configAddition), nil
+	return MergeConfigs(rootConfig, configAddition), nil
 }
 
 // IsTestDirectory returns true if the given directory matches one of the configured test directories
@@ -170,7 +170,9 @@ func loadFile(path string) (*Config, error) {
 	return conf, nil
 }
 
-func mergeConfigs(root *Config, additions *Config) *Config {
+// MergeConfigs merges the additions config on top of the root config.
+// Scalar fields are replaced when non-zero; list fields are appended.
+func MergeConfigs(root *Config, additions *Config) *Config {
 	if additions.MinPasswordLength > 0 {
 		root.MinPasswordLength = additions.MinPasswordLength
 	}

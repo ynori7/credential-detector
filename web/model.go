@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ynori7/credential-detector/config"
 	"github.com/ynori7/credential-detector/parser"
 )
 
@@ -42,14 +43,15 @@ type ScanRequest struct {
 
 // ScanSession holds the state of an in-progress or completed scan
 type ScanSession struct {
-	ID        string
-	Request   ScanRequest
-	Status    ScanStatus
-	Error     string
-	Results   []parser.Result
-	Stats     parser.Statistics
-	Progress  chan string
-	CreatedAt time.Time
+	ID             string
+	Request        ScanRequest
+	Status         ScanStatus
+	Error          string
+	Results        []parser.Result
+	Stats          parser.Statistics
+	Progress       chan string
+	CreatedAt      time.Time
+	ConfigOverride *config.Config // optional per-session config additions
 
 	mu        sync.Mutex
 	dismissed map[int]bool
