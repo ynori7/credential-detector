@@ -62,7 +62,9 @@ There exists a web app which encompasses the various features available in this 
 go run cmd/web/main.go
 ```
 
-Note that fetching remote repos relies on the `gh` command.
+Note that fetching remote repos relies on the `gh` command. The UI looks like this:
+
+![screenshot](./web/static/screenshot.png)
 
 ## Usage as a library
 The credential scanner can also be used as a library like so:
