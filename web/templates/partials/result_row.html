@@ -29,6 +29,13 @@
                 title="Dismiss this finding">
             Dismiss
         </button>
+        <button class="outline secondary dismiss-value-btn"
+                hx-delete="/scan/{{.SessionID}}/dismiss-value?value={{.Result.Value | urlquery}}"
+                hx-target="#scan-results"
+                hx-swap="outerHTML"
+                title="Dismiss all findings with this value">
+            Dismiss All Same Value
+        </button>
     </div>
 </div>
 {{end}}

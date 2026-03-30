@@ -96,6 +96,7 @@
     font-size: 0.85rem;
     opacity: 0.85;
     white-space: nowrap;
+    color:#ccc;
 }
 
 .dismiss-file-btn {
@@ -212,9 +213,19 @@
 /* Dismiss button */
 .result-actions {
     flex-shrink: 0;
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .dismiss-btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.dismiss-value-btn {
     padding: 0.25rem 0.75rem;
     font-size: 0.8rem;
     margin: 0;

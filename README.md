@@ -52,6 +52,7 @@ Credential-detector can scan:
 - PHP code
 - Generic text files
 - Bash files
+- Generic code (java/c/cpp style)
 - Javascript/HTML files
 
 ## Web App

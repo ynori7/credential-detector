@@ -71,6 +71,20 @@ func (s *ScanSession) DismissFile(file string) {
 	}
 }
 
+// DismissValue marks all results with the given value as dismissed
+func (s *ScanSession) DismissValue(value string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.dismissed == nil {
+		s.dismissed = make(map[int]bool)
+	}
+	for i, r := range s.Results {
+		if r.Value == value {
+			s.dismissed[i] = true
+		}
+	}
+}
+
 // Dismiss marks a result index as dismissed
 func (s *ScanSession) Dismiss(index int) {
 	s.mu.Lock()

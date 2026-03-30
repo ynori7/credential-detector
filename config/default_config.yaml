@@ -101,7 +101,8 @@ fullTextValueExcludePatterns:
   - postgres(?:ql)?:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
   - (?i)basic auth
 variableValueExcludePatterns:
-  - (?i)^test$|password|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
+  - (?i)^test$|password|^postgres$|^root$|^foobar$|^changeme$|^default$|^master$ #common dummy values
+  - (?i)example$|^example|examplekey$|^examplekey #common dummy values
   - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
   - (?i)^true$|^false$
   - (?i)^bearer$|^Authorization$

@@ -500,6 +500,55 @@ func TestHandleDismiss_Success(t *testing.T) {
 	assert.True(t, sess.IsDismissed(0))
 }
 
+func TestHandleDismissValue_NotFound(t *testing.T) {
+	srv := newTestServer(t)
+
+	req := httptest.NewRequest(http.MethodDelete, "/scan/nonexistent/dismiss-value?value=secret", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestHandleDismissValue_MissingValue(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
+
+	req := httptest.NewRequest(http.MethodDelete, "/scan/"+sess.ID+"/dismiss-value", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestHandleDismissValue_Success(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
+	sess.Status = ScanStatusComplete
+	sess.mu.Lock()
+	sess.Results = []parser.Result{
+		{File: "a.go", Name: "key1", Value: "secret123"},
+		{File: "b.go", Name: "key2", Value: "other"},
+		{File: "c.go", Name: "key3", Value: "secret123"},
+	}
+	sess.mu.Unlock()
+
+	req := httptest.NewRequest(http.MethodDelete, "/scan/"+sess.ID+"/dismiss-value?value=secret123", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.True(t, sess.IsDismissed(0))
+	assert.False(t, sess.IsDismissed(1))
+	assert.True(t, sess.IsDismissed(2))
+	// Response should be the re-rendered results partial
+	assert.Contains(t, w.Body.String(), "other")
+	assert.NotContains(t, w.Body.String(), "key1")
+	assert.NotContains(t, w.Body.String(), "key3")
+}
+
 func TestHandleScan_ConcurrentLimit(t *testing.T) {
 	srv := newTestServer(t)
 

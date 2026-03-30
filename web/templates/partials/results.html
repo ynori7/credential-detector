@@ -1,5 +1,5 @@
 {{define "results.html"}}
-<article>
+<article id="scan-results">
     <header>
         <div class="results-header">
             <h3>Scan Results for <code>{{.Target}}</code></h3>
@@ -18,6 +18,7 @@
                             });
                             btn.dataset.revealed = isRevealed ? 'false' : 'true';
                             btn.textContent = isRevealed ? 'Reveal All' : 'Censor All';
+                            credDetectorRevealed = !isRevealed;
                         })()">
                     Reveal All
                 </button>

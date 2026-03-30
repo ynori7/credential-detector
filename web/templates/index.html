@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="/static/style.css">
     <script src="/static/htmx.min.js"></script>
     <script>
+        var credDetectorRevealed = false;
+
         document.addEventListener('DOMContentLoaded', function() {
             var observer = new MutationObserver(function(mutations) {
                 for (var i = 0; i < mutations.length; i++) {
@@ -35,6 +37,18 @@
                 evt.detail.shouldSwap = true;
                 evt.detail.isError = false;
             }
+        });
+
+        // After dismiss-value re-renders the results article, re-apply reveal state if active.
+        document.addEventListener('htmx:afterSwap', function() {
+            if (!credDetectorRevealed) return;
+            var btn = document.getElementById('reveal-all-btn');
+            if (!btn) return;
+            document.querySelectorAll('#results-list .var-value').forEach(function(el) {
+                el.classList.remove('masked');
+            });
+            btn.dataset.revealed = 'true';
+            btn.textContent = 'Censor All';
         });
     </script>
 </head>

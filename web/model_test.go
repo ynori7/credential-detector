@@ -53,6 +53,47 @@ func TestScanSession_ActiveResults(t *testing.T) {
 	assert.Equal(t, 2, active[1].Index)
 }
 
+func TestScanSession_DismissValue(t *testing.T) {
+	sess := &ScanSession{
+		Results: []parser.Result{
+			{File: "a.go", Name: "key1", Value: "secret123"},
+			{File: "b.go", Name: "key2", Value: "other"},
+			{File: "c.go", Name: "key3", Value: "secret123"},
+		},
+		dismissed: make(map[int]bool),
+	}
+
+	sess.DismissValue("secret123")
+
+	assert.True(t, sess.IsDismissed(0))
+	assert.False(t, sess.IsDismissed(1))
+	assert.True(t, sess.IsDismissed(2))
+}
+
+func TestScanSession_DismissValue_NilMap(t *testing.T) {
+	sess := &ScanSession{
+		Results: []parser.Result{
+			{File: "a.go", Value: "secret123"},
+		},
+	}
+
+	// DismissValue should initialize the dismissed map
+	sess.DismissValue("secret123")
+	assert.True(t, sess.IsDismissed(0))
+}
+
+func TestScanSession_DismissValue_NoMatch(t *testing.T) {
+	sess := &ScanSession{
+		Results: []parser.Result{
+			{File: "a.go", Value: "secret123"},
+		},
+		dismissed: make(map[int]bool),
+	}
+
+	sess.DismissValue("doesnotexist")
+	assert.False(t, sess.IsDismissed(0))
+}
+
 // --- SessionStore tests ---
 
 func TestSessionStore_CreateAndGet(t *testing.T) {

@@ -336,6 +336,36 @@ func (s *Server) handleDismissFile(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<!-- dismissed -->"))
 }
 
+func (s *Server) handleDismissValue(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	value := r.URL.Query().Get("value")
+
+	sess, ok := s.sessions.Get(id)
+	if !ok {
+		http.Error(w, "Session not found", http.StatusNotFound)
+		return
+	}
+
+	if value == "" {
+		http.Error(w, "Value is required", http.StatusBadRequest)
+		return
+	}
+
+	sess.DismissValue(value)
+
+	w.Header().Set("Content-Type", "text/html")
+	s.templates.ExecuteTemplate(w, "results.html", ResultsPageData{
+		SessionID:   sess.ID,
+		Results:     sess.ActiveResults(),
+		Stats:       sess.Stats,
+		Status:      sess.Status,
+		Error:       sess.Error,
+		Target:      sess.Request.Target,
+		ActiveCount: len(sess.ActiveResults()),
+		TotalCount:  len(sess.Results),
+	})
+}
+
 // --- Config handlers ---
 
 func (s *Server) handleConfigGet(w http.ResponseWriter, r *http.Request) {
