@@ -13,6 +13,7 @@ var AllScanTypes = []string{
 	config.ScanTypePHP,
 	config.ScanTypeBash,
 	config.ScanTypeJavaScript,
+	config.ScanTypeTypeScript,
 	config.ScanTypeHTML,
 	config.ScanTypeGeneric,
 	config.ScanTypeGenericCode,
