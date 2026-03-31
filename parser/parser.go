@@ -54,6 +54,10 @@ const (
 	TypeJSComment
 	TypeJSOther
 
+	TypeTSVariable
+	TypeTSComment
+	TypeTSOther
+
 	TypeHTMLScript
 )
 
@@ -216,6 +220,8 @@ func (p *Parser) ParseFile(filepath string) bool {
 		p.parseBashFile(filepath)
 	case p.isParsableJavaScriptFile(filepath):
 		p.parseJavaScriptFile(filepath)
+	case p.isParsableTypeScriptFile(filepath):
+		p.parseTypeScriptFile(filepath)
 	case p.isParsableHTMLFile(filepath):
 		p.parseHTMLFile(filepath)
 	case p.isParsableGenericCodeFile(filepath):

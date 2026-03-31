@@ -285,8 +285,8 @@ func endsWithOpenBrace(trimmedLine string) bool {
 	if !strings.HasSuffix(trimmedLine, "{") {
 		return false
 	}
-	// Skip control flow statements — these are not object literals
-	for _, prefix := range []string{"if ", "if(", "else", "for ", "for(", "while ", "while(", "switch ", "switch(", "function ", "function(", "try", "catch", "class "} {
+	// Skip control flow statements, declarations, and TypeScript-specific blocks — these are not object literals
+	for _, prefix := range []string{"if ", "if(", "else", "for ", "for(", "while ", "while(", "switch ", "switch(", "function ", "function(", "try", "catch", "class ", "interface ", "enum ", "namespace ", "module ", "abstract ", "declare "} {
 		if strings.HasPrefix(trimmedLine, prefix) {
 			return false
 		}

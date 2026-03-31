@@ -6,5 +6,6 @@ spec:
       args:
         - --registry
         - consul
+        - --no-fail-on-initial-config-load
         - --api-key
         - supersecretvalue123

@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -145,10 +146,23 @@ func (sc *Scanner) RunOrgScan(ctx context.Context, sess *model.ScanSession) {
 
 	sess.Progress <- fmt.Sprintf("Found %d repos in '%s'", len(repos), orgName)
 
+	if sess.Request.OrgFilter.ActiveOnly {
+		cutoff := time.Now().AddDate(-1, 0, 0)
+		var filtered []repoInfo
+		for _, r := range repos {
+			if !r.pushedAt.IsZero() && r.pushedAt.After(cutoff) {
+				filtered = append(filtered, r)
+			}
+		}
+		sess.Progress <- fmt.Sprintf("Filtered to %d active repos (pushed within the last 12 months)", len(filtered))
+		repos = filtered
+	}
+
 	var allResults []parser.Result
 	var totalStats parser.Statistics
 
-	for i, repoURL := range repos {
+	for i, repo := range repos {
+		repoURL := repo.cloneURL
 		if ctx.Err() != nil {
 			sc.failSession(sess, "Scan cancelled")
 			return
@@ -412,34 +426,56 @@ func validateRepoURL(rawURL string) error {
 	return nil
 }
 
-func listOrgRepos(ctx context.Context, orgName string) ([]string, error) {
+// repoInfo holds basic metadata about a GitHub repository.
+type repoInfo struct {
+	cloneURL string
+	pushedAt time.Time
+}
+
+func listOrgRepos(ctx context.Context, orgName string) ([]repoInfo, error) {
+	// jq expression emits "<clone_url>|<pushed_at>" per repo, one per line
 	cmd := exec.CommandContext(ctx, "gh", "api",
 		fmt.Sprintf("/orgs/%s/repos", orgName),
 		"--paginate",
-		"--jq", ".[].clone_url",
+		"--jq", `.[] | (.clone_url + "|" + (.pushed_at // ""))`,
 	)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("gh api failed: %w", err)
 	}
 
-	var repos []string
-	scanner := bufio.NewScanner(strings.NewReader(string(output)))
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line != "" {
-			repos = append(repos, line)
+	var repos []repoInfo
+	sc := bufio.NewScanner(strings.NewReader(string(output)))
+	for sc.Scan() {
+		line := strings.TrimSpace(sc.Text())
+		if line == "" {
+			continue
 		}
+		parts := strings.SplitN(line, "|", 2)
+		info := repoInfo{cloneURL: parts[0]}
+		if len(parts) == 2 && parts[1] != "" && parts[1] != "null" {
+			if t, err := time.Parse(time.RFC3339, parts[1]); err == nil {
+				info.pushedAt = t
+			}
+		}
+		repos = append(repos, info)
 	}
 
-	// If jq output is empty, try parsing as JSON array (some gh versions)
+	// Fallback: parse as JSON array (some gh versions don't support --jq filtering)
 	if len(repos) == 0 && len(output) > 0 {
 		var jsonRepos []struct {
 			CloneURL string `json:"clone_url"`
+			PushedAt string `json:"pushed_at"`
 		}
 		if err := json.Unmarshal(output, &jsonRepos); err == nil {
 			for _, r := range jsonRepos {
-				repos = append(repos, r.CloneURL)
+				info := repoInfo{cloneURL: r.CloneURL}
+				if r.PushedAt != "" {
+					if t, err := time.Parse(time.RFC3339, r.PushedAt); err == nil {
+						info.pushedAt = t
+					}
+				}
+				repos = append(repos, info)
 			}
 		}
 	}

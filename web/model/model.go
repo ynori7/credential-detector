@@ -34,11 +34,17 @@ const (
 	ScanStatusFailed   ScanStatus = "failed"
 )
 
+// OrgFilter holds filtering options for GitHub org scans
+type OrgFilter struct {
+	ActiveOnly bool // only include repos pushed to within the last 12 months
+}
+
 // ScanRequest represents a user-submitted scan form
 type ScanRequest struct {
-	Mode   ScanMode
-	Target string
-	Depth  ScanDepth
+	Mode      ScanMode
+	Target    string
+	Depth     ScanDepth
+	OrgFilter OrgFilter
 }
 
 // ScanSession holds the state of an in-progress or completed scan

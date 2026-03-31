@@ -38,6 +38,8 @@ const (
 	ScanTypeGenericCode = "generic_code"
 	// ScanTypeJavaScript indicates JavaScript files
 	ScanTypeJavaScript = "javascript"
+	// ScanTypeTypeScript indicates TypeScript files
+	ScanTypeTypeScript = "typescript"
 	// ScanTypeHTML indicates HTML files
 	ScanTypeHTML = "html"
 )

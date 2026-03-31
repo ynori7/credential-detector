@@ -54,6 +54,7 @@ Credential-detector can scan:
 - Bash files
 - Generic code (java/c/cpp style)
 - Javascript/HTML files
+- Typescript files
 
 ## Web App
 There exists a web app which encompasses the various features available in this tool and presents them in a convenient way. Run the app locally with:
@@ -128,7 +129,7 @@ testDirectories:
 ignoreFiles: #files or directories to skip
   - vendor
 excludeComments: false
-scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php|javascript|html|generic|generic_code
+scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php|javascript|typescript|html|generic|generic_code
   - go
   - yaml
   - json
@@ -141,6 +142,7 @@ scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php|javas
   - generic_code
   - javascript
   - html
+  - typescript
 genericFileExtensions:
   - txt
   - md

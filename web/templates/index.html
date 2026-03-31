@@ -76,17 +76,17 @@
                     <div class="grid">
                         <label>
                             <input type="radio" name="mode" value="repo" checked
-                                   onclick="document.getElementById('target-label').textContent='Repository URL'; document.getElementById('target').placeholder='https://github.com/owner/repo or owner/repo'; document.getElementById('depth-fieldset').style.display=''">
+                                   onclick="document.getElementById('target-label').textContent='Repository URL'; document.getElementById('target').placeholder='https://github.com/owner/repo or owner/repo'; document.getElementById('depth-fieldset').style.display=''; document.getElementById('org-filter-fieldset').style.display='none'">
                             Repository
                         </label>
                         <label>
                             <input type="radio" name="mode" value="org"
-                                   onclick="document.getElementById('target-label').textContent='Organization Name'; document.getElementById('target').placeholder='my-org'; document.getElementById('depth-fieldset').style.display='none'; document.querySelector('input[name=depth][value=head]').checked=true">
+                                   onclick="document.getElementById('target-label').textContent='Organization Name'; document.getElementById('target').placeholder='my-org'; document.getElementById('depth-fieldset').style.display='none'; document.querySelector('input[name=depth][value=head]').checked=true; document.getElementById('org-filter-fieldset').style.display=''">
                             GitHub Org
                         </label>
                         <label>
                             <input type="radio" name="mode" value="local"
-                                   onclick="document.getElementById('target-label').textContent='Local Path'; document.getElementById('target').placeholder='/path/to/directory'; document.getElementById('depth-fieldset').style.display='none'">
+                                   onclick="document.getElementById('target-label').textContent='Local Path'; document.getElementById('target').placeholder='/path/to/directory'; document.getElementById('depth-fieldset').style.display='none'; document.getElementById('org-filter-fieldset').style.display='none'">
                             Local Path
                         </label>
                     </div>
@@ -107,6 +107,14 @@
                             Deep scan (full git history)
                         </label>
                     </div>
+                </fieldset>
+
+                <fieldset id="org-filter-fieldset" style="display:none">
+                    <legend>Org Filters</legend>
+                    <label>
+                        <input type="checkbox" name="active_only" value="on">
+                        Active repos only (updated within the last 12 months)
+                    </label>
                 </fieldset>
 
                 <button type="submit" id="scan-btn">

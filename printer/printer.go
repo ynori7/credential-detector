@@ -106,6 +106,12 @@ func PrintResults(results []parser.Result) {
 			printJSOtherResult(result)
 		case parser.TypeHTMLScript:
 			printJSOtherResult(result)
+		case parser.TypeTSVariable:
+			printTSVariableResult(result)
+		case parser.TypeTSComment:
+			printTSOtherResult(result)
+		case parser.TypeTSOther:
+			printTSOtherResult(result)
 		}
 	}
 }
@@ -279,6 +285,28 @@ func printJSVariableResult(result parser.Result) {
 }
 
 func printJSOtherResult(result parser.Result) {
+	if result.CredentialType != "" {
+		fmt.Printf(`%sLine %d:%s
+Possible %s
+%s
+
+`, fgYellow, result.Line, reset, result.CredentialType, result.Value)
+	} else {
+		fmt.Printf(`%sLine %d:%s
+%s
+
+`, fgYellow, result.Line, reset, result.Value)
+	}
+}
+
+func printTSVariableResult(result parser.Result) {
+	fmt.Printf(`%sLine %d:%s 
+%s = %s;
+
+`, fgYellow, result.Line, reset, result.Name, result.Value)
+}
+
+func printTSOtherResult(result parser.Result) {
 	if result.CredentialType != "" {
 		fmt.Printf(`%sLine %d:%s
 Possible %s

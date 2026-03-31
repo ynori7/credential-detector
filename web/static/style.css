@@ -1,5 +1,10 @@
 /* Credential Detector Web UI — custom styles on top of Pico CSS */
 
+#org-filter-fieldset input[type="checkbox"] {
+    appearance: auto;
+    -webkit-appearance: auto;
+}
+
 /* Progress log */
 .progress-log {
     max-height: 300px;

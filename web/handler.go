@@ -93,6 +93,9 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		Mode:   mode,
 		Target: target,
 		Depth:  depth,
+		OrgFilter: model.OrgFilter{
+			ActiveOnly: r.FormValue("active_only") == "on",
+		},
 	}
 
 	sess := s.sessions.Create(req)
