@@ -17,6 +17,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/ynori7/credential-detector/config"
 	"github.com/ynori7/credential-detector/parser"
+	"github.com/ynori7/credential-detector/web/model"
 )
 
 var (
@@ -33,8 +34,8 @@ var (
 		"/dev",
 		"/run",
 		"/boot",
-		"/private/etc",   // macOS
-		"/private/var",   // macOS
+		"/private/etc", // macOS
+		"/private/var", // macOS
 		"/Users/root",
 	}
 )
@@ -72,7 +73,7 @@ func (sc *Scanner) loadConfigWithOverride(override *config.Config) (*config.Conf
 }
 
 // RunRepoScan clones a repo and scans it, sending progress to the session
-func (sc *Scanner) RunRepoScan(ctx context.Context, sess *ScanSession) {
+func (sc *Scanner) RunRepoScan(ctx context.Context, sess *model.ScanSession) {
 	defer close(sess.Progress)
 
 	target := sess.Request.Target
@@ -100,7 +101,7 @@ func (sc *Scanner) RunRepoScan(ctx context.Context, sess *ScanSession) {
 
 	sess.Progress <- fmt.Sprintf("Cloning %s ...", target)
 
-	deep := sess.Request.Depth == ScanDepthDeep
+	deep := sess.Request.Depth == model.ScanDepthDeep
 	if err := cloneRepo(ctx, target, repoDir, deep); err != nil {
 		sc.failSession(sess, fmt.Sprintf("Clone failed: %s", err))
 		return
@@ -119,7 +120,7 @@ func (sc *Scanner) RunRepoScan(ctx context.Context, sess *ScanSession) {
 }
 
 // RunOrgScan lists repos in an org and scans each one
-func (sc *Scanner) RunOrgScan(ctx context.Context, sess *ScanSession) {
+func (sc *Scanner) RunOrgScan(ctx context.Context, sess *model.ScanSession) {
 	defer close(sess.Progress)
 
 	orgName := sess.Request.Target
@@ -197,17 +198,17 @@ func (sc *Scanner) RunOrgScan(ctx context.Context, sess *ScanSession) {
 	}
 
 	sortResults(allResults)
-	sess.mu.Lock()
+	sess.Mu.Lock()
 	sess.Results = allResults
 	sess.Stats = totalStats
-	sess.Status = ScanStatusComplete
-	sess.mu.Unlock()
+	sess.Status = model.ScanStatusComplete
+	sess.Mu.Unlock()
 
 	sess.Progress <- "done"
 }
 
 // RunLocalScan scans a local directory or file
-func (sc *Scanner) RunLocalScan(ctx context.Context, sess *ScanSession) {
+func (sc *Scanner) RunLocalScan(ctx context.Context, sess *model.ScanSession) {
 	defer close(sess.Progress)
 
 	target := sess.Request.Target
@@ -237,7 +238,7 @@ func (sc *Scanner) RunLocalScan(ctx context.Context, sess *ScanSession) {
 	sc.runHeadScan(ctx, sess, conf, target)
 }
 
-func (sc *Scanner) runHeadScan(_ context.Context, sess *ScanSession, conf *config.Config, scanPath string) {
+func (sc *Scanner) runHeadScan(_ context.Context, sess *model.ScanSession, conf *config.Config, scanPath string) {
 	p := parser.NewParser(conf)
 	if err := p.Scan(scanPath); err != nil {
 		sc.failSession(sess, fmt.Sprintf("Scan failed: %s", err))
@@ -245,16 +246,16 @@ func (sc *Scanner) runHeadScan(_ context.Context, sess *ScanSession, conf *confi
 	}
 
 	sortResults(p.Results)
-	sess.mu.Lock()
+	sess.Mu.Lock()
 	sess.Results = p.Results
 	sess.Stats = p.Statistics
-	sess.Status = ScanStatusComplete
-	sess.mu.Unlock()
+	sess.Status = model.ScanStatusComplete
+	sess.Mu.Unlock()
 
 	sess.Progress <- "done"
 }
 
-func (sc *Scanner) runDeepScan(_ context.Context, sess *ScanSession, conf *config.Config, scanPath string) {
+func (sc *Scanner) runDeepScan(_ context.Context, sess *model.ScanSession, conf *config.Config, scanPath string) {
 	repo, err := git.PlainOpen(scanPath)
 	if err != nil {
 		sc.failSession(sess, fmt.Sprintf("Failed to open git repo: %s", err))
@@ -328,29 +329,29 @@ func (sc *Scanner) runDeepScan(_ context.Context, sess *ScanSession, conf *confi
 	totalStats.ResultsFound = len(allResults)
 	sortResults(allResults)
 
-	sess.mu.Lock()
+	sess.Mu.Lock()
 	sess.Results = allResults
 	sess.Stats = totalStats
-	sess.Status = ScanStatusComplete
-	sess.mu.Unlock()
+	sess.Status = model.ScanStatusComplete
+	sess.Mu.Unlock()
 
 	sess.Progress <- "done"
 }
 
-func (sc *Scanner) stripFilePrefix(sess *ScanSession, prefix string) {
-	sess.mu.Lock()
-	defer sess.mu.Unlock()
+func (sc *Scanner) stripFilePrefix(sess *model.ScanSession, prefix string) {
+	sess.Mu.Lock()
+	defer sess.Mu.Unlock()
 	for i := range sess.Results {
 		rel := strings.TrimPrefix(sess.Results[i].File, prefix)
 		sess.Results[i].File = strings.TrimPrefix(rel, string(filepath.Separator))
 	}
 }
 
-func (sc *Scanner) failSession(sess *ScanSession, msg string) {
-	sess.mu.Lock()
-	sess.Status = ScanStatusFailed
+func (sc *Scanner) failSession(sess *model.ScanSession, msg string) {
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusFailed
 	sess.Error = msg
-	sess.mu.Unlock()
+	sess.Mu.Unlock()
 	sess.Progress <- "error: " + msg
 }
 

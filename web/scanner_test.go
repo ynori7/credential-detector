@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ynori7/credential-detector/config"
 	"github.com/ynori7/credential-detector/parser"
+	"github.com/ynori7/credential-detector/web/model"
 )
 
 func testdataDir() string {
@@ -89,16 +90,16 @@ func TestSortResults(t *testing.T) {
 
 func TestFailSession(t *testing.T) {
 	sc := &Scanner{}
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		ID:        "test",
-		Status:    ScanStatusRunning,
+		Status:    model.ScanStatusRunning,
 		Progress:  make(chan string, 64),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.failSession(sess, "something went wrong")
 
-	assert.Equal(t, ScanStatusFailed, sess.Status)
+	assert.Equal(t, model.ScanStatusFailed, sess.Status)
 	assert.Equal(t, "something went wrong", sess.Error)
 
 	msg := <-sess.Progress
@@ -107,12 +108,12 @@ func TestFailSession(t *testing.T) {
 
 func TestStripFilePrefix(t *testing.T) {
 	sc := &Scanner{}
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		Results: []parser.Result{
 			{File: "/tmp/credential-detector-123/repo/src/main.go"},
 			{File: "/tmp/credential-detector-123/repo/config.yaml"},
 		},
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.stripFilePrefix(sess, "/tmp/credential-detector-123/repo")
@@ -137,17 +138,17 @@ func TestRunLocalScan_Directory(t *testing.T) {
 	// so scan the project root which contains non-test source files.
 	projectRoot := filepath.Join(testdataDir(), "..")
 	sc := NewScanner("", "")
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		ID:        "test-local-dir",
-		Request:   ScanRequest{Mode: ScanModeLocal, Target: projectRoot},
-		Status:    ScanStatusRunning,
+		Request:   model.ScanRequest{Mode: model.ScanModeLocal, Target: projectRoot},
+		Status:    model.ScanStatusRunning,
 		Progress:  make(chan string, 256),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.RunLocalScan(context.Background(), sess)
 
-	assert.Equal(t, ScanStatusComplete, sess.Status)
+	assert.Equal(t, model.ScanStatusComplete, sess.Status)
 	assert.Empty(t, sess.Error)
 	assert.Greater(t, sess.Stats.FilesFound, 0)
 	assert.Greater(t, sess.Stats.FilesScanned, 0)
@@ -156,17 +157,17 @@ func TestRunLocalScan_Directory(t *testing.T) {
 func TestRunLocalScan_SingleFile(t *testing.T) {
 	sc := NewScanner("", "")
 	target := filepath.Join(testdataDir(), "dummy.go")
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		ID:        "test-local-file",
-		Request:   ScanRequest{Mode: ScanModeLocal, Target: target},
-		Status:    ScanStatusRunning,
+		Request:   model.ScanRequest{Mode: model.ScanModeLocal, Target: target},
+		Status:    model.ScanStatusRunning,
 		Progress:  make(chan string, 256),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.RunLocalScan(context.Background(), sess)
 
-	assert.Equal(t, ScanStatusComplete, sess.Status)
+	assert.Equal(t, model.ScanStatusComplete, sess.Status)
 	assert.Empty(t, sess.Error)
 	assert.Greater(t, len(sess.Results), 0)
 
@@ -182,17 +183,17 @@ func TestRunLocalScan_SingleFile(t *testing.T) {
 func TestRunLocalScan_YAMLFile(t *testing.T) {
 	sc := NewScanner("", "")
 	target := filepath.Join(testdataDir(), "dummy.yaml")
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		ID:        "test-local-yaml",
-		Request:   ScanRequest{Mode: ScanModeLocal, Target: target},
-		Status:    ScanStatusRunning,
+		Request:   model.ScanRequest{Mode: model.ScanModeLocal, Target: target},
+		Status:    model.ScanStatusRunning,
 		Progress:  make(chan string, 256),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.RunLocalScan(context.Background(), sess)
 
-	assert.Equal(t, ScanStatusComplete, sess.Status)
+	assert.Equal(t, model.ScanStatusComplete, sess.Status)
 	assert.Greater(t, len(sess.Results), 0)
 
 	var names []string
@@ -204,49 +205,49 @@ func TestRunLocalScan_YAMLFile(t *testing.T) {
 
 func TestRunLocalScan_InvalidPath(t *testing.T) {
 	sc := NewScanner("", "")
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		ID:        "test-local-bad",
-		Request:   ScanRequest{Mode: ScanModeLocal, Target: "/nonexistent/path/to/nowhere"},
-		Status:    ScanStatusRunning,
+		Request:   model.ScanRequest{Mode: model.ScanModeLocal, Target: "/nonexistent/path/to/nowhere"},
+		Status:    model.ScanStatusRunning,
 		Progress:  make(chan string, 256),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.RunLocalScan(context.Background(), sess)
 
-	assert.Equal(t, ScanStatusFailed, sess.Status)
+	assert.Equal(t, model.ScanStatusFailed, sess.Status)
 	assert.NotEmpty(t, sess.Error)
 }
 
 func TestRunRepoScan_InvalidURL(t *testing.T) {
 	sc := NewScanner("", "")
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		ID:        "test-repo-bad",
-		Request:   ScanRequest{Mode: ScanModeRepo, Target: "ftp://evil.com/repo"},
-		Status:    ScanStatusRunning,
+		Request:   model.ScanRequest{Mode: model.ScanModeRepo, Target: "ftp://evil.com/repo"},
+		Status:    model.ScanStatusRunning,
 		Progress:  make(chan string, 256),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.RunRepoScan(context.Background(), sess)
 
-	assert.Equal(t, ScanStatusFailed, sess.Status)
+	assert.Equal(t, model.ScanStatusFailed, sess.Status)
 	assert.Contains(t, sess.Error, "Invalid URL")
 }
 
 func TestRunOrgScan_InvalidOrgName(t *testing.T) {
 	sc := NewScanner("", "")
-	sess := &ScanSession{
+	sess := &model.ScanSession{
 		ID:        "test-org-bad",
-		Request:   ScanRequest{Mode: ScanModeOrg, Target: "invalid org name!"},
-		Status:    ScanStatusRunning,
+		Request:   model.ScanRequest{Mode: model.ScanModeOrg, Target: "invalid org name!"},
+		Status:    model.ScanStatusRunning,
 		Progress:  make(chan string, 256),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sc.RunOrgScan(context.Background(), sess)
 
-	assert.Equal(t, ScanStatusFailed, sess.Status)
+	assert.Equal(t, model.ScanStatusFailed, sess.Status)
 	assert.Contains(t, sess.Error, "Invalid organization name")
 }
 

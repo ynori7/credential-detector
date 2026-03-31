@@ -1,4 +1,4 @@
-package web
+package model
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ import (
 func TestScanSession_Dismiss(t *testing.T) {
 	sess := &ScanSession{
 		Results:   make([]parser.Result, 3),
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	assert.False(t, sess.IsDismissed(0))
@@ -38,7 +38,7 @@ func TestScanSession_ActiveResults(t *testing.T) {
 			{File: "b.go", Name: "key2"},
 			{File: "c.go", Name: "key3"},
 		},
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	active := sess.ActiveResults()
@@ -60,7 +60,7 @@ func TestScanSession_DismissValue(t *testing.T) {
 			{File: "b.go", Name: "key2", Value: "other"},
 			{File: "c.go", Name: "key3", Value: "secret123"},
 		},
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sess.DismissValue("secret123")
@@ -87,7 +87,7 @@ func TestScanSession_DismissValue_NoMatch(t *testing.T) {
 		Results: []parser.Result{
 			{File: "a.go", Value: "secret123"},
 		},
-		dismissed: make(map[int]bool),
+		Dismissed: make(map[int]bool),
 	}
 
 	sess.DismissValue("doesnotexist")
@@ -97,7 +97,7 @@ func TestScanSession_DismissValue_NoMatch(t *testing.T) {
 // --- SessionStore tests ---
 
 func TestSessionStore_CreateAndGet(t *testing.T) {
-	store := &SessionStore{sessions: make(map[string]*ScanSession)}
+	store := &SessionStore{Sessions: make(map[string]*ScanSession)}
 	req := ScanRequest{Mode: ScanModeRepo, Target: "https://github.com/test/repo", Depth: ScanDepthHead}
 
 	sess := store.Create(req)
@@ -111,13 +111,13 @@ func TestSessionStore_CreateAndGet(t *testing.T) {
 }
 
 func TestSessionStore_Get_NotFound(t *testing.T) {
-	store := &SessionStore{sessions: make(map[string]*ScanSession)}
+	store := &SessionStore{Sessions: make(map[string]*ScanSession)}
 	_, ok := store.Get("nonexistent")
 	assert.False(t, ok)
 }
 
 func TestSessionStore_Delete(t *testing.T) {
-	store := &SessionStore{sessions: make(map[string]*ScanSession)}
+	store := &SessionStore{Sessions: make(map[string]*ScanSession)}
 	sess := store.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
 
 	store.Delete(sess.ID)

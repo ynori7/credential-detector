@@ -24,6 +24,10 @@ const (
 	TypeYamlVariable
 	TypeYamlListVal
 
+	TypeK8sEnvVariable
+	TypeK8sSecret
+	TypeK8sFlag
+
 	TypePropertiesComment
 	TypePropertiesValue
 

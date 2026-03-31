@@ -11,103 +11,9 @@ import (
 	"strings"
 
 	"github.com/ynori7/credential-detector/config"
+	"github.com/ynori7/credential-detector/web/model"
 	"gopkg.in/yaml.v3"
 )
-
-// allScanTypes lists every supported scan type in display order.
-var allScanTypes = []string{
-	config.ScanTypeGo,
-	config.ScanTypeYaml,
-	config.ScanTypeJSON,
-	config.ScanTypeProperties,
-	config.ScanTypePrivateKey,
-	config.ScanTypeXML,
-	config.ScanTypePHP,
-	config.ScanTypeBash,
-	config.ScanTypeJavaScript,
-	config.ScanTypeHTML,
-	config.ScanTypeGeneric,
-	config.ScanTypeGenericCode,
-}
-
-// ConfigEditorData is the template data for the config editor partial.
-type ConfigEditorData struct {
-	// Replace fields — effective value (override wins, then defaults)
-	VariableNameExclusionPattern     string
-	XMLAttributeNameExclusionPattern string
-	MinPasswordLength                int
-	ExcludeTests                     bool
-	ExcludeComments                  bool
-	Verbose                          bool
-	ScanTypes                        []string
-
-	// Append fields — only the user's overrides (empty if none saved)
-	ExtraVariableNamePatterns         []string
-	ExtraValueMatchPatterns           []config.ValueMatchPattern
-	ExtraVariableValueExcludePatterns []string
-	ExtraFullTextValueExcludePatterns []string
-	ExtraTestDirectories              []string
-	ExtraIgnoreFiles                  []string
-	ExtraGenericFileExtensions        []string
-	ExtraGenericCodeFileExtensions    []string
-
-	// Reference: the base defaults shown collapsed for context
-	Defaults     *config.Config
-	AllScanTypes []string
-
-	// Whether a custom config is currently active
-	HasOverride bool
-}
-
-func buildEditorData(defaults, override *config.Config) ConfigEditorData {
-	d := ConfigEditorData{
-		Defaults:     defaults,
-		AllScanTypes: allScanTypes,
-		// Seed replace fields with effective defaults
-		VariableNameExclusionPattern:     defaults.VariableNameExclusionPattern,
-		XMLAttributeNameExclusionPattern: defaults.XMLAttributeNameExclusionPattern,
-		MinPasswordLength:                defaults.MinPasswordLength,
-		ExcludeTests:                     defaults.ExcludeTests,
-		ExcludeComments:                  defaults.ExcludeComments,
-		Verbose:                          defaults.Verbose,
-		ScanTypes:                        defaults.ScanTypes,
-	}
-
-	if override == nil {
-		return d
-	}
-
-	d.HasOverride = true
-
-	// Apply override to replace fields
-	if override.VariableNameExclusionPattern != "" {
-		d.VariableNameExclusionPattern = override.VariableNameExclusionPattern
-	}
-	if override.XMLAttributeNameExclusionPattern != "" {
-		d.XMLAttributeNameExclusionPattern = override.XMLAttributeNameExclusionPattern
-	}
-	if override.MinPasswordLength > 0 {
-		d.MinPasswordLength = override.MinPasswordLength
-	}
-	d.ExcludeTests = override.ExcludeTests
-	d.ExcludeComments = override.ExcludeComments
-	d.Verbose = override.Verbose
-	if len(override.ScanTypes) > 0 {
-		d.ScanTypes = override.ScanTypes
-	}
-
-	// Populate append fields with the override's additions
-	d.ExtraVariableNamePatterns = override.VariableNamePatterns
-	d.ExtraValueMatchPatterns = override.ValueMatchPatterns
-	d.ExtraVariableValueExcludePatterns = override.VariableValueExcludePatterns
-	d.ExtraFullTextValueExcludePatterns = override.FullTextValueExcludePatterns
-	d.ExtraTestDirectories = override.TestDirectories
-	d.ExtraIgnoreFiles = override.IgnoreFiles
-	d.ExtraGenericFileExtensions = override.GenericFileExtensions
-	d.ExtraGenericCodeFileExtensions = override.GenericCodeFileExtensions
-
-	return d
-}
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	defaults, err := s.scanner.DefaultConfig()
@@ -121,7 +27,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		override = s.configStore.Get(cookie.Value)
 	}
 
-	editorData := buildEditorData(defaults, override)
+	editorData := model.BuildEditorData(defaults, override)
 	s.templates.ExecuteTemplate(w, "index.html", editorData)
 }
 
@@ -131,13 +37,13 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mode := ScanMode(r.FormValue("mode"))
+	mode := model.ScanMode(r.FormValue("mode"))
 	target := strings.TrimSpace(r.FormValue("target"))
-	depth := ScanDepth(r.FormValue("depth"))
+	depth := model.ScanDepth(r.FormValue("depth"))
 
 	// Validate mode
 	switch mode {
-	case ScanModeRepo, ScanModeOrg, ScanModeLocal:
+	case model.ScanModeRepo, model.ScanModeOrg, model.ScanModeLocal:
 	default:
 		httpErrorHTML(w, "Invalid scan mode", http.StatusBadRequest)
 		return
@@ -149,7 +55,7 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Local mode: validate the target is a filesystem path, not a URL
-	if mode == ScanModeLocal {
+	if mode == model.ScanModeLocal {
 		if strings.Contains(target, "://") || strings.Contains(target, "@") {
 			httpErrorHTML(w, "Target must be a local file path, not a URL", http.StatusBadRequest)
 			return
@@ -159,11 +65,11 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Deep scan doesn't apply to local paths
-		depth = ScanDepthHead
+		depth = model.ScanDepthHead
 	}
 
-	if depth != ScanDepthHead && depth != ScanDepthDeep {
-		depth = ScanDepthHead
+	if depth != model.ScanDepthHead && depth != model.ScanDepthDeep {
+		depth = model.ScanDepthHead
 	}
 
 	// Try to acquire the scan semaphore (only 1 scan at a time)
@@ -183,7 +89,7 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		configOverride = s.configStore.Get(cookie.Value)
 	}
 
-	req := ScanRequest{
+	req := model.ScanRequest{
 		Mode:   mode,
 		Target: target,
 		Depth:  depth,
@@ -202,11 +108,11 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		}()
 
 		switch mode {
-		case ScanModeRepo:
+		case model.ScanModeRepo:
 			s.scanner.RunRepoScan(ctx, sess)
-		case ScanModeOrg:
+		case model.ScanModeOrg:
 			s.scanner.RunOrgScan(ctx, sess)
-		case ScanModeLocal:
+		case model.ScanModeLocal:
 			s.scanner.RunLocalScan(ctx, sess)
 		}
 	}()
@@ -256,7 +162,7 @@ func (s *Server) handleProgress(w http.ResponseWriter, r *http.Request) {
 		case msg, ok := <-sess.Progress:
 			if !ok {
 				// Channel closed — scan is done
-				if sess.Status == ScanStatusFailed {
+				if sess.Status == model.ScanStatusFailed {
 					fmt.Fprintf(w, "event: scan-error\ndata: %s\n\n", sess.Error)
 				} else {
 					fmt.Fprintf(w, "event: complete\ndata: %s\n\n", sess.ID)
@@ -280,7 +186,7 @@ func (s *Server) handleResults(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html")
-	s.templates.ExecuteTemplate(w, "results.html", ResultsPageData{
+	s.templates.ExecuteTemplate(w, "results.html", model.ResultsPageData{
 		SessionID:   sess.ID,
 		Results:     sess.ActiveResults(),
 		Stats:       sess.Stats,
@@ -354,7 +260,7 @@ func (s *Server) handleDismissValue(w http.ResponseWriter, r *http.Request) {
 	sess.DismissValue(value)
 
 	w.Header().Set("Content-Type", "text/html")
-	s.templates.ExecuteTemplate(w, "results.html", ResultsPageData{
+	s.templates.ExecuteTemplate(w, "results.html", model.ResultsPageData{
 		SessionID:   sess.ID,
 		Results:     sess.ActiveResults(),
 		Stats:       sess.Stats,
@@ -380,7 +286,7 @@ func (s *Server) handleConfigGet(w http.ResponseWriter, r *http.Request) {
 		override = s.configStore.Get(cookie.Value)
 	}
 
-	editorData := buildEditorData(defaults, override)
+	editorData := model.BuildEditorData(defaults, override)
 	w.Header().Set("Content-Type", "text/html")
 	s.templates.ExecuteTemplate(w, "config_editor.html", editorData)
 }
@@ -429,7 +335,7 @@ func (s *Server) handleConfigDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	editorData := buildEditorData(defaults, nil)
+	editorData := model.BuildEditorData(defaults, nil)
 	w.Header().Set("Content-Type", "text/html")
 	s.templates.ExecuteTemplate(w, "config_editor.html", editorData)
 }
@@ -515,7 +421,7 @@ func parseConfigFromForm(r *http.Request) (*config.Config, error) {
 
 func validateConfig(c *config.Config) error {
 	validScanTypes := make(map[string]bool)
-	for _, st := range allScanTypes {
+	for _, st := range model.AllScanTypes {
 		validScanTypes[st] = true
 	}
 
@@ -524,7 +430,7 @@ func validateConfig(c *config.Config) error {
 			return fmt.Errorf("unknown scan type: %q", st)
 		}
 	}
-	if len(c.ScanTypes) == 0 && len(allScanTypes) > 0 {
+	if len(c.ScanTypes) == 0 && len(model.AllScanTypes) > 0 {
 		// Empty scan types is allowed (means "keep root defaults")
 	}
 

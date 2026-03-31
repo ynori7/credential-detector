@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ynori7/credential-detector/config"
 	"github.com/ynori7/credential-detector/parser"
+	"github.com/ynori7/credential-detector/web/model"
 )
 
 func newTestServer(t *testing.T) *Server {
@@ -33,6 +34,9 @@ func TestResultTypeName(t *testing.T) {
 		{parser.TypeJSONListVal, "JSON List"},
 		{parser.TypeYamlVariable, "YAML Variable"},
 		{parser.TypeYamlListVal, "YAML List"},
+		{parser.TypeK8sEnvVariable, "K8s Env Variable"},
+		{parser.TypeK8sSecret, "K8s Secret"},
+		{parser.TypeK8sFlag, "K8s CLI Flag"},
 		{parser.TypePropertiesComment, "Properties Comment"},
 		{parser.TypePropertiesValue, "Properties Value"},
 		{parser.TypePrivateKey, "Private Key"},
@@ -78,7 +82,7 @@ func TestMaskValue(t *testing.T) {
 }
 
 func TestGroupByFile(t *testing.T) {
-	results := []IndexedResult{
+	results := []model.IndexedResult{
 		{Index: 0, Result: parser.Result{File: "a.go", Name: "k1"}},
 		{Index: 1, Result: parser.Result{File: "a.go", Name: "k2"}},
 		{Index: 2, Result: parser.Result{File: "b.go", Name: "k3"}},
@@ -95,53 +99,6 @@ func TestGroupByFile(t *testing.T) {
 func TestGroupByFile_Empty(t *testing.T) {
 	groups := groupByFile(nil)
 	assert.Empty(t, groups)
-}
-
-// --- buildEditorData tests ---
-
-func TestBuildEditorData_NoOverride(t *testing.T) {
-	defaults := &config.Config{
-		MinPasswordLength:            8,
-		ExcludeTests:                 true,
-		ScanTypes:                    []string{config.ScanTypeGo, config.ScanTypeYaml},
-		VariableNameExclusionPattern: "(?i)format",
-		VariableNamePatterns:         []string{"(?i)secret"},
-	}
-	d := buildEditorData(defaults, nil)
-
-	assert.False(t, d.HasOverride)
-	assert.Equal(t, 8, d.MinPasswordLength)
-	assert.True(t, d.ExcludeTests)
-	assert.Equal(t, []string{config.ScanTypeGo, config.ScanTypeYaml}, d.ScanTypes)
-	assert.Equal(t, "(?i)format", d.VariableNameExclusionPattern)
-	assert.Empty(t, d.ExtraVariableNamePatterns)
-}
-
-func TestBuildEditorData_WithOverride(t *testing.T) {
-	defaults := &config.Config{
-		MinPasswordLength:            6,
-		ExcludeTests:                 true,
-		ScanTypes:                    []string{config.ScanTypeGo},
-		VariableNameExclusionPattern: "(?i)format",
-		VariableNamePatterns:         []string{"(?i)secret"},
-	}
-	override := &config.Config{
-		MinPasswordLength:            20,
-		ExcludeTests:                 false,
-		ScanTypes:                    []string{config.ScanTypeYaml},
-		VariableNameExclusionPattern: "(?i)myexclusion",
-		VariableNamePatterns:         []string{"(?i)extra"},
-	}
-	d := buildEditorData(defaults, override)
-
-	assert.True(t, d.HasOverride)
-	// Replace fields take override values
-	assert.Equal(t, 20, d.MinPasswordLength)
-	assert.False(t, d.ExcludeTests)
-	assert.Equal(t, []string{config.ScanTypeYaml}, d.ScanTypes)
-	assert.Equal(t, "(?i)myexclusion", d.VariableNameExclusionPattern)
-	// Append fields expose the override additions
-	assert.Equal(t, []string{"(?i)extra"}, d.ExtraVariableNamePatterns)
 }
 
 // --- splitLines tests ---
@@ -424,14 +381,14 @@ func TestHandleResults_NotFound(t *testing.T) {
 func TestHandleResults_WithSession(t *testing.T) {
 	srv := newTestServer(t)
 
-	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeRepo, Target: "test/repo"})
-	sess.mu.Lock()
-	sess.Status = ScanStatusComplete
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
 	sess.Results = []parser.Result{
 		{File: "a.go", Line: 1, Name: "password", Value: "secret123456"},
 	}
 	sess.Stats = parser.Statistics{FilesFound: 5, FilesScanned: 3, ResultsFound: 1}
-	sess.mu.Unlock()
+	sess.Mu.Unlock()
 
 	req := httptest.NewRequest(http.MethodGet, "/scan/"+sess.ID+"/results", nil)
 	w := httptest.NewRecorder()
@@ -454,10 +411,10 @@ func TestHandleDismiss_NotFound(t *testing.T) {
 func TestHandleDismiss_InvalidIndex(t *testing.T) {
 	srv := newTestServer(t)
 
-	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
-	sess.mu.Lock()
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeLocal, Target: "/tmp"})
+	sess.Mu.Lock()
 	sess.Results = []parser.Result{{File: "a.go", Name: "key"}}
-	sess.mu.Unlock()
+	sess.Mu.Unlock()
 
 	req := httptest.NewRequest(http.MethodDelete, "/scan/"+sess.ID+"/dismiss/abc", nil)
 	w := httptest.NewRecorder()
@@ -469,10 +426,10 @@ func TestHandleDismiss_InvalidIndex(t *testing.T) {
 func TestHandleDismiss_OutOfRange(t *testing.T) {
 	srv := newTestServer(t)
 
-	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
-	sess.mu.Lock()
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeLocal, Target: "/tmp"})
+	sess.Mu.Lock()
 	sess.Results = []parser.Result{{File: "a.go", Name: "key"}}
-	sess.mu.Unlock()
+	sess.Mu.Unlock()
 
 	req := httptest.NewRequest(http.MethodDelete, "/scan/"+sess.ID+"/dismiss/5", nil)
 	w := httptest.NewRecorder()
@@ -484,13 +441,13 @@ func TestHandleDismiss_OutOfRange(t *testing.T) {
 func TestHandleDismiss_Success(t *testing.T) {
 	srv := newTestServer(t)
 
-	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
-	sess.mu.Lock()
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeLocal, Target: "/tmp"})
+	sess.Mu.Lock()
 	sess.Results = []parser.Result{
 		{File: "a.go", Name: "key1"},
 		{File: "b.go", Name: "key2"},
 	}
-	sess.mu.Unlock()
+	sess.Mu.Unlock()
 
 	req := httptest.NewRequest(http.MethodDelete, "/scan/"+sess.ID+"/dismiss/0", nil)
 	w := httptest.NewRecorder()
@@ -513,7 +470,7 @@ func TestHandleDismissValue_NotFound(t *testing.T) {
 func TestHandleDismissValue_MissingValue(t *testing.T) {
 	srv := newTestServer(t)
 
-	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeLocal, Target: "/tmp"})
 
 	req := httptest.NewRequest(http.MethodDelete, "/scan/"+sess.ID+"/dismiss-value", nil)
 	w := httptest.NewRecorder()
@@ -525,15 +482,15 @@ func TestHandleDismissValue_MissingValue(t *testing.T) {
 func TestHandleDismissValue_Success(t *testing.T) {
 	srv := newTestServer(t)
 
-	sess := srv.sessions.Create(ScanRequest{Mode: ScanModeLocal, Target: "/tmp"})
-	sess.Status = ScanStatusComplete
-	sess.mu.Lock()
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeLocal, Target: "/tmp"})
+	sess.Status = model.ScanStatusComplete
+	sess.Mu.Lock()
 	sess.Results = []parser.Result{
 		{File: "a.go", Name: "key1", Value: "secret123"},
 		{File: "b.go", Name: "key2", Value: "other"},
 		{File: "c.go", Name: "key3", Value: "secret123"},
 	}
-	sess.mu.Unlock()
+	sess.Mu.Unlock()
 
 	req := httptest.NewRequest(http.MethodDelete, "/scan/"+sess.ID+"/dismiss-value?value=secret123", nil)
 	w := httptest.NewRecorder()
@@ -596,14 +553,14 @@ func TestHandleScan_LocalMode_EndToEnd(t *testing.T) {
 func TestBuildEditorData_Override_ZeroMinPasswordLength_KeepsDefault(t *testing.T) {
 	defaults := &config.Config{MinPasswordLength: 6}
 	override := &config.Config{MinPasswordLength: 0} // not set
-	d := buildEditorData(defaults, override)
+	d := model.BuildEditorData(defaults, override)
 	assert.Equal(t, 6, d.MinPasswordLength)
 }
 
 func TestBuildEditorData_Override_EmptyExclusionPattern_KeepsDefault(t *testing.T) {
 	defaults := &config.Config{VariableNameExclusionPattern: "(?i)format"}
 	override := &config.Config{VariableNameExclusionPattern: ""}
-	d := buildEditorData(defaults, override)
+	d := model.BuildEditorData(defaults, override)
 	assert.Equal(t, "(?i)format", d.VariableNameExclusionPattern)
 }
 
@@ -777,13 +734,13 @@ func TestHandleScan_UsesConfigCookie(t *testing.T) {
 
 	// Find the created session and verify override is attached
 	var found bool
-	srv.sessions.mu.RLock()
-	for _, sess := range srv.sessions.sessions {
+	srv.sessions.Mu.RLock()
+	for _, sess := range srv.sessions.Sessions {
 		if sess.ConfigOverride != nil && sess.ConfigOverride.MinPasswordLength == 50 {
 			found = true
 		}
 	}
-	srv.sessions.mu.RUnlock()
+	srv.sessions.Mu.RUnlock()
 	assert.True(t, found, "expected at least one session with ConfigOverride.MinPasswordLength==50")
 }
 
@@ -802,11 +759,11 @@ func TestHandleScan_NoConfigCookie_NilOverride(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 
 	// No override should be attached — all sessions should have nil ConfigOverride
-	srv.sessions.mu.RLock()
-	for _, sess := range srv.sessions.sessions {
+	srv.sessions.Mu.RLock()
+	for _, sess := range srv.sessions.Sessions {
 		assert.Nil(t, sess.ConfigOverride)
 	}
-	srv.sessions.mu.RUnlock()
+	srv.sessions.Mu.RUnlock()
 }
 
 func TestHandleIndex_WithConfigCookie(t *testing.T) {

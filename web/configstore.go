@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ynori7/credential-detector/config"
+	"github.com/ynori7/credential-detector/web/model"
 )
 
 const configStoreTTL = 24 * time.Hour
@@ -28,7 +29,7 @@ func newConfigStore() *ConfigStore {
 
 // Save stores the config and returns its ID.
 func (cs *ConfigStore) Save(conf *config.Config) string {
-	id := generateID()
+	id := model.GenerateID()
 	cs.mu.Lock()
 	cs.items[id] = &configEntry{conf: conf, savedAt: time.Now()}
 	cs.mu.Unlock()

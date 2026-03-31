@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ynori7/credential-detector/parser"
+	"github.com/ynori7/credential-detector/web/model"
 )
 
 //go:embed templates/*
@@ -20,7 +21,7 @@ var staticFS embed.FS
 type Server struct {
 	mux         *http.ServeMux
 	templates   *template.Template
-	sessions    *SessionStore
+	sessions    *model.SessionStore
 	scanner     *Scanner
 	scanSem     chan struct{} // limits concurrent scans to 1
 	configStore *ConfigStore
@@ -30,7 +31,7 @@ type Server struct {
 func NewServer(scanner *Scanner) *Server {
 	s := &Server{
 		mux:         http.NewServeMux(),
-		sessions:    NewSessionStore(),
+		sessions:    model.NewSessionStore(),
 		scanner:     scanner,
 		scanSem:     make(chan struct{}, 1),
 		configStore: newConfigStore(),
@@ -67,8 +68,8 @@ func (s *Server) loadTemplates() {
 			}
 			return m
 		},
-		"makeRowData": func(sessionID string, ir IndexedResult) ResultRowData {
-			return ResultRowData{SessionID: sessionID, Index: ir.Index, Result: ir.Result}
+		"makeRowData": func(sessionID string, ir model.IndexedResult) model.ResultRowData {
+			return model.ResultRowData{SessionID: sessionID, Index: ir.Index, Result: ir.Result}
 		},
 	}
 
@@ -125,6 +126,12 @@ func resultTypeName(t int) string {
 		return "YAML Variable"
 	case parser.TypeYamlListVal:
 		return "YAML List"
+	case parser.TypeK8sEnvVariable:
+		return "K8s Env Variable"
+	case parser.TypeK8sSecret:
+		return "K8s Secret"
+	case parser.TypeK8sFlag:
+		return "K8s CLI Flag"
 	case parser.TypePropertiesComment:
 		return "Properties Comment"
 	case parser.TypePropertiesValue:
@@ -178,10 +185,10 @@ func maskValue(value string) string {
 // FileGroup organizes results by file for template rendering
 type FileGroup struct {
 	File    string
-	Results []IndexedResult
+	Results []model.IndexedResult
 }
 
-func groupByFile(results []IndexedResult) []FileGroup {
+func groupByFile(results []model.IndexedResult) []FileGroup {
 	var groups []FileGroup
 	var current *FileGroup
 
@@ -192,7 +199,7 @@ func groupByFile(results []IndexedResult) []FileGroup {
 			}
 			current = &FileGroup{
 				File:    r.Result.File,
-				Results: []IndexedResult{r},
+				Results: []model.IndexedResult{r},
 			}
 		} else {
 			current.Results = append(current.Results, r)

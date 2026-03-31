@@ -80,6 +80,20 @@ func TestParser_Yaml(t *testing.T) {
 			Value:          `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
 			CredentialType: "Postgres URI",
 		},
+		{
+			File:  file,
+			Type:  TypeK8sEnvVariable,
+			Line:  0,
+			Name:  "API_KEY",
+			Value: `askjlwerkol#`,
+		},
+		{
+			File:  file,
+			Type:  TypeK8sFlag,
+			Line:  0,
+			Name:  "--postgres_uri",
+			Value: `postgres://myuser:password123@somepostgresdb:5432/mydb?sslmode=disable`,
+		},
 	}
 
 	// when
@@ -97,4 +111,61 @@ func TestParser_Yaml(t *testing.T) {
 
 	assert.Equal(t, len(expected), len(res))
 	assert.Equal(t, expected, res)
+}
+
+func TestParser_YamlK8sSecret(t *testing.T) {
+	// given
+	conf, err := config.ParseConfig(getTestConfig())
+	require.NoError(t, err)
+	file := "../testdata/dummy-secret.yaml"
+
+	// when
+	parser := NewParser(conf)
+	parseFileForTest(parser, file)
+
+	// then - all data/stringData entries should be flagged regardless of key name
+	res := parser.Results
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Name < res[j].Name
+	})
+
+	require.Equal(t, 3, len(res))
+	for _, r := range res {
+		assert.Equal(t, file, r.File)
+		assert.Equal(t, TypeK8sSecret, r.Type)
+		assert.Equal(t, "K8s Secret", r.CredentialType)
+	}
+
+	names := make([]string, len(res))
+	for i, r := range res {
+		names[i] = r.Name
+	}
+	assert.Contains(t, names, "password")
+	assert.Contains(t, names, "api-key")
+	assert.Contains(t, names, "db-password")
+}
+
+func TestParser_YamlK8sFlags(t *testing.T) {
+	// given
+	conf, err := config.ParseConfig(getTestConfig())
+	require.NoError(t, err)
+
+	// Use a dedicated inline test via a temp file-like approach via testdata
+	file := "../testdata/dummy-flags.yaml"
+
+	// when
+	parser := NewParser(conf)
+	parseFileForTest(parser, file)
+
+	// then
+	res := parser.Results
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Name < res[j].Name
+	})
+
+	require.Equal(t, 1, len(res))
+	assert.Equal(t, file, res[0].File)
+	assert.Equal(t, TypeK8sFlag, res[0].Type)
+	assert.Equal(t, "--api-key", res[0].Name)
+	assert.Equal(t, "supersecretvalue123", res[0].Value)
 }

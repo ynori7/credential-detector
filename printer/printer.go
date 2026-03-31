@@ -66,6 +66,12 @@ func PrintResults(results []parser.Result) {
 			printYamlVariableResult(result)
 		case parser.TypeYamlListVal:
 			printYamlListValResult(result)
+		case parser.TypeK8sEnvVariable:
+			printK8sEnvVariableResult(result)
+		case parser.TypeK8sSecret:
+			printK8sSecretResult(result)
+		case parser.TypeK8sFlag:
+			printK8sFlagResult(result)
 		case parser.TypePropertiesValue:
 			printPropertiesValueResult(result)
 		case parser.TypePropertiesComment:
@@ -155,6 +161,27 @@ Possible %s
 ]
 
 `, fgYellow, reset, result.Name, result.CredentialType, result.Value)
+}
+
+func printK8sEnvVariableResult(result parser.Result) {
+	fmt.Printf(`%sK8s Env Variable:%s
+%s = %s
+
+`, fgYellow, reset, result.Name, result.Value)
+}
+
+func printK8sSecretResult(result parser.Result) {
+	fmt.Printf(`%sK8s Secret Entry:%s
+%s = %s
+
+`, fgYellow, reset, result.Name, result.Value)
+}
+
+func printK8sFlagResult(result parser.Result) {
+	fmt.Printf(`%sK8s CLI Flag:%s
+%s = %s
+
+`, fgYellow, reset, result.Name, result.Value)
 }
 
 func printPropertiesValueResult(result parser.Result) {

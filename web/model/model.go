@@ -1,4 +1,4 @@
-package web
+package model
 
 import (
 	"sync"
@@ -53,62 +53,62 @@ type ScanSession struct {
 	CreatedAt      time.Time
 	ConfigOverride *config.Config // optional per-session config additions
 
-	mu        sync.Mutex
-	dismissed map[int]bool
+	Mu        sync.Mutex
+	Dismissed map[int]bool
 }
 
 // DismissFile marks all results for a given file as dismissed
 func (s *ScanSession) DismissFile(file string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.dismissed == nil {
-		s.dismissed = make(map[int]bool)
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+	if s.Dismissed == nil {
+		s.Dismissed = make(map[int]bool)
 	}
 	for i, r := range s.Results {
 		if r.File == file {
-			s.dismissed[i] = true
+			s.Dismissed[i] = true
 		}
 	}
 }
 
 // DismissValue marks all results with the given value as dismissed
 func (s *ScanSession) DismissValue(value string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.dismissed == nil {
-		s.dismissed = make(map[int]bool)
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+	if s.Dismissed == nil {
+		s.Dismissed = make(map[int]bool)
 	}
 	for i, r := range s.Results {
 		if r.Value == value {
-			s.dismissed[i] = true
+			s.Dismissed[i] = true
 		}
 	}
 }
 
 // Dismiss marks a result index as dismissed
 func (s *ScanSession) Dismiss(index int) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.dismissed == nil {
-		s.dismissed = make(map[int]bool)
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+	if s.Dismissed == nil {
+		s.Dismissed = make(map[int]bool)
 	}
-	s.dismissed[index] = true
+	s.Dismissed[index] = true
 }
 
 // IsDismissed checks whether a result has been dismissed
 func (s *ScanSession) IsDismissed(index int) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.dismissed[index]
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
+	return s.Dismissed[index]
 }
 
 // ActiveResults returns non-dismissed results with their original indices
 func (s *ScanSession) ActiveResults() []IndexedResult {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
 	var active []IndexedResult
 	for i, r := range s.Results {
-		if !s.dismissed[i] {
+		if !s.Dismissed[i] {
 			active = append(active, IndexedResult{Index: i, Result: r})
 		}
 	}

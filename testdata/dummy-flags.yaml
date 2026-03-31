@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  containers:
+    - name: my-service
+      args:
+        - --registry
+        - consul
+        - --api-key
+        - supersecretvalue123
