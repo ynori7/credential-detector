@@ -1,6 +1,10 @@
 package web
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -792,4 +796,306 @@ func TestHandleIndex_WithInvalidConfigCookie(t *testing.T) {
 	// Should still render the page normally (unknown IDs return nil from the store)
 	srv.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+// --- Repo filter tests ---
+
+func TestHandleScan_OrgMode_RepoFilter(t *testing.T) {
+	srv := newTestServer(t)
+
+	form := url.Values{
+		"mode":        {"org"},
+		"target":      {"my-org"},
+		"repo_filter": {"my-service-*"},
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/scan", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	// Scan starts (returns progress partial) — verify the session has the filter
+	require.Equal(t, http.StatusOK, w.Code)
+
+	srv.sessions.Mu.RLock()
+	defer srv.sessions.Mu.RUnlock()
+	for _, sess := range srv.sessions.Sessions {
+		assert.Equal(t, "my-service-*", sess.Request.OrgFilter.RepoPattern)
+	}
+}
+
+// --- Pagination tests ---
+
+func makeResults(n int) []parser.Result {
+	results := make([]parser.Result, n)
+	for i := 0; i < n; i++ {
+		results[i] = parser.Result{
+			File: fmt.Sprintf("file%d.go", i),
+			Line: i + 1,
+			Name: fmt.Sprintf("key%d", i),
+		}
+	}
+	return results
+}
+
+func TestHandleResults_Pagination_FirstPage(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = makeResults(120)
+	sess.Stats = parser.Statistics{ResultsFound: 120}
+	sess.Mu.Unlock()
+
+	req := httptest.NewRequest(http.MethodGet, "/scan/"+sess.ID+"/results?page=1&page_size=50", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	assert.Contains(t, body, "key0")
+	assert.Contains(t, body, "key49")
+	assert.NotContains(t, body, "key50")
+	assert.Contains(t, body, "Load More Results")
+}
+
+func TestHandleResults_Pagination_SecondPage(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = makeResults(120)
+	sess.Stats = parser.Statistics{ResultsFound: 120}
+	sess.Mu.Unlock()
+
+	req := httptest.NewRequest(http.MethodGet, "/scan/"+sess.ID+"/results?page=2&page_size=50", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	assert.Contains(t, body, "key50")
+	assert.Contains(t, body, "key99")
+	assert.NotContains(t, body, "key0")
+	assert.Contains(t, body, "Load More Results")
+}
+
+func TestHandleResults_Pagination_LastPage(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = makeResults(120)
+	sess.Stats = parser.Statistics{ResultsFound: 120}
+	sess.Mu.Unlock()
+
+	req := httptest.NewRequest(http.MethodGet, "/scan/"+sess.ID+"/results?page=3&page_size=50", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	assert.Contains(t, body, "key100")
+	assert.Contains(t, body, "key119")
+	assert.NotContains(t, body, "Load More Results")
+}
+
+func TestHandleResults_Pagination_DefaultPageSize(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = makeResults(60)
+	sess.Stats = parser.Statistics{ResultsFound: 60}
+	sess.Mu.Unlock()
+
+	// No page params — should default to page 1, page_size 50
+	req := httptest.NewRequest(http.MethodGet, "/scan/"+sess.ID+"/results", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	assert.Contains(t, body, "key0")
+	assert.Contains(t, body, "key49")
+	assert.NotContains(t, body, "key50")
+	assert.Contains(t, body, "Load More Results")
+}
+
+func TestHandleResults_Pagination_InvalidPage(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = makeResults(10)
+	sess.Stats = parser.Statistics{ResultsFound: 10}
+	sess.Mu.Unlock()
+
+	req := httptest.NewRequest(http.MethodGet, "/scan/"+sess.ID+"/results?page=-1", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "key0")
+}
+
+func TestHandleResults_Pagination_SmallResultSet(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = makeResults(5)
+	sess.Stats = parser.Statistics{ResultsFound: 5}
+	sess.Mu.Unlock()
+
+	req := httptest.NewRequest(http.MethodGet, "/scan/"+sess.ID+"/results?page=1&page_size=50", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	assert.Contains(t, body, "key4")
+	assert.NotContains(t, body, "Load More Results")
+}
+
+// --- Export results tests ---
+
+func TestHandleExportResults_Success(t *testing.T) {
+	srv := newTestServer(t)
+
+	sess := srv.sessions.Create(model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"})
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = []parser.Result{
+		{File: "a.go", Line: 1, Name: "password", Value: "secret123"},
+		{File: "b.go", Line: 5, Name: "token", Value: "tok456"},
+	}
+	sess.Stats = parser.Statistics{FilesFound: 10, FilesScanned: 8, ResultsFound: 2}
+	sess.Dismissed[0] = true // dismiss "password"
+	sess.Mu.Unlock()
+
+	req := httptest.NewRequest(http.MethodPost, "/scan/"+sess.ID+"/export", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "attachment")
+
+	var exported model.ExportData
+	err := json.Unmarshal(w.Body.Bytes(), &exported)
+	require.NoError(t, err)
+	assert.Equal(t, 1, exported.Version)
+	// Dismissed result should be excluded; only "token" exported
+	assert.Len(t, exported.Results, 1)
+	assert.Equal(t, "token", exported.Results[0].Name)
+	assert.Equal(t, 1, exported.Stats.ResultsFound)
+	// No dismissed map in export since all exported results are active
+	assert.Empty(t, exported.Dismissed)
+}
+
+func TestHandleExportResults_NotFound(t *testing.T) {
+	srv := newTestServer(t)
+
+	req := httptest.NewRequest(http.MethodPost, "/scan/nonexistent/export", nil)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+// --- Import results tests ---
+
+func createMultipartRequest(t *testing.T, url string, data []byte) *http.Request {
+	t.Helper()
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+	part, err := writer.CreateFormFile("results_file", "results.json")
+	require.NoError(t, err)
+	_, err = part.Write(data)
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+
+	req := httptest.NewRequest(http.MethodPost, url, &buf)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	return req
+}
+
+func TestHandleImportResults_Success(t *testing.T) {
+	srv := newTestServer(t)
+
+	exportData := model.ExportData{
+		Version: 1,
+		Request: model.ScanRequest{Mode: model.ScanModeRepo, Target: "test/repo"},
+		Results: []parser.Result{
+			{File: "a.go", Line: 1, Name: "key1", Value: "val1"},
+			{File: "b.go", Line: 2, Name: "key2", Value: "val2"},
+		},
+		Stats:     parser.Statistics{FilesFound: 5, FilesScanned: 3, ResultsFound: 2},
+		Dismissed: map[int]bool{0: true},
+	}
+	data, err := json.Marshal(exportData)
+	require.NoError(t, err)
+
+	req := createMultipartRequest(t, "/import", data)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	// Dismissed result (key1) should not appear, key2 should
+	assert.NotContains(t, body, "key1")
+	assert.Contains(t, body, "key2")
+}
+
+func TestHandleImportResults_InvalidJSON(t *testing.T) {
+	srv := newTestServer(t)
+
+	req := createMultipartRequest(t, "/import", []byte("not json"))
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "Invalid JSON")
+}
+
+func TestHandleImportResults_EmptyFile(t *testing.T) {
+	srv := newTestServer(t)
+
+	req := createMultipartRequest(t, "/import", []byte(""))
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "empty")
+}
+
+func TestHandleImportResults_UnsupportedVersion(t *testing.T) {
+	srv := newTestServer(t)
+
+	data, _ := json.Marshal(model.ExportData{Version: 99})
+	req := createMultipartRequest(t, "/import", data)
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "Unsupported export version")
+}
+
+func TestHandleImportResults_MissingFile(t *testing.T) {
+	srv := newTestServer(t)
+
+	// POST to /import without a file field
+	req := httptest.NewRequest(http.MethodPost, "/import", strings.NewReader(""))
+	req.Header.Set("Content-Type", "multipart/form-data; boundary=----test")
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

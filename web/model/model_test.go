@@ -1,9 +1,12 @@
 package model
 
 import (
+	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/ynori7/credential-detector/parser"
 )
 
@@ -123,4 +126,54 @@ func TestSessionStore_Delete(t *testing.T) {
 	store.Delete(sess.ID)
 	_, ok := store.Get(sess.ID)
 	assert.False(t, ok)
+}
+
+// --- ExportData tests ---
+
+func TestExportData_JSONRoundTrip(t *testing.T) {
+	original := ExportData{
+		Version:    1,
+		ExportedAt: time.Date(2026, 1, 15, 10, 30, 0, 0, time.UTC),
+		Request: ScanRequest{
+			Mode:   ScanModeOrg,
+			Target: "my-org",
+			Depth:  ScanDepthHead,
+			OrgFilter: OrgFilter{
+				ActiveOnly:  true,
+				RepoPattern: "my-service-*",
+			},
+		},
+		Results: []parser.Result{
+			{File: "repo/config.go", Type: 1, Line: 10, Name: "apiKey", Value: "secret123", CredentialType: "API Key"},
+			{File: "repo/main.go", Type: 2, Line: 25, Name: "password", Value: "pass456"},
+		},
+		Stats: parser.Statistics{
+			FilesFound:   100,
+			FilesScanned: 80,
+			ResultsFound: 2,
+		},
+		Dismissed: map[int]bool{0: true},
+	}
+
+	data, err := json.Marshal(original)
+	require.NoError(t, err)
+
+	var restored ExportData
+	err = json.Unmarshal(data, &restored)
+	require.NoError(t, err)
+
+	assert.Equal(t, original.Version, restored.Version)
+	assert.Equal(t, original.ExportedAt, restored.ExportedAt)
+	assert.Equal(t, original.Request.Mode, restored.Request.Mode)
+	assert.Equal(t, original.Request.Target, restored.Request.Target)
+	assert.Equal(t, original.Request.OrgFilter.ActiveOnly, restored.Request.OrgFilter.ActiveOnly)
+	assert.Equal(t, original.Request.OrgFilter.RepoPattern, restored.Request.OrgFilter.RepoPattern)
+	assert.Len(t, restored.Results, 2)
+	assert.Equal(t, "apiKey", restored.Results[0].Name)
+	assert.Equal(t, "secret123", restored.Results[0].Value)
+	assert.Equal(t, "API Key", restored.Results[0].CredentialType)
+	assert.Equal(t, 10, restored.Results[0].Line)
+	assert.Equal(t, original.Stats, restored.Stats)
+	assert.True(t, restored.Dismissed[0])
+	assert.False(t, restored.Dismissed[1])
 }

@@ -87,19 +87,19 @@ type Parser struct {
 
 // Result is a hard-coded credential finding
 type Result struct {
-	File           string
-	Type           int
-	Line           int
-	Name           string
-	Value          string
-	CredentialType string //only filled for cases where it's not clear from the context
+	File           string `json:"file"`
+	Type           int    `json:"type"`
+	Line           int    `json:"line"`
+	Name           string `json:"name"`
+	Value          string `json:"value"`
+	CredentialType string `json:"credential_type,omitempty"`
 }
 
 // Statistics contains information about the findings
 type Statistics struct {
-	FilesFound   int
-	FilesScanned int
-	ResultsFound int
+	FilesFound   int `json:"files_found"`
+	FilesScanned int `json:"files_scanned"`
+	ResultsFound int `json:"results_found"`
 }
 
 // NewParser returns a new parser with the given configuration

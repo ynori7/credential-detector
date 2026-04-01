@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -156,6 +157,11 @@ func (sc *Scanner) RunOrgScan(ctx context.Context, sess *model.ScanSession) {
 		}
 		sess.Progress <- fmt.Sprintf("Filtered to %d active repos (pushed within the last 6 months)", len(filtered))
 		repos = filtered
+	}
+
+	if pattern := sess.Request.OrgFilter.RepoPattern; pattern != "" {
+		repos = filterReposByPattern(repos, pattern)
+		sess.Progress <- fmt.Sprintf("Filtered to %d repos matching pattern '%s'", len(repos), pattern)
 	}
 
 	var allResults []parser.Result
@@ -514,4 +520,16 @@ func validateLocalPath(target string) error {
 		}
 	}
 	return nil
+}
+
+// filterReposByPattern filters repos by matching the repo name against a glob pattern.
+func filterReposByPattern(repos []repoInfo, pattern string) []repoInfo {
+	var filtered []repoInfo
+	for _, r := range repos {
+		name := repoNameFromURL(r.cloneURL)
+		if matched, err := path.Match(pattern, name); err == nil && matched {
+			filtered = append(filtered, r)
+		}
+	}
+	return filtered
 }

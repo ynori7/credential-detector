@@ -91,6 +91,8 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("DELETE /scan/{id}/dismiss/{index}", s.handleDismiss)
 	s.mux.HandleFunc("DELETE /scan/{id}/dismiss-file", s.handleDismissFile)
 	s.mux.HandleFunc("DELETE /scan/{id}/dismiss-value", s.handleDismissValue)
+	s.mux.HandleFunc("POST /scan/{id}/export", s.handleExportResults)
+	s.mux.HandleFunc("POST /import", s.handleImportResults)
 
 	// Config
 	s.mux.HandleFunc("GET /config", s.handleConfigGet)

@@ -1,0 +1,38 @@
+{{define "results_page.html"}}
+{{$sessionID := .SessionID}}
+{{range $group := groupByFile .Results}}
+<details class="file-group" open>
+    <summary class="file-header">
+        <span class="file-name">{{$group.File}}</span>
+        <div class="file-summary-right">
+            <span class="file-count">{{len $group.Results}} finding{{if ne (len $group.Results) 1}}s{{end}}</span>
+            <button class="outline secondary dismiss-file-btn"
+                    hx-delete="/scan/{{$sessionID}}/dismiss-file?file={{$group.File | urlquery}}"
+                    hx-target="closest details"
+                    hx-swap="outerHTML"
+                    onclick="event.stopPropagation()"
+                    title="Dismiss all findings in this file">
+                Dismiss File
+            </button>
+        </div>
+    </summary>
+
+    <div class="file-results">
+        {{range $group.Results}}
+        {{template "result_row.html" (makeRowData $sessionID .)}}
+        {{end}}
+    </div>
+</details>
+{{end}}
+
+{{if .HasMore}}
+<div id="load-more-container">
+    <button class="outline load-more-btn"
+            hx-get="/scan/{{.SessionID}}/results?page={{add .Page 1}}&page_size={{.PageSize}}"
+            hx-target="#load-more-container"
+            hx-swap="outerHTML">
+        Load More Results
+    </button>
+</div>
+{{end}}
+{{end}}

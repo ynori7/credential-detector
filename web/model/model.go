@@ -36,15 +36,16 @@ const (
 
 // OrgFilter holds filtering options for GitHub org scans
 type OrgFilter struct {
-	ActiveOnly bool // only include repos pushed to within the last 12 months
+	ActiveOnly  bool   `json:"active_only,omitempty"`
+	RepoPattern string `json:"repo_pattern,omitempty"`
 }
 
 // ScanRequest represents a user-submitted scan form
 type ScanRequest struct {
-	Mode      ScanMode
-	Target    string
-	Depth     ScanDepth
-	OrgFilter OrgFilter
+	Mode      ScanMode  `json:"mode"`
+	Target    string    `json:"target"`
+	Depth     ScanDepth `json:"depth"`
+	OrgFilter OrgFilter `json:"org_filter,omitempty"`
 }
 
 // ScanSession holds the state of an in-progress or completed scan
@@ -144,4 +145,17 @@ type ResultsPageData struct {
 	Target      string
 	ActiveCount int
 	TotalCount  int
+	Page        int
+	PageSize    int
+	HasMore     bool
+}
+
+// ExportData is the JSON-serializable format for saving and loading scan results.
+type ExportData struct {
+	Version    int               `json:"version"`
+	ExportedAt time.Time         `json:"exported_at"`
+	Request    ScanRequest       `json:"request"`
+	Results    []parser.Result   `json:"results"`
+	Stats      parser.Statistics `json:"stats"`
+	Dismissed  map[int]bool      `json:"dismissed,omitempty"`
 }

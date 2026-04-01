@@ -284,3 +284,62 @@ func TestLoadConfigWithOverride_AppendsPatterns(t *testing.T) {
 	assert.Contains(t, conf.VariableNamePatterns, "(?i)myCustomPattern")
 	assert.Greater(t, len(conf.VariableNamePatterns), 1)
 }
+
+// --- filterReposByPattern tests ---
+
+func TestFilterReposByPattern_GlobMatch(t *testing.T) {
+	repos := []repoInfo{
+		{cloneURL: "https://github.com/org/my-service-api.git"},
+		{cloneURL: "https://github.com/org/my-service-web.git"},
+		{cloneURL: "https://github.com/org/other-project.git"},
+		{cloneURL: "https://github.com/org/unrelated.git"},
+	}
+
+	filtered := filterReposByPattern(repos, "my-service-*")
+	assert.Len(t, filtered, 2)
+	assert.Equal(t, "https://github.com/org/my-service-api.git", filtered[0].cloneURL)
+	assert.Equal(t, "https://github.com/org/my-service-web.git", filtered[1].cloneURL)
+}
+
+func TestFilterReposByPattern_NoMatch(t *testing.T) {
+	repos := []repoInfo{
+		{cloneURL: "https://github.com/org/repo-a.git"},
+		{cloneURL: "https://github.com/org/repo-b.git"},
+	}
+
+	filtered := filterReposByPattern(repos, "nonexistent-*")
+	assert.Empty(t, filtered)
+}
+
+func TestFilterReposByPattern_EmptyPattern(t *testing.T) {
+	repos := []repoInfo{
+		{cloneURL: "https://github.com/org/repo-a.git"},
+		{cloneURL: "https://github.com/org/repo-b.git"},
+	}
+
+	// Empty pattern matches nothing (caller should skip filtering)
+	filtered := filterReposByPattern(repos, "")
+	assert.Empty(t, filtered)
+}
+
+func TestFilterReposByPattern_ExactMatch(t *testing.T) {
+	repos := []repoInfo{
+		{cloneURL: "https://github.com/org/exact-repo.git"},
+		{cloneURL: "https://github.com/org/other.git"},
+	}
+
+	filtered := filterReposByPattern(repos, "exact-repo")
+	assert.Len(t, filtered, 1)
+	assert.Equal(t, "https://github.com/org/exact-repo.git", filtered[0].cloneURL)
+}
+
+func TestFilterReposByPattern_QuestionMarkGlob(t *testing.T) {
+	repos := []repoInfo{
+		{cloneURL: "https://github.com/org/api-v1.git"},
+		{cloneURL: "https://github.com/org/api-v2.git"},
+		{cloneURL: "https://github.com/org/api-v10.git"},
+	}
+
+	filtered := filterReposByPattern(repos, "api-v?")
+	assert.Len(t, filtered, 2)
+}

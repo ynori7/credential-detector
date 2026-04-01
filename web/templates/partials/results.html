@@ -9,6 +9,9 @@
                     <span>Files scanned: <strong>{{.Stats.FilesScanned}}</strong></span>
                     <span id="results-count">Results: <strong>{{.ActiveCount}}</strong>{{if ne .ActiveCount .TotalCount}} / {{.TotalCount}}{{end}}</span>
                 </div>
+                <form method="POST" action="/scan/{{.SessionID}}/export" style="display:contents">
+                    <button type="submit" class="outline secondary small-action-btn export-btn">Export</button>
+                </form>
                 <button id="reveal-all-btn" class="outline secondary reveal-all-btn" data-revealed="false"
                         onclick="(function(){
                             var btn = document.getElementById('reveal-all-btn');
@@ -61,6 +64,17 @@
                 {{end}}
             </div>
         </details>
+        {{end}}
+
+        {{if .HasMore}}
+        <div id="load-more-container">
+            <button class="outline load-more-btn"
+                    hx-get="/scan/{{.SessionID}}/results?page={{add .Page 1}}&page_size={{.PageSize}}"
+                    hx-target="#load-more-container"
+                    hx-swap="outerHTML">
+                Load More Results
+            </button>
+        </div>
         {{end}}
     </div>
     {{end}}

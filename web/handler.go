@@ -2,15 +2,19 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html"
+	"io"
 	"net/http"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ynori7/credential-detector/config"
+	"github.com/ynori7/credential-detector/parser"
 	"github.com/ynori7/credential-detector/web/model"
 	"gopkg.in/yaml.v3"
 )
@@ -94,7 +98,8 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		Target: target,
 		Depth:  depth,
 		OrgFilter: model.OrgFilter{
-			ActiveOnly: r.FormValue("active_only") == "on",
+			ActiveOnly:  r.FormValue("active_only") == "on",
+			RepoPattern: strings.TrimSpace(r.FormValue("repo_filter")),
 		},
 	}
 
@@ -188,17 +193,51 @@ func (s *Server) handleResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	s.templates.ExecuteTemplate(w, "results.html", model.ResultsPageData{
+	const defaultPageSize = 50
+	page := 1
+	pageSize := defaultPageSize
+
+	if p, err := strconv.Atoi(r.URL.Query().Get("page")); err == nil && p > 0 {
+		page = p
+	}
+	if ps, err := strconv.Atoi(r.URL.Query().Get("page_size")); err == nil && ps > 0 && ps <= 500 {
+		pageSize = ps
+	}
+
+	allActive := sess.ActiveResults()
+	totalActive := len(allActive)
+
+	start := (page - 1) * pageSize
+	if start > len(allActive) {
+		start = len(allActive)
+	}
+	end := start + pageSize
+	if end > len(allActive) {
+		end = len(allActive)
+	}
+	pageResults := allActive[start:end]
+	hasMore := end < totalActive
+
+	data := model.ResultsPageData{
 		SessionID:   sess.ID,
-		Results:     sess.ActiveResults(),
+		Results:     pageResults,
 		Stats:       sess.Stats,
 		Status:      sess.Status,
 		Error:       sess.Error,
 		Target:      sess.Request.Target,
-		ActiveCount: len(sess.ActiveResults()),
+		ActiveCount: totalActive,
 		TotalCount:  len(sess.Results),
-	})
+		Page:        page,
+		PageSize:    pageSize,
+		HasMore:     hasMore,
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	if page > 1 {
+		s.templates.ExecuteTemplate(w, "results_page.html", data)
+	} else {
+		s.templates.ExecuteTemplate(w, "results.html", data)
+	}
 }
 
 func (s *Server) handleDismiss(w http.ResponseWriter, r *http.Request) {
@@ -271,16 +310,145 @@ func (s *Server) handleDismissValue(w http.ResponseWriter, r *http.Request) {
 
 	sess.DismissValue(value)
 
+	allActive := sess.ActiveResults()
+	totalActive := len(allActive)
+	pageSize := 50
+	pageResults := allActive
+	hasMore := false
+	if totalActive > pageSize {
+		pageResults = allActive[:pageSize]
+		hasMore = true
+	}
+
 	w.Header().Set("Content-Type", "text/html")
 	s.templates.ExecuteTemplate(w, "results.html", model.ResultsPageData{
 		SessionID:   sess.ID,
-		Results:     sess.ActiveResults(),
+		Results:     pageResults,
 		Stats:       sess.Stats,
 		Status:      sess.Status,
 		Error:       sess.Error,
 		Target:      sess.Request.Target,
-		ActiveCount: len(sess.ActiveResults()),
+		ActiveCount: totalActive,
 		TotalCount:  len(sess.Results),
+		Page:        1,
+		PageSize:    pageSize,
+		HasMore:     hasMore,
+	})
+}
+
+// --- Export/Import handlers ---
+
+const maxImportSize = 50 << 20 // 50 MB
+
+func (s *Server) handleExportResults(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	sess, ok := s.sessions.Get(id)
+	if !ok {
+		http.Error(w, "Session not found", http.StatusNotFound)
+		return
+	}
+
+	// Export only the non-dismissed results, reindexed from 0.
+	active := sess.ActiveResults()
+	sess.Mu.Lock()
+	exportResults := make([]parser.Result, len(active))
+	for i, ir := range active {
+		exportResults[i] = ir.Result
+	}
+	exportStats := sess.Stats
+	exportStats.ResultsFound = len(exportResults)
+	exportData := model.ExportData{
+		Version:    1,
+		ExportedAt: time.Now(),
+		Request:    sess.Request,
+		Results:    exportResults,
+		Stats:      exportStats,
+	}
+	sess.Mu.Unlock()
+
+	data, err := json.MarshalIndent(exportData, "", "  ")
+	if err != nil {
+		http.Error(w, "Failed to marshal results: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", `attachment; filename="credential-detector-results.json"`)
+	w.Write(data)
+}
+
+func (s *Server) handleImportResults(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxImportSize)
+
+	if err := r.ParseMultipartForm(maxImportSize); err != nil {
+		httpErrorHTML(w, "File too large or invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	file, _, err := r.FormFile("results_file")
+	if err != nil {
+		httpErrorHTML(w, "Missing results file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		httpErrorHTML(w, "Failed to read file", http.StatusBadRequest)
+		return
+	}
+
+	if len(data) == 0 {
+		httpErrorHTML(w, "File is empty", http.StatusBadRequest)
+		return
+	}
+
+	var exportData model.ExportData
+	if err := json.Unmarshal(data, &exportData); err != nil {
+		httpErrorHTML(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if exportData.Version != 1 {
+		httpErrorHTML(w, "Unsupported export version", http.StatusBadRequest)
+		return
+	}
+
+	sess := s.sessions.Create(exportData.Request)
+	sess.Mu.Lock()
+	sess.Status = model.ScanStatusComplete
+	sess.Results = exportData.Results
+	sess.Stats = exportData.Stats
+	if exportData.Dismissed != nil {
+		sess.Dismissed = exportData.Dismissed
+	}
+	sess.Mu.Unlock()
+	close(sess.Progress)
+
+	allActive := sess.ActiveResults()
+	totalActive := len(allActive)
+	pageSize := 50
+	pageResults := allActive
+	hasMore := false
+	if totalActive > pageSize {
+		pageResults = allActive[:pageSize]
+		hasMore = true
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	s.templates.ExecuteTemplate(w, "results.html", model.ResultsPageData{
+		SessionID:   sess.ID,
+		Results:     pageResults,
+		Stats:       sess.Stats,
+		Status:      sess.Status,
+		Error:       sess.Error,
+		Target:      sess.Request.Target,
+		ActiveCount: totalActive,
+		TotalCount:  len(sess.Results),
+		Page:        1,
+		PageSize:    pageSize,
+		HasMore:     hasMore,
 	})
 }
 

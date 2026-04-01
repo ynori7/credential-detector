@@ -43,11 +43,16 @@
     flex-wrap: wrap;
 }
 
-.reveal-all-btn {
+.reveal-all-btn,
+.small-action-btn {
     font-size: 0.85rem;
     padding: 0.3rem 0.8rem;
     margin: 0;
     white-space: nowrap;
+}
+
+.results-header-right .export-btn {
+    width: auto;
 }
 
 .stats {

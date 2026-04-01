@@ -60,6 +60,17 @@
             </ul>
             <ul>
                 <li><a href="/">New Scan</a></li>
+                <li>
+                    <form id="import-nav-form" hx-post="/import" hx-target="#results-area" hx-swap="innerHTML" hx-encoding="multipart/form-data" style="display:none">
+                        <input type="file" id="import-nav-file" name="results_file" accept=".json">
+                    </form>
+                    <a href="#" onclick="document.getElementById('import-nav-file').click(); return false;">Load Results</a>
+                    <script>
+                        document.getElementById('import-nav-file').addEventListener('change', function() {
+                            if (this.files.length > 0) { htmx.trigger(document.getElementById('import-nav-form'), 'submit'); }
+                        });
+                    </script>
+                </li>
             </ul>
         </nav>
     </header>
@@ -115,6 +126,8 @@
                         <input type="checkbox" name="active_only" value="on">
                         Active repos only (updated within the last 6 months)
                     </label>
+                    <label for="repo_filter">Repo name filter (glob pattern)</label>
+                    <input type="text" id="repo_filter" name="repo_filter" placeholder="e.g. my-service-*">
                 </fieldset>
 
                 <button type="submit" id="scan-btn">
