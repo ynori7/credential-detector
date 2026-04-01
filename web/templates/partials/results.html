@@ -7,7 +7,7 @@
                 <div class="stats">
                     <span>Files found: <strong>{{.Stats.FilesFound}}</strong></span>
                     <span>Files scanned: <strong>{{.Stats.FilesScanned}}</strong></span>
-                    <span>Results: <strong>{{.ActiveCount}}</strong>{{if ne .ActiveCount .TotalCount}} / {{.TotalCount}}{{end}}</span>
+                    <span id="results-count">Results: <strong>{{.ActiveCount}}</strong>{{if ne .ActiveCount .TotalCount}} / {{.TotalCount}}{{end}}</span>
                 </div>
                 <button id="reveal-all-btn" class="outline secondary reveal-all-btn" data-revealed="false"
                         onclick="(function(){

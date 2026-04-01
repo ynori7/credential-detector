@@ -219,9 +219,13 @@ func (s *Server) handleDismiss(w http.ResponseWriter, r *http.Request) {
 
 	sess.Dismiss(index)
 
-	// Return an empty HTML comment so HTMX processes the outerHTML swap
+	// Return the dismissed comment plus an OOB swap to update the count header
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte("<!-- dismissed -->"))
+	s.templates.ExecuteTemplate(w, "results-count.html", map[string]int{
+		"ActiveCount": len(sess.ActiveResults()),
+		"TotalCount":  len(sess.Results),
+	})
 }
 
 func (s *Server) handleDismissFile(w http.ResponseWriter, r *http.Request) {
@@ -241,8 +245,13 @@ func (s *Server) handleDismissFile(w http.ResponseWriter, r *http.Request) {
 
 	sess.DismissFile(file)
 
+	// Return the dismissed comment plus an OOB swap to update the count header
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte("<!-- dismissed -->"))
+	s.templates.ExecuteTemplate(w, "results-count.html", map[string]int{
+		"ActiveCount": len(sess.ActiveResults()),
+		"TotalCount":  len(sess.Results),
+	})
 }
 
 func (s *Server) handleDismissValue(w http.ResponseWriter, r *http.Request) {

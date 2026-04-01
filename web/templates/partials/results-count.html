@@ -1,0 +1,3 @@
+{{define "results-count.html"}}
+<span id="results-count" hx-swap-oob="outerHTML">Results: <strong>{{.ActiveCount}}</strong>{{if ne .ActiveCount .TotalCount}} / {{.TotalCount}}{{end}}</span>
+{{end}}

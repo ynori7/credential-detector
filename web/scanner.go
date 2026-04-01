@@ -147,14 +147,14 @@ func (sc *Scanner) RunOrgScan(ctx context.Context, sess *model.ScanSession) {
 	sess.Progress <- fmt.Sprintf("Found %d repos in '%s'", len(repos), orgName)
 
 	if sess.Request.OrgFilter.ActiveOnly {
-		cutoff := time.Now().AddDate(-1, 0, 0)
+		cutoff := time.Now().AddDate(0, -6, 0)
 		var filtered []repoInfo
 		for _, r := range repos {
 			if !r.pushedAt.IsZero() && r.pushedAt.After(cutoff) {
 				filtered = append(filtered, r)
 			}
 		}
-		sess.Progress <- fmt.Sprintf("Filtered to %d active repos (pushed within the last 12 months)", len(filtered))
+		sess.Progress <- fmt.Sprintf("Filtered to %d active repos (pushed within the last 6 months)", len(filtered))
 		repos = filtered
 	}
 
