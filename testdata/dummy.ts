@@ -42,3 +42,34 @@ const dbConfig = {
     },
     DefaultPw: "supersecret"
 };
+
+import { Injectable } from '@angular/core';
+import { Http, Headers } from '@angular/http';
+import 'rxjs/add/operator/map';
+
+@Injectable()
+
+export class SomethingService{
+    private username: string;
+    private client_id = '234234234234234';
+    private client_secret = '2452354e566456ryhfty656756756';
+
+    constructor(private _http: Http){
+        console.log('Something Service Ready...');
+        this.username = 's44534d';
+    }
+
+    getUser() {
+        return this._http.get('http://whatever.com/' +this.username+'?client_id='+this.client_id+'&client_secret='+this.client_secret)
+            .map(res => res.json());
+    }
+
+    getRepos() {
+        return this._http.get('http://whatever.com/' +this.username+'/repos?client_id='+this.client_id+'&client_secret='+this.client_secret)
+            .map(res => res.json());
+    }
+
+    updateUser(username: string) {
+        this.username = username;
+    }
+}

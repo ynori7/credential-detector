@@ -70,8 +70,8 @@ func TestParser_TypeScript(t *testing.T) {
 		}
 	}
 
-	// 10 results from TS line-by-line parsing (8 variables + 2 comments)
-	assert.Equal(t, 10, len(tsResults))
+	// 11 results from TS line-by-line parsing (9 variables + 2 comments)
+	assert.Equal(t, 11, len(tsResults))
 
 	tsByName := make(map[string]Result)
 	for _, r := range tsResults {
@@ -102,6 +102,8 @@ func TestParser_TypeScript(t *testing.T) {
 	assert.Equal(t, TypeTSVariable, tsByName["secret"].Type)
 	assert.Equal(t, TypeTSVariable, tsByName["serviceApiKey"].Type)
 	assert.Equal(t, TypeTSVariable, tsByName["token"].Type)
+	assert.Equal(t, TypeTSVariable, tsByName["client_secret"].Type)
+	assert.Equal(t, `'2452354e566456ryhfty656756756'`, tsByName["client_secret"].Value)
 
 	tsVarResults := make([]Result, 0)
 	for _, r := range tsResults {
@@ -109,8 +111,8 @@ func TestParser_TypeScript(t *testing.T) {
 			tsVarResults = append(tsVarResults, r)
 		}
 	}
-	// password, apiKey, dbUri, accessKey, dbPassword, secret, serviceApiKey, token
-	assert.Equal(t, 8, len(tsVarResults))
+	// password, apiKey, dbUri, accessKey, dbPassword, secret, serviceApiKey, token, client_secret
+	assert.Equal(t, 9, len(tsVarResults))
 
 	// Comments with credentials
 	commentResults := make([]Result, 0)

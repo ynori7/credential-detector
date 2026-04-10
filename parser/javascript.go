@@ -31,6 +31,9 @@ var (
 
 	// matches: key: "value" (object property)
 	jsObjectPropertyPattern = regexp.MustCompile(`^\s*(\w+)\s*:\s*(.+?)(?:,\s*)?$`)
+
+	// matches block declarations that are not object literals.
+	jsNonObjectBlockPattern = regexp.MustCompile(`^(?:(?:export\s+)?(?:default\s+)?(?:abstract\s+)?(?:class|interface|enum|namespace|module|declare)\b)`)
 )
 
 func (p *Parser) isParsableJavaScriptFile(filepath string) bool {
@@ -283,6 +286,9 @@ func unminifyJS(data []byte) string {
 // It skips lines that are control flow statements and function expressions.
 func endsWithOpenBrace(trimmedLine string) bool {
 	if !strings.HasSuffix(trimmedLine, "{") {
+		return false
+	}
+	if jsNonObjectBlockPattern.MatchString(trimmedLine) {
 		return false
 	}
 	// Skip control flow statements, declarations, and TypeScript-specific blocks — these are not object literals

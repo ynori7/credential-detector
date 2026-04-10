@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const sessionTimeout = 1 * time.Hour
+const sessionTimeout = 6 * time.Hour
 
 // SessionStore holds active scan sessions in memory
 type SessionStore struct {

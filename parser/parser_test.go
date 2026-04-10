@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -131,7 +132,7 @@ func Test_Scan(t *testing.T) {
 
 	err = parser.Scan("../testdata/")
 	require.NoError(t, err)
-	assert.Equal(t, 82, len(parser.Results))
+	assert.Equal(t, 83, len(parser.Results))
 }
 
 func parseFileForTest(parser *Parser, filepath string) {
@@ -141,130 +142,130 @@ func parseFileForTest(parser *Parser, filepath string) {
 }
 
 func getTestConfig() []byte {
-	return []byte(`variableNamePatterns:
-  - (?i)passwd|password
-  - (?i)pw$
-  - (?i)secret
-  - (?i)token
-  - (?i)apiKey|api[_-]key
-  - (?i)accessKey|access[_-]key
-  - (?i)bearer
-  - (?i)credentials
-  - salt|SALT|Salt
-  - (?i)signature
+	return []byte(strings.ReplaceAll(`variableNamePatterns:
+	- (?i)passwd|password
+	- (?i)pw$
+	- (?i)secret
+	- (?i)token
+	- (?i)apiKey|api[_-]key
+	- (?i)accessKey|access[_-]key
+	- (?i)bearer
+	- (?i)credentials
+	- salt|SALT|Salt
+	- (?i)signature
 variableNameExclusionPattern: (?i)format|tokenizer|secretName|Error$|passwordPolicy|tokens$|tokenPolicy|[,\s#+*^|}{'"\[\]]
 xmlAttributeNameExclusionPattern: (?i)token #values that tend to have a different meaning for xml
 valueMatchPatterns:
-  - name: Postgres URI
-    pattern: postgres:\/\/.+:.+@.+:.+\/.+
+	- name: Postgres URI
+		pattern: postgres:\/\/.+:.+@.+:.+\/.+
 
-  - name: JWT Token
-    pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
+	- name: JWT Token
+		pattern: eyJhbGciOiJIUzI1NiIsInR5cCI[a-zA-Z0-9_.]+
 
-  - name: Bcrypt Hash
-    pattern: ^\$2[ayb]\$.{56}$
+	- name: Bcrypt Hash
+		pattern: ^\$2[ayb]\$.{56}$
 
-  - name: AWS Client ID
-    pattern: (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}
+	- name: AWS Client ID
+		pattern: (A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}
 
-  - name: SendGrid API Key
-    pattern: SG\.[\w_-]{16,32}\.[\w_-]{16,64}
+	- name: SendGrid API Key
+		pattern: SG\.[\w_-]{16,32}\.[\w_-]{16,64}
 
-  - name: Amazon MMS Key
-    pattern: amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+	- name: Amazon MMS Key
+		pattern: amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 
-  - name: Facebook Secret
-    pattern: (?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}['\"]
+	- name: Facebook Secret
+		pattern: (?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}['\"]
 
-  - name: Facebook Client ID
-    pattern: (?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}['\"]
+	- name: Facebook Client ID
+		pattern: (?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}['\"]
 
-  - name: Twitter Secret
-    pattern: (?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}['\"]
+	- name: Twitter Secret
+		pattern: (?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}['\"]
 
-  - name: Twitter Client ID
-    pattern: (?i)twitter(.{0,20})?['\"][0-9a-z]{18,25}['\"]
+	- name: Twitter Client ID
+		pattern: (?i)twitter(.{0,20})?['\"][0-9a-z]{18,25}['\"]
 
-  - name: Github Secret
-    pattern: (?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}['\"]
+	- name: Github Secret
+		pattern: (?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}['\"]
 
-  - name: LinkedIn Client ID
-    pattern: (?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]
+	- name: LinkedIn Client ID
+		pattern: (?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]
 
-  - name: LinkedIn Secret
-    pattern: (?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"]
+	- name: LinkedIn Secret
+		pattern: (?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"]
 
-  - name: Slack Token
-    pattern: xox[baprs]-([0-9a-zA-Z]{10,48})?
+	- name: Slack Token
+		pattern: xox[baprs]-([0-9a-zA-Z]{10,48})?
 
-  - name: Slack WebHook
-    pattern: https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8}\/[a-zA-Z0-9_]{24}
+	- name: Slack WebHook
+		pattern: https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8}\/B[a-zA-Z0-9_]{8}\/[a-zA-Z0-9_]{24}
 
-  - name: Private Key
-    pattern: -----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----
+	- name: Private Key
+		pattern: -----BEGIN ((EC|PGP|DSA|RSA|OPENSSH) )?PRIVATE KEY( BLOCK)?-----
 
-  - name: Google API Key
-    pattern: AIza[0-9A-Za-z\\-_]{35}
+	- name: Google API Key
+		pattern: AIza[0-9A-Za-z\\-_]{35}
 
-  - name: Heroku Key
-    pattern: (?i)heroku(.{0,20})?['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"]
+	- name: Heroku Key
+		pattern: (?i)heroku(.{0,20})?['"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['"]
 
-  - name: MailChimp Key
-    pattern: (?i)(mailchimp|mc)(.{0,20})?['"][0-9a-f]{32}-us[0-9]{1,2}['"]
+	- name: MailChimp Key
+		pattern: (?i)(mailchimp|mc)(.{0,20})?['"][0-9a-f]{32}-us[0-9]{1,2}['"]
 
-  - name: MailGun Key
-    pattern: (?i)(mailgun|mg)(.{0,20})?['"][0-9a-z]{32}['"]
+	- name: MailGun Key
+		pattern: (?i)(mailgun|mg)(.{0,20})?['"][0-9a-z]{32}['"]
 
-  - name: Twilio Key
-    pattern: (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"]
+	- name: Twilio Key
+		pattern: (?i)twilio(.{0,20})?['\"][0-9a-f]{32}['\"]
 fullTextValueExcludePatterns:
-  - postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
-  - postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
-  - postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
+	- postgres:\/\/.+:.+@localhost:.+\/.+ #default postgres uri for testing
+	- postgres:\/\/.+:.+@127.0.0.1:.+\/.+ #default postgres uri for testing
+	- postgres:\/\/postgres:postgres@postgres:.+\/.+ #default postgres uri for testing
 variableValueExcludePatterns:
-  - (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
-  - (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
-  - (?i)^true$|^false$
-  - (?i)^bearer$|^Authorization$
-  - bootstrapper
-  - \${.+\} #typically for values injected at build time
-  - (?i){{.*}}
+	- (?i)^test$|^postgres$|^root$|^foobar$|^example$|^changeme$|^default$|^master$ #common dummy values
+	- (?i)^string$|^integer$|^number$|^boolean$|^xsd:.+|^literal$
+	- (?i)^true$|^false$
+	- (?i)^bearer$|^Authorization$
+	- bootstrapper
+	- \${.+\} #typically for values injected at build time
+	- (?i){{.*}}
 minPasswordLength: 6 #don't consider anything shorter than this as a possible credential
 excludeTests: false
 testDirectories:
-  - test
-  - tests
-  - testdata
-  - example
+	- test
+	- tests
+	- testdata
+	- example
 ignoreFiles: #files or directories to skip
-  - vendor
-  - .git
-  - .idea
+	- vendor
+	- .git
+	- .idea
 excludeComments: false
 scanTypes: #possible values are go|yaml|json|properties|privatekey|xml|php
-  - go
-  - yaml
-  - json
-  - properties
-  - privatekey
-  - xml
-  - php
-  - bash
-  - generic
-  - generic_code
-  - javascript
-  - html
-  - typescript
+	- go
+	- yaml
+	- json
+	- properties
+	- privatekey
+	- xml
+	- php
+	- bash
+	- generic
+	- generic_code
+	- javascript
+	- html
+	- typescript
 genericFileExtensions:
-  - txt
-  - py
-  - md
+	- txt
+	- py
+	- md
 genericCodeFileExtensions:
-  - java
-  - swift
-  - cpp
-  - c
-  - h
+	- java
+	- swift
+	- cpp
+	- c
+	- h
 disableOutputColors: false
-verbose: false`)
+verbose: false`, "\t", "  "))
 }
