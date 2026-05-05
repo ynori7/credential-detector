@@ -10,15 +10,16 @@ import (
 
 const bashSuffix = ".sh"
 
-var bashDeclarationPattern = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*=['"].+`)
+var bashDeclarationPattern = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*=['"` + "`" + `].+`)
+var dockerfileDeclarationPattern = regexp.MustCompile(`(?i)^(?:ENV|ARG)\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:=| )(.+)`)
 
 func (p *Parser) isParsableBashFile(filepath string) bool {
 	if _, ok := p.scanTypes[config.ScanTypeGenericCode]; !ok {
 		return false
 	}
 
-	_, extension := getFileNameAndExtension(filepath)
-	return extension == bashSuffix
+	name, extension := getFileNameAndExtension(filepath)
+	return extension == bashSuffix || strings.EqualFold(name, "makefile") || strings.EqualFold(name, "dockerfile")
 }
 
 func (p *Parser) parseBashFile(filepath string) {
@@ -39,12 +40,15 @@ func (p *Parser) parseBashFile(filepath string) {
 	var line string
 
 	var (
-		ok bool
+		ok       bool
+		emitted  bool
+		credType string
 	)
 	for {
 		line, err = reader.ReadString('\n')
 		line = strings.TrimSpace(line)
 
+		emitted = false
 		if bashDeclarationPattern.MatchString(line) {
 			parts := strings.SplitN(line, "=", 2) //there must be an = if we entered this block
 
@@ -56,6 +60,32 @@ func (p *Parser) parseBashFile(filepath string) {
 					Line:  lineNumber,
 					Name:  "",
 					Value: line,
+				}
+				emitted = true
+			}
+		} else if matches := dockerfileDeclarationPattern.FindStringSubmatch(line); matches != nil {
+			valueWithoutQuotes := trimQuotes(matches[2])
+			if ok = p.isPossiblyCredentialsVariable(matches[1], valueWithoutQuotes); ok {
+				p.resultChan <- Result{
+					File:  filepath,
+					Type:  TypeBashVariable,
+					Line:  lineNumber,
+					Name:  "",
+					Value: line,
+				}
+				emitted = true
+			}
+		}
+
+		if !emitted {
+			if ok, credType = p.isPossiblyCredentialValue(line); ok {
+				p.resultChan <- Result{
+					File:           filepath,
+					Type:           TypeBashVariable,
+					Line:           lineNumber,
+					Name:           "",
+					Value:          line,
+					CredentialType: credType,
 				}
 			}
 		}

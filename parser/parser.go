@@ -211,13 +211,13 @@ func (p *Parser) ParseFile(filepath string) bool {
 		p.parseYamlFile(filepath)
 	case p.isParsablePhpFile(filepath):
 		p.parsePhpFile(filepath)
+	case p.isParsableBashFile(filepath):
+		p.parseBashFile(filepath)
 	case p.isParsablePropertiesFile(filepath):
 		p.parsePropertiesFile(filepath)
 		fallthrough
 	case p.isParsablePrivateKeyFile(filepath):
 		p.parsePrivateKeyFile(filepath)
-	case p.isParsableBashFile(filepath):
-		p.parseBashFile(filepath)
 	case p.isParsableJavaScriptFile(filepath):
 		p.parseJavaScriptFile(filepath)
 	case p.isParsableTypeScriptFile(filepath):

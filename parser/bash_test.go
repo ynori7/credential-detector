@@ -25,6 +25,14 @@ func Test_isParsableBashFile(t *testing.T) {
 			path:     "/home/blah/blah.sh",
 			expected: true,
 		},
+		"Makefile": {
+			path:     "/home/blah/Makefile",
+			expected: true,
+		},
+		"makefile lowercase": {
+			path:     "/home/blah/makefile",
+			expected: true,
+		},
 	}
 
 	conf, err := config.ParseConfig(getTestConfig())
@@ -50,6 +58,66 @@ func TestParser_Bash(t *testing.T) {
 			Line:           13,
 			Name:           "",
 			Value:          `PASSWORD="123blahblah"`,
+			CredentialType: "",
+		},
+	}
+
+	// when
+	parser := NewParser(conf)
+	parseFileForTest(parser, file)
+
+	// then
+	res := parser.Results
+	assert.Equal(t, len(expected), len(res))
+	assert.Equal(t, expected, res)
+}
+
+func TestParser_Makefile(t *testing.T) {
+	// given
+	conf, err := config.ParseConfig(getTestConfig())
+	require.NoError(t, err)
+	file := "../testdata/Makefile"
+	expected := []Result{
+		{
+			File:           file,
+			Type:           TypeBashVariable,
+			Line:           5,
+			Name:           "",
+			Value:          `--googlePlacesApiKey=AIzaSyAxxxxxsgx7s_cSxxxxx9g9bxxxxxxUVgU`,
+			CredentialType: "Google API Key",
+		},
+	}
+
+	// when
+	parser := NewParser(conf)
+	parseFileForTest(parser, file)
+
+	// then
+	res := parser.Results
+	assert.Equal(t, len(expected), len(res))
+	assert.Equal(t, expected, res)
+}
+
+func TestParser_Dockerfile(t *testing.T) {
+	// given
+	conf, err := config.ParseConfig(getTestConfig())
+	require.NoError(t, err)
+	file := "../testdata/Dockerfile"
+	expected := []Result{
+		{
+			File:           file,
+			Type:           TypeBashVariable,
+			Line:           4,
+			Name:           "",
+			Value:          `ARG GOOGLE_API_KEY=AIzaSyAxxxxxsgx7s_cSxxxxx9g9bxxxxxxUVgU`,
+			CredentialType: "",
+		},
+		{
+			File:           file,
+			Type:           TypeBashVariable,
+			Line:           5,
+			Name:           "",
+			Value:          `ENV DB_PASSWORD="xK9mP2qLr7vTn4wZ"`,
 			CredentialType: "",
 		},
 	}
