@@ -51,6 +51,9 @@ valueMatchPatterns:
   - name: Github Secret
     pattern: (?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}['\"]
 
+  - name: Github Classic Token
+    pattern: (?i)ghp_[a-zA-Z0-9]{32,40}
+
   - name: LinkedIn Client ID
     pattern: (?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]
 
