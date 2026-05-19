@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/clbanning/mxj/v2 v2.5.5
-	github.com/go-git/go-git/v5 v5.19.0
+	github.com/go-git/go-git/v5 v5.19.1
 	github.com/stretchr/testify v1.11.1
 	github.com/tdewolff/parse/v2 v2.8.11
 	github.com/ynori7/workerpool v1.2.1
