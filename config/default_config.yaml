@@ -182,5 +182,6 @@ genericCodeFileExtensions:
   - h
   - hpp
   - cs
+  - cls
 disableOutputColors: false
 verbose: false

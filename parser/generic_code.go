@@ -2,6 +2,7 @@ package parser
 
 import (
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/ynori7/credential-detector/config"
@@ -138,13 +139,17 @@ func (p *Parser) parseGenericCodeFile(filepath string) {
 	}
 }
 
+// matches plain field/property assignments without a declaration prefix, e.g. obj.Field__c = 'value';
+// (common in Apex, JS, and other languages that assign to existing fields rather than declaring variables)
+var assignmentLineRegex = regexp.MustCompile(`^[A-Za-z_$][\w.]*\s*=\s*[^=]`)
+
 func isVariableDeclaration(line string) bool {
 	parts := strings.Split(line, " ")
 
 	//check if the line starts with a potential declaration prefix
-	if !declarationPrefixes[strings.ToLower(parts[0])] {
-		return false
+	if declarationPrefixes[strings.ToLower(parts[0])] {
+		return strings.Contains(line, "=")
 	}
 
-	return strings.Contains(line, "=")
+	return assignmentLineRegex.MatchString(line)
 }
